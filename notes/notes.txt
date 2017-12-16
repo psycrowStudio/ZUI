@@ -1,0 +1,31 @@
+Game Notes:
+====================
+
+Checks (Triggers?):
+  Mental
+  Physical
+  Social
+  Power
+  Finesse
+  Resilience 
+
+  Compatibility (Demographic, Occupation, Personality, Contacts, Background, Supernatural)
+  Conversation
+  Agency / Urgency
+
+  Saving (influenced by willpower) ($$)
+
+
+  
+  Travel:
+  		EnvironmentalHazard:
+
+
+  Skills
+	// available conditions check
+	// cast check
+	// success check
+
+
+Combat Check
+QuestComplete Check	
