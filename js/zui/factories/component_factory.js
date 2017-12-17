@@ -2,7 +2,7 @@ define(['underscore',
         'backbone',
         'zuiRoot/common',
         'zuiRoot/types',
-        'zuiRoot/Logger'], function(_, Backbone, Common, Types, Logger){
+        'zuiRoot/logger'], function(_, Backbone, Common, Types, Logger){
     //TBD on what params will be needed
     //TODO think about saving a reference to all of the components created?
     var _externalComponentTypes = {};
