@@ -2,27 +2,75 @@
     trigger { linkages { rules {}}}
 
     == RULE ==
-    TYPE: 
-        * EventEquality: does an event name, and or body match a pattern
-        * linkagesEquality: does a _var[] property match a pattern
-        * triggerEquality: does a specific trigger match a pattern
-        * objectExists: does a specific JS object exist in memory?
-
-    STATES: 
-        * pending: an async evaluation is underway
-        * satisfied: evaluation is complete and satisfies the condition
-
-    METHODS:
-        * prime()^: Called automatically on init(), makes registrations, sets variables and counters, 
-            * EventEquality: subscribe to _evChannel for _evName and call evaluate()
-            * linkagesEquality: create
-            * triggerEquality: does a specific trigger match a pattern
-            * objectExists: does a specific JS object exist in memory?
-        * evaluate()^: 
-            * EventEquality: _evName == ev.name && ev.data === _evExactMatch || {_variables contained match _evContians }
+        TYPE: 
+            * EventEquality: does an event name, and or body match a pattern
             * linkagesEquality: does a _var[] property match a pattern
             * triggerEquality: does a specific trigger match a pattern
             * objectExists: does a specific JS object exist in memory?
-        * reset()^: Called to reset the trigger to the unprimed state. 
 
+        STATES: 
+            * idle: intial state
+            * pending: an async evaluation is underway
+            * satisfied: evaluation is complete and satisfies the condition
+
+        METHODS:
+            * prime()^: Called automatically on init(), makes registrations, sets variables and counters, 
+                * EventEquality: subscribe to _evChannel for _evName and call evaluate()
+                * linkagesEquality: create
+                * triggerEquality: does a specific trigger match a pattern
+                * objectExists: does a specific JS object exist in memory?
+            * evaluate()^: 
+                * EventEquality: _evName == ev.name && ev.data === _evExactMatch || {_variables contained match _evContians }
+                * linkagesEquality: does a _var[] property match a pattern
+                * triggerEquality: does a specific trigger match a pattern
+                * objectExists: does a specific JS object exist in memory?
+            * reset()^: Called to reset the trigger to the unprimed state. 
+
+        MODIFIERS:
+            * sticky
+            * clearCustomVarsOnReset
+            * clearInternalVarsOnReset
+            * resetWithTrigger
+            * keepAlive
+            * resetAfterFire
+            * stickyRules
+   
+        INTERNAL VARIABLES:
+            * count / increment(x)
+            * average, sum
+            * max
+            * min
+        
+        EVENTS:
+            * primed
+            * reset
+            * fired
+            * evaluated
+            * consumed?
+
+    == LINKAGE == 
+        TYPE: 
+            * sequence-linear: each rule is evaluated after the prior has been passed
+            * sequence-parallel: 
+        LOGICAL GROUP:
+            * AND: success after all rules are satisfied
+            * OR: success after the first rule is satisfied
+        TIMING: 
+            * delay: a timer is started; when complete, evaluation is called. 
+            * window: evalutation is started and then checked at the end of the time window 
+        STATE: 
+            * satisfied: T/F returned by evaluate()
+
+    == TRIGGER == 
+        STATE: 
+            * unprimed
+            * primed 
+            * fired 
+        MODIFIERS:
+            * stickyRules
+            * clearCustomVarsOnReset
+            * clearInternalVarsOnReset
+            * resetWithTrigger
+            * keepAlive
+			* resetAfterFire
 }

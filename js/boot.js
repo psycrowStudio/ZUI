@@ -16,6 +16,8 @@ requirejs.config({
 require(['zui','pages/index/index'], function(zui) {
     zui.logger.log('Zui Loaded!', { tags:'zui-all', eventName: 'zui-load' })
 
+    console.log(zui.factory['trigger'].fabricate());
+
     //require(['page/home']);
     // require(['zui/zui_init'], function(zui) {
     //     //     //require(['page/home']);

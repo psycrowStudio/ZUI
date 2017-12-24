@@ -1,5 +1,4 @@
 define(['zui'], function(zui){
-    console.log( zui );
     var testPage = zui.factory.page.addPage(zui.factory.page.instantiatePage({ 'title' : 'Test Page' }));
         zui.factory.component.fabricate( { id:'header', parentModel: testPage } );
         zui.factory.component.fabricate( { id:'content', parentModel: testPage } );
