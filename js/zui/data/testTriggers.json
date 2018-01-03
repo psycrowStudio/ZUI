@@ -1,0 +1,26 @@
+{
+ "triggers": [
+     {
+         "keepAlive" : true,
+         "resetAfterFire" : true,
+         "resetAfterEval" : false,
+         "linkages" : [
+             {
+                "type": "linear",
+                "logicalGrouping" : "AND",
+                "delay": 10,
+                "timeWindowBegin" : 0,
+                "timeWindowDuration" : 0,
+                "resetWithTrigger" : true,
+                 "rules" : [
+                     {
+                        "type":"",
+                        "clearCustomVarsOnReset" : false,
+                        "clearInternalVarsOnReset" : false
+                     }
+                 ]
+             }
+         ]
+     }
+ ]   
+}

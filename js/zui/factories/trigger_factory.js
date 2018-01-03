@@ -7,7 +7,7 @@ define(['zuiRoot/common',
         fabricate: function( settings ){
             settings = typeof settings === 'undefined' ? {} : settings;
 
-            var trigger = new (Types.TriggerModel.extend({
+            var trigger = new (Types.Trigger.extend({
                 defaults : typeof settings.defaults !== "undefined" ? settings.defaults : {
                     //'type': 'Standard', 
                     'channels' : [], //Object // Obj Dom // Global // Global DOM

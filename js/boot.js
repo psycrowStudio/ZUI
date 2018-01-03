@@ -18,6 +18,14 @@ require(['zui','pages/index/index'], function(zui) {
 
     console.log(zui.factory['trigger'].fabricate());
 
+    var t1 = new zui.types.Trigger.fabricate();  
+    var t2 = new zui.types.Trigger.fabricate();  
+
+    t1.setProp(156);
+    t2.setProp(333);
+
+    console.log(t1.getProp(), t2.getProp());
+
     //require(['page/home']);
     // require(['zui/zui_init'], function(zui) {
     //     //     //require(['page/home']);

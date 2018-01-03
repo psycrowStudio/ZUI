@@ -27,13 +27,8 @@
             * reset()^: Called to reset the trigger to the unprimed state. 
 
         MODIFIERS:
-            * sticky
             * clearCustomVarsOnReset
             * clearInternalVarsOnReset
-            * resetWithTrigger
-            * keepAlive
-            * resetAfterFire
-            * stickyRules
    
         INTERNAL VARIABLES:
             * count / increment(x)
@@ -48,10 +43,12 @@
             * evaluated
             * consumed?
 
+    'channels' : [], //Object // Obj Dom // Global // Global DOM
+
     == LINKAGE == 
         TYPE: 
-            * sequence-linear: each rule is evaluated after the prior has been passed
-            * sequence-parallel: 
+            * linear: each rule is evaluated after the prior has been passed
+            * parallel: 
         LOGICAL GROUP:
             * AND: success after all rules are satisfied
             * OR: success after the first rule is satisfied
@@ -60,16 +57,16 @@
             * window: evalutation is started and then checked at the end of the time window 
         STATE: 
             * satisfied: T/F returned by evaluate()
-
+        MODIFIERS:
+            * stickyRules
+            * resetWithTrigger
+    
     == TRIGGER == 
         STATE: 
             * unprimed
             * primed 
             * fired 
         MODIFIERS:
-            * stickyRules
-            * clearCustomVarsOnReset
-            * clearInternalVarsOnReset
             * resetWithTrigger
             * keepAlive
 			* resetAfterFire

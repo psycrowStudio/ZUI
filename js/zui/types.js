@@ -7,6 +7,6 @@ define(['zuiRoot/models/ComponentModel',
         Component : componentModel,
         Event: eventModel,
         Page: pageModel,
-        TriggerModel: triggerModel
+        Trigger: triggerModel
     }
 });
