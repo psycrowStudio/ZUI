@@ -35,13 +35,6 @@
             * average, sum
             * max
             * min
-        
-        EVENTS:
-            * primed
-            * reset
-            * fired
-            * evaluated
-            * consumed?
 
     'channels' : [], //Object // Obj Dom // Global // Global DOM
 
