@@ -41,7 +41,7 @@
     == LINKAGE == 
         TYPE: 
             * linear: each rule is evaluated after the prior has been passed
-            * parallel: 
+            * parallel: all rules begin evaluation immediately 
         LOGICAL GROUP:
             * AND: success after all rules are satisfied
             * OR: success after the first rule is satisfied
@@ -59,6 +59,7 @@
             * unprimed
             * primed 
             * fired 
+            * consumed
         MODIFIERS:
             * resetWithTrigger
             * keepAlive

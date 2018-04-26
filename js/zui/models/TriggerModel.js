@@ -1,37 +1,55 @@
+
+	
+	//const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+    //wait(10000).then(() => saySomething("10 seconds")).catch(failureCallback);
+    
 define(['underscore', 'backbone', 
     'zuiRoot/common',
     'zuiRoot/logger'], function(_, Backbone, Common, Logger){
         var _initial;
+        var generateSuperScope = function(){
+            return new (function(){
+                return {
+
+                };
+            })();
+        }
+        
         var generateScope = function(settings){
+            
             return new (function(settings){
                 settings = typeof settings === 'undefined' ? {} : settings;
                 var _ruleLinkages = {};
                 var testProp = 0;
     
+                var _evaluateLinkages = function(fireAfterEvaluate) {
+                    // all linkages must be true for the trigger to fire...
+                    for(var key in _ruleLinkages) {
+                        if(_ruleLinkages[key].isEvalPending || _ruleLinkages[key].isSatisfied){	return false; }
+                    }
+                    
+                    if(fireAfterEvaluate) {
+                        _trigger.fire();
+                    }
+                };
+                
                 return { 
                     defaults : {
-                        'id' : settings.id ? settings.id : Common.genId(),
-                        'state' : 'unprimed',
+                        'id' : Common.genId(),
+                        'state' : 'unprimed', //'primed', 'fired', 'consumed'
                         'keepAlive': false,
                         'resetAfterFire': false,
-                        'resetAfterEval': false,
                         'lastPrimed': 0,
-                        'firedCount': 0,
-                        'state' : 'init'
-                        //'echo'
+                        'firedCount': 0
                     },
-                    actions : [], // array of function pointers
         
                     initialize : function(){   
-                        Logger.log('Trigger ' + this.get('id') + ' Created', { filter: 'create' });
+                        Logger.log('Trigger ' + this.get('id') + ' Created', { tags: 'zui-create' });
                         this.prime();
                     },
         
                     // CONSTRUCTOR 
                     state: function() {	return this.get('state') },
-                    
-                    setProp: function(value) { testProp = value; },
-                    getProp: function() { return testProp; },
                     
                     addLinkage: function(link){
                         // add new linkages  
@@ -41,6 +59,10 @@ define(['underscore', 'backbone',
                     
                     // AKA initialize
                     prime: function(){
+                        if(this.get('state') == "primed") {
+
+                        }
+                        
                         // if event based, we need trigger target or global space filter
                             // listen to subs
                             // payload match
@@ -68,6 +90,15 @@ define(['underscore', 'backbone',
                             
                         //     _ruleLinkages[key].prime(settings); 
                         // }
+
+                        var primeEvent = {};
+                        var logSettings = {
+                            tags: ["zui-trigger"],
+                            obj: primeEvent,
+                            logLevel: 1
+                        }
+                        Logger.log(this.get('id') + " Trigger Primed", logSettings);
+                        this.trigger("zui-trigger-prime", primeEvent);
                     },
                     
                     fire: function() {
@@ -80,22 +111,36 @@ define(['underscore', 'backbone',
                             max
                             min
                         */
-                        // if(_action && typeof _action === 'function'){
-                        //     _action();
-                        // }
-                        // else {
-                        //     console.log('could not fire action. invalid type');
-                        // }
-                        
-                        // if(!_keepAlive) {
-                        //     _this.cleanup();
-                        // } else if(_resetAfterFire) {
-                        //     _this.reset();
-                        // }
+
+                       if(this.get('state') == "primed") {
+                            if(!_keepAlive) {
+                                _this.cleanup();
+                            } else if(_resetAfterFire) {
+                                _this.reset();
+                            }
+                            var fireEvent = {};
+                            var logSettings = {
+                                tags: ["zui-trigger"],
+                                obj: fireEvent,
+                                logLevel: 1
+                            }
+                            Logger.log(this.get('id') + " Trigger Fired", logSettings);
+                            this.trigger("zui-trigger-fire", fireEvent);
+                       }
                     },
                     
                     reset: function() {
                         _vars = {};
+
+                        var resetEvent = {};
+                        var logSettings = {
+                            tags: ["zui-trigger"],
+                            obj: resetEvent,
+                            logLevel: 1
+                        }
+                        Logger.log(this.get('id') + " Trigger Reset", logSettings);
+                        this.trigger("zui-trigger-reset", resetEvent);
+                        
                         for(var key in _ruleLinkages) {
                             if(_ruleLinkages[key].resetWithTrigger){	
                                 _ruleLinkages[key].reset(); 
@@ -122,21 +167,22 @@ define(['underscore', 'backbone',
             })(settings);
         };
         
-        //console.log(Backbone, Common, Logger);
+        //These are the static methods that this type will inherit
         var staticMethods = (function() {
-            
             return {
-                fab: function( settings ){
-                    var trigger = new (_initial.extend(generateScope(settings)))();
+                fab: function( objValues,  options){
+                    var trigger = new (_initial.extend(generateScope(objValues)))();
                     return trigger;
                 },
                 fabFromJson: function(json) {
-                    return JSON.parse(json);
-                },
+                    var trigger = new (_initial.extend(generateScope(JSON.parse(json))))();
+                    return trigger;
+                }
             }
         })();
 
-        //console.log(staticMethods);
-        _initial = Backbone.Model.extend(generateScope(), staticMethods);
-        return _initial
+   
+        _initial = Backbone.Model.extend(generateSuperScope(), staticMethods);
+        console.log(_initial);
+        return _initial;
 });

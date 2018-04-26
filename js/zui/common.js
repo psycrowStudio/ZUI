@@ -41,9 +41,25 @@ define(['backbone', 'underscore'], function(Backbone, _){
         objIsOfType : function(obj, type) { return true; },
         objInstanceOfType : function(obj, type) { return true; },
         //returnTypeFromString : function(name) { return  }
-        registeredTypes: {}
-        
-        
+        registeredTypes: {},
+
+        //ANIMATOR
+        animator: {
+            //hide : function() {}
+            //reveal
+            //animate
+            //transition
+        },
+
+        //LOCATER - finding ZUI objects at runtime
+        locator: {
+            //locate: function(){}
+        },
+
+        // AUDIO - a shared resource for playing sounds
+        audio:{
+
+        }
         //TODO HTTP GET wrapper, promise style
     };
     

@@ -65,8 +65,10 @@ define(['underscore', 'backbone'], function(_, Backbone){
         'zui-component' : 1,
         'zui-page' : 2,
         'zui-trigger' : 1,
+        'zui-event' : 2,
+        'zui-create' : 2,
         'ZUI': 1,
-        'misc' : 1,
+        'misc' : 1
         //router, html-dom, pageActions
     } ;
 
@@ -112,6 +114,12 @@ define(['underscore', 'backbone'], function(_, Backbone){
         unsubscribe : function(channel, eventName, handler) {
             if(this.eventChannels.hasOwnProperty(channel)) {
                 this.eventChannels[channel].off(eventName, handler);
+            }
+        },
+
+        registerChannel : function(name, handler){
+            if(!this.eventChannels.hasOwnProperty(channel)) {
+                this.eventChannels[name] = _.extend(handler, Backbone.Events);
             }
         },
         eventChannels : {

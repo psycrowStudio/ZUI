@@ -77,4 +77,29 @@ define(['zui'], function(zui){
         });
 
     zui.factory.page.setActivePage(testPage);
+
+    zui.factory.component.fabricate({ 
+        id:'TriggerSandbox', 
+        parentModel: testPage.components.get('content'), 
+        parentElementSelector: '#content',
+        className:'status-active',
+        template:'<label>Trigger Timer</label> <input type="number" min="0" step="1" placeholder="DELAY IN SECONDS"></input>\
+                           <button> Start </button> \
+        ',
+        events: {
+            click: function(e) {
+                if(e.target.nodeName.toLowerCase() === "button") {
+                    var button = e.target;
+                    var input = this.model.view.el.querySelector('input:valid');
+
+                    if(input && input.value > 0){
+                        button.disabled = true;
+                        console.log("Setting " + input.value + "(s) Trigger")
+                    }
+                }
+                return false;
+            }
+        }
+    });
+    testPage.redraw();
 });
