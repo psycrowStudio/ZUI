@@ -1,0 +1,4 @@
+picture this:
+
+when entering areas such as towns and encampments, the map will be "fog of war" over sections of the map. These areas will require various skill and abilities to unlock and make visible.
+This could also be extenede to a characters & character detection. 
