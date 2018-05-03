@@ -18,12 +18,12 @@ require(['zui','pages/index/index', 'backbone'], function(zui, index, Backbone) 
 
    // console.log(zui.factory['trigger'].fabricate());
 
-    var t1 =  zui.types.Trigger.fab({"id":"1111"});
-    t1.listenTo(t1, 'all', function(input){ console.log(arguments, input);});  
-    var t2 =  zui.types.Trigger.fab(); 
+    // var t1 =  zui.types.Trigger.fab({"id":"1111"});
+    // t1.listenTo(t1, 'all', function(input){ console.log(arguments, input);});  
+    // var t2 =  zui.types.Trigger.fab(); 
 
-    console.log(t2.get('superScore'));
-    t1.prime();
+    // console.log(t2.get('superScore'));
+    // t1.prime();
 
     //require(['page/home']);
     // require(['zui/zui_init'], function(zui) {

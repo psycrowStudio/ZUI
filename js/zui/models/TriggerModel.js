@@ -1,12 +1,8 @@
-
-	
-	//const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-    //wait(10000).then(() => saySomething("10 seconds")).catch(failureCallback);
-    
 define(['underscore', 'backbone', 
     'zuiRoot/common',
-    'zuiRoot/logger'], function(_, Backbone, Common, Logger){
-        var _initial;
+    'zuiRoot/logger',
+    'zuiRoot/models/TriggerAssemblyModel'], function(_, Backbone, Common, Logger, TriggerAssembly){
+        var _prius;
         var generateSuperScope = function(){
             return new (function(){
                 return {
@@ -19,24 +15,88 @@ define(['underscore', 'backbone',
             
             return new (function(settings){
                 settings = typeof settings === 'undefined' ? {} : settings;
-                var _ruleLinkages = {};
-                var testProp = 0;
-    
-                var _evaluateLinkages = function(fireAfterEvaluate) {
-                    // all linkages must be true for the trigger to fire...
-                    for(var key in _ruleLinkages) {
-                        if(_ruleLinkages[key].isEvalPending || _ruleLinkages[key].isSatisfied){	return false; }
-                    }
-                    
-                    if(fireAfterEvaluate) {
-                        _trigger.fire();
-                    }
+                var _assembly = TriggerAssembly.fab({});  
+                
+                var _fire = function() {
+                    /* MODIFIERS POST-FIRE / EVAL / ACTION
+                        keepAlive
+                        resetAfterFire
+                        stickyRules
+                        count / increment(x)
+                        average, sum
+                        max
+                        min
+                    */
+
+                   if(this.get('state') === "unprimed") {
+                        if(!this.get('keepAlive')) {
+                            _cleanup.call(this);
+                        } else if(this.get('resetAfterFire')) {
+                            _reset.call(this);
+                        }
+
+                        _inform.call(this, "zui-trigger-fired");
+                   }
                 };
                 
+                var _reset = function() {	
+                    _assembly.reset(); 
+                    _inform.call(this, "zui-trigger-reset");
+                    _prime(this);
+                };
+                
+               var _cleanup = function() {
+                    // do some cleanup actions,
+                    // unsub any listeners
+                    // call parent to delete trigger?
+                    // delete vars
+
+                    _assembly.cleanup();
+                    _inform.call(this, "zui-trigger-consumed");
+                };
+                
+                var _inform = function(event, message) {
+                    var eventObject = {
+                        id: this.get('id'),
+                        sourceTriggerAssembly: this
+                    };
+                    var logSettings = {
+                        message: message ? message :  _prius.messageDefaults.hasOwnProperty(event) ? _prius.messageDefaults[event].message : '--',
+                        tags: ["zui-trigger"],
+                        obj: eventObject,
+                        logLevel: 1
+                    }
+                    
+                    //TODO re-take on thee com
+                    // if(!message && _prius.messageDefaults.hasOwnProperty(event))
+                    // {
+                    //     var props = _prius.messageDefaults[event];
+                    //     for(var prop in props)
+                    //     {
+                    //         if(props.hasOwnProperty(prop)){
+                    //             Logger.log(this.get('id') + " Trigger Primed", logSettings);
+                    //             this.trigger("zui-trigger-prime", primeEvent);
+                    //         }
+                    //     }
+                    // }
+                    // else
+                    // {
+                    //     this.ownedBy.
+                    // }
+
+                    Logger.log(this.get('id') + message, logSettings);
+                    this.trigger(event, eventObject);
+
+                    //TODO evaluate whether or not its a good idea to blast 2x events, self and parent separately
+                    this.ownedBy.trigger(event, eventObject);
+
+                };
+
+
                 return { 
                     defaults : {
                         'id' : Common.genId(),
-                        'state' : 'unprimed', //'primed', 'fired', 'consumed'
+                        'state' : 'unprimed', //'fired', 'consumed'
                         'keepAlive': false,
                         'resetAfterFire': false,
                         'lastPrimed': 0,
@@ -48,120 +108,32 @@ define(['underscore', 'backbone',
                         this.prime();
                     },
         
-                    // CONSTRUCTOR 
                     state: function() {	return this.get('state') },
-                    
-                    addLinkage: function(link){
-                        // add new linkages  
-                        //check link type,
-                        _ruleLinkages.add(link);
+                    ownedBy: settings.target,
+
+                    addAssembly: function(link){
+                        _assembly = link;
                     },
                     
                     // AKA initialize
                     prime: function(){
-                        if(this.get('state') == "primed") {
+                        
+                        if(!this.ownedBy) {
+                            //TODO -- consume self here...
+                            return;
+                        }
+
+                        if(this.get('state') === "unprimed") {
+                            if(_assembly.evaluate()){	
+                                this.inform("zui-trigger-primed");
+                                _fire.call(this);
+                            }
 
                         }
-                        
-                        // if event based, we need trigger target or global space filter
-                            // listen to subs
-                            // payload match
-                        // if time based
-                            // timeA (at a point in the future): setListenInterval
-                            // timeB 
-                        // if event and time based, do both
-        
-                        // if isSet loop through primeConditions and evaluate 
-        
-                        //lastPrimed : 0, // date.now
-                        // isSet = true
-                        // return isSet;
-        
-                        // if(_state !== 'unprimed') {
-                        //     return;
-                        // }
-                        
-                        // loop over rules and route subs to eval, check for listenTo
-                        // for(var key in _ruleLinkages) {
-                        //     var settings = {};
-                            
-                        //     settings.trigger = _trigger;
-                        //     settings.vars = _vars;
-                            
-                        //     _ruleLinkages[key].prime(settings); 
-                        // }
+                        else if(this.get('state') === "fired" && this.get('resetAfterFire') === true){
+                            _reset.call(this);
+                        }
 
-                        var primeEvent = {};
-                        var logSettings = {
-                            tags: ["zui-trigger"],
-                            obj: primeEvent,
-                            logLevel: 1
-                        }
-                        Logger.log(this.get('id') + " Trigger Primed", logSettings);
-                        this.trigger("zui-trigger-prime", primeEvent);
-                    },
-                    
-                    fire: function() {
-                        /* MODIFIERS POST-FIRE / EVAL / ACTION
-                            keepAlive
-                            resetAfterFire
-                            stickyRules
-                            count / increment(x)
-                            average, sum
-                            max
-                            min
-                        */
-
-                       if(this.get('state') == "primed") {
-                            if(!_keepAlive) {
-                                _this.cleanup();
-                            } else if(_resetAfterFire) {
-                                _this.reset();
-                            }
-                            var fireEvent = {};
-                            var logSettings = {
-                                tags: ["zui-trigger"],
-                                obj: fireEvent,
-                                logLevel: 1
-                            }
-                            Logger.log(this.get('id') + " Trigger Fired", logSettings);
-                            this.trigger("zui-trigger-fire", fireEvent);
-                       }
-                    },
-                    
-                    reset: function() {
-                        _vars = {};
-
-                        var resetEvent = {};
-                        var logSettings = {
-                            tags: ["zui-trigger"],
-                            obj: resetEvent,
-                            logLevel: 1
-                        }
-                        Logger.log(this.get('id') + " Trigger Reset", logSettings);
-                        this.trigger("zui-trigger-reset", resetEvent);
-                        
-                        for(var key in _ruleLinkages) {
-                            if(_ruleLinkages[key].resetWithTrigger){	
-                                _ruleLinkages[key].reset(); 
-                            }
-                        }
-                    },
-                    
-                    cleanup: function() {
-                        // do some cleanup actions,
-                        // unsub any listeners
-                        // call parent to delete trigger?
-                        
-                        for(var key in _ruleLinkages) {
-                            if(_ruleLinkages[key].resetWithTrigger){	
-                                _ruleLinkages[key].cleanup(); 
-                            }
-                        }
-                    },
-                    
-                    evaluate: function(fireAfterEvaluate) {
-                        return _evaluateLinkages(fireAfterEvaluate);
                     }
                 };
             })(settings);
@@ -170,19 +142,50 @@ define(['underscore', 'backbone',
         //These are the static methods that this type will inherit
         var staticMethods = (function() {
             return {
-                fab: function( objValues,  options){
-                    var trigger = new (_initial.extend(generateScope(objValues)))();
+                fab: function( objValues,  options){   
+                    var trigger = new (_prius.extend(generateScope(objValues)))();
+                    
+                    options = options ? options : {};
+
+                    // handling template & template settings
+                    switch(options.template) {
+                        case "timer-basic":
+                            var timerAssembly = TriggerAssembly.fab({},{
+                                template: "timer-basic",
+                                templateVars: {
+                                    template:  options.template,
+                                    duration: options.templateVars.duration
+                                }
+                            });
+                            trigger.addAssembly(timerAssembly);
+                        break;
+                    }
+
+                    
                     return trigger;
                 },
                 fabFromJson: function(json) {
-                    var trigger = new (_initial.extend(generateScope(JSON.parse(json))))();
+                    var trigger = new (_prius.extend(generateScope(JSON.parse(json))))();
                     return trigger;
+                },
+
+                messageDefaults: {
+                    "zui-trigger-primed": {
+                        message: " Trigger Primed",
+                    },
+                    "zui-trigger-fired": {
+                        message: " Trigger Fired",
+                    },
+                    "zui-trigger-reset": {
+                        message: " Trigger Reset",
+                    },
+                    "zui-trigger-consumed": {
+                        message: " Trigger Consumed",
+                    }
                 }
             }
         })();
-
    
-        _initial = Backbone.Model.extend(generateSuperScope(), staticMethods);
-        console.log(_initial);
-        return _initial;
+        _prius = Backbone.Model.extend(generateSuperScope(), staticMethods);
+        return _prius;
 });

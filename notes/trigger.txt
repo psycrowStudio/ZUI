@@ -7,7 +7,7 @@
             * linkagesEquality: does a _var[] property match a pattern
             * triggerEquality: does a specific trigger match a pattern
             * objectExists: does a specific JS object exist in memory?
-
+            * DOMObjectExists: same as above but for DOM selectors
         STATES: 
             * idle: intial state
             * pending: an async evaluation is underway
@@ -61,7 +61,6 @@
             * fired 
             * consumed
         MODIFIERS:
-            * resetWithTrigger
             * keepAlive
 			* resetAfterFire
 }

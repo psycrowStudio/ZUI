@@ -1,4 +1,5 @@
 define(['zui'], function(zui){
+   
     var testPage = zui.factory.page.addPage(zui.factory.page.instantiatePage({ 'title' : 'Test Page' }));
         zui.factory.component.fabricate( { id:'header', parentModel: testPage } );
         zui.factory.component.fabricate( { id:'content', parentModel: testPage } );
@@ -94,7 +95,25 @@ define(['zui'], function(zui){
 
                     if(input && input.value > 0){
                         button.disabled = true;
-                        console.log("Setting " + input.value + "(s) Trigger")
+                        //TODO create trigger from factory and attach to this object.   
+                        //console.log("Setting " + input.value + "(s) Trigger")
+                        this.listenToOnce(this, 'zui-trigger-primed', function(input){ 
+                            console.log(arguments, input);
+                        }); 
+                        var trigger = zui.types.Trigger.fab(
+                            { 
+                                target:this
+                            }, 
+                            {
+                                template: "timer-basic", 
+                                templateVars:{
+                                    duration:60
+                                }
+                        });
+                        this.listenToOnce(trigger, "zui-trigger-fired", function(event){
+                            console.log(event, "FIRED!");
+                            //reset
+                        })
                     }
                 }
                 return false;

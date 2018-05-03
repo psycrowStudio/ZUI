@@ -101,12 +101,12 @@ define(['underscore',
                         events : function(){
                             //event mapping & routing
                             var defaultEventMapping = {
-                                'keyup' : this.model.onKeyUp,
-                                'keydown' : this.model.onKeyDown,
-                                'mouseenter' : this.model.onMouseIn,
-                                'mouseout' : this.model.onMouseOut,
-                                'mousedown' : this.model.onMouseDown,
-                                'mouseup' : this.model.onMouseUp,
+                                // 'keyup' : this.model.onKeyUp,
+                                // 'keydown' : this.model.onKeyDown,
+                                // 'mouseenter' : this.model.onMouseIn,
+                                // 'mouseout' : this.model.onMouseOut,
+                                // 'mousedown' : this.model.onMouseDown,
+                                // 'mouseup' : this.model.onMouseUp,
                                 'click' : this.model.onClick
                             };
 
@@ -170,8 +170,8 @@ define(['underscore',
                             }
                         },
                         onComponentEvent : function(eventName, options){
-                            console.log(eventName);
-                            console.log(options);
+                            //console.log(eventName);
+                            //console.log(options);
                         }
                     }))();
                         
