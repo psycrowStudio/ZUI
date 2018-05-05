@@ -84,7 +84,7 @@ define(['zui'], function(zui){
         parentModel: testPage.components.get('content'), 
         parentElementSelector: '#content',
         className:'status-active',
-        template:'<label>Trigger Timer</label> <input type="number" min="0" step="1" placeholder="DELAY IN SECONDS"></input>\
+        template:'<label>Trigger Timer</label> <input type="number" min="1000" step="500" placeholder="DELAY IN SECONDS"></input>\
                            <button> Start </button> \
         ',
         events: {
@@ -107,13 +107,14 @@ define(['zui'], function(zui){
                             {
                                 template: "timer-basic", 
                                 templateVars:{
-                                    duration:60
+                                    duration:input.value
                                 }
                         });
-                        this.listenToOnce(trigger, "zui-trigger-fired", function(event){
+                        trigger.listenToOnce(trigger, "zui-trigger-fired", function(event){
                             console.log(event, "FIRED!");
                             //reset
-                        })
+                        });
+                        console.log(trigger);
                     }
                 }
                 return false;

@@ -42,7 +42,7 @@ define(['underscore', 'backbone',
                 var _reset = function() {	
                     _assembly.reset(); 
                     _inform.call(this, "zui-trigger-reset");
-                    _prime(this);
+                    _prime();
                 };
                 
                var _cleanup = function() {
@@ -85,6 +85,7 @@ define(['underscore', 'backbone',
                     // }
 
                     Logger.log(this.get('id') + message, logSettings);
+                    console.log(this, event);
                     this.trigger(event, eventObject);
 
                     //TODO evaluate whether or not its a good idea to blast 2x events, self and parent separately
@@ -105,16 +106,17 @@ define(['underscore', 'backbone',
         
                     initialize : function(){   
                         Logger.log('Trigger ' + this.get('id') + ' Created', { tags: 'zui-create' });
-                        this.prime();
                     },
         
                     state: function() {	return this.get('state') },
                     ownedBy: settings.target,
 
                     addAssembly: function(link){
+                        link.ownedBy = this;
                         _assembly = link;
+                        this.prime();
                     },
-                    
+    
                     // AKA initialize
                     prime: function(){
                         
@@ -124,16 +126,12 @@ define(['underscore', 'backbone',
                         }
 
                         if(this.get('state') === "unprimed") {
-                            if(_assembly.evaluate()){	
-                                this.inform("zui-trigger-primed");
+                            if(_assembly.evaluate() === true){	
+                                _inform.call(this, "zui-trigger-primed");
                                 _fire.call(this);
                             }
 
                         }
-                        else if(this.get('state') === "fired" && this.get('resetAfterFire') === true){
-                            _reset.call(this);
-                        }
-
                     }
                 };
             })(settings);

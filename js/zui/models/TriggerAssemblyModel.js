@@ -26,6 +26,8 @@
                         this.set('becameTrueAt', Date.now());
                         //this.ownedBy.fire(); // assuming this is and will always be a trigger...
                     }
+
+                    this.ownedBy.prime();
                     return true;
                 }
 
@@ -39,16 +41,11 @@
                     return false;
                 }
 
-                var _finallyCallback = function(status) {
-                    console.log("Trigger Assembly Post", status);
-                    this.set('state', 'initialized');
-                }
-
                 
                 var _timerCallback = function(resolve, duration){
                     console.log("Trigger Assembly Timer", duration);
                     return new Promise(function(resolve) {
-                        setTimeout(resolve, duration);
+                        setTimeout(resolve, duration, "!!!");
                     });
                 }
 
@@ -83,12 +80,14 @@
 						this.set('lastEvaluation', Date.now());
 						if(!this.ownedBy) {
                             //TODO -- consume self here...
-                            return;
+                            return false;
                         }
 
                         if(this.get('status') === false || this.get('sticky') === false) {                           
                             var _scope = this;
                             var continueEvaluation = function(){
+                                //TODO this is actually parallel
+                                var _scope = this;
                                 if(this.get('mode') === 'linear') {
                                     var conditionPromisies = [];
                                     for(var each in _conditions) {
@@ -96,10 +95,12 @@
                                         //rule / assembly responds with promise, or if solved, promise.resolve(true/false)
                                     }
                                     this.set('state', 'evaluating');
-                                    return conditionPromisies.length === 0 ? true : Promise.all(conditionPromisies)
-                                        .then(_successCallback, _failCallback)
-                                        .catch(_errorlCallback)
-                                        .finally(_finallyCallback); 
+                                    return conditionPromisies.length === 0 ? _successCallback.call(this, this.get('id')) : Promise.all(conditionPromisies)
+                                        .then(function() {
+                                            _successCallback.call(_scope);
+                                        }, function(){
+                                            _failCallback.call(_scope);
+                                        }).catch(_scope_errorCallback);
                                 }
 
                                 // else if (this.get('mode') === 'parallel') {
@@ -113,13 +114,16 @@
                             }
 
                             // if timing, start window or delay.
-                            if(this.get('timing') === 'delay')
+                            if(this.get('status') === false && this.get('timing') === 'delay')
                             {
                                 return _timerCallback(function(){
-                                   return continueEvaluation.call(_scope);
-                                }, this.get('delayLength'));
+                                    console.log("@@@@");
+                                }, this.get('delayLength')).then(function(result) {
+                                    console.log(result);
+                                    return continueEvaluation.call(_scope);
+                                });
                             }
-                            else if(this.get('timing') === 'window'){
+                            else if(this.get('status') === false && this.get('timing') === 'window'){
                                 continueEvaluation.call(_scope);
                                 return _timerCallback(function(){
                                    //this.evaluate(); // call at the end of the window, to re-evaluate?
@@ -131,7 +135,9 @@
                                    }
                                 }, this.get('windowLength')); 
                             }
-						}
+                        }
+                        
+                        return true;
                     },
                     
 
