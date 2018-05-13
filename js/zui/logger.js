@@ -19,20 +19,13 @@ define(['underscore', 'backbone'], function(_, Backbone){
     var _logPrefix = function(filter){
         var str = '';
         if(Array.isArray(filter)){
-            for(var key in filter)
-            {
-                str += key + ' ';
-            }
+            str += filter.join(', ');
         }
         else if(typeof filter === 'string') {
-           str += filter;
+            str += filter;
         }
 
-        if(str === ''){
-            str = 'ZUI';
-        }
-
-        return '['+ str.trim() +']';
+        return '['+ str +']';
     }
 
     var routeOutput = function(msg, tags, obj){
@@ -47,9 +40,10 @@ define(['underscore', 'backbone'], function(_, Backbone){
             console.log(output);
         }
 
-        if(typeof obj === 'object' ){
-            console.log(obj);
-        }
+        // TODO Re-enable this
+        // if(typeof obj === 'object' ){
+        //     console.log(obj);
+        // }
     };
 
     // Error Logging Levels:
@@ -84,11 +78,11 @@ define(['underscore', 'backbone'], function(_, Backbone){
                 var sendOutputFilter = false;
                 for(var key in tags)
                 {  
-                    if(this.eventChannels.hasOwnProperty(key)) {
-                        this.eventChannels[key].trigger(key, obj);
+                    if(this.eventChannels.hasOwnProperty(tags[key])) {
+                        this.eventChannels[tags[key]].trigger(tags[key], obj);
                     } 
 
-                    if(logOutputFilter.hasOwnProperty(key) && logOutputFilter[key] >= logLevel) {
+                    if(logOutputFilter.hasOwnProperty(tags[key]) && logOutputFilter[tags[key]] >= logLevel) {
                         sendOutputFilter = true;
                     }
                 }

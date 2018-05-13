@@ -1,6 +1,5 @@
 define(['zuiRoot/common',
-        'zuiRoot/types',
-        'zuiRoot/logger'], function(Common, Types, Logger){
+        'zuiRoot/logger'], function(Common, Logger){
     var _this = this;
 
     return function(objValues,  options){   

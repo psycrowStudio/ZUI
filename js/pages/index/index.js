@@ -86,6 +86,8 @@ define(['zui'], function(zui){
         className:'status-active',
         template:'<label>Trigger Timer</label> <input type="number" min="1000" step="500" placeholder="DELAY IN SECONDS"></input>\
                            <button> Start </button> \
+                           <input type="checkbox" title="keep alive" class="keepAlive">\
+                           <input type="checkbox" title="reset after fire" class="resetAfterFire">\
         ',
         events: {
             click: function(e) {
@@ -102,7 +104,9 @@ define(['zui'], function(zui){
                         }); 
                         var trigger = zui.types.Trigger.fab(
                             { 
-                                target:this
+                                target: this.model,
+                                keepAlive: this.keepAlive ? this.keepAlive : false,
+                                resetAfterFire: this.resetAfterFire ? this.resetAfterFire : false
                             }, 
                             {
                                 template: "timer-basic", 
@@ -110,14 +114,20 @@ define(['zui'], function(zui){
                                     duration:input.value
                                 }
                         });
-                        trigger.listenToOnce(trigger, "zui-trigger-fired", function(event){
-                            console.log(event, "FIRED!");
-                            //reset
+                        this.model.listenToOnce(trigger, "zui-trigger-fired", function(event){
+                            button.disabled = false;
                         });
-                        console.log(trigger);
                     }
+                    return false;
                 }
-                return false;
+                else if(e.target.nodeName.toLowerCase() === 'input' && e.target.classList.contains('keepAlive'))
+                {
+                    this.keepAlive = e.target.checked;
+                }
+                else if(e.target.nodeName.toLowerCase() === 'input' && e.target.classList.contains('resetAfterFire')){
+                    this.resetAfterFire = e.target.checked;
+                }
+
             }
         }
     });
