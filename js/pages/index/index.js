@@ -88,6 +88,7 @@ define(['zui'], function(zui){
                            <button> Start </button> \
                            <input type="checkbox" title="keep alive" class="keepAlive">\
                            <input type="checkbox" title="reset after fire" class="resetAfterFire">\
+                           <input type="checkbox" title="sticky" class="sticky">\
         ',
         events: {
             click: function(e) {
@@ -106,15 +107,18 @@ define(['zui'], function(zui){
                             { 
                                 target: this.model,
                                 keepAlive: this.keepAlive ? this.keepAlive : false,
-                                resetAfterFire: this.resetAfterFire ? this.resetAfterFire : false
+                                resetAfterFire: this.resetAfterFire ? this.resetAfterFire : false,
+                                firedLimit: 3
                             }, 
                             {
                                 template: "timer-basic", 
                                 templateVars:{
-                                    duration:input.value
+                                    duration:input.value,
+                                    sticky: this.sticky ? this.sticky : false,
                                 }
                         });
-                        this.model.listenToOnce(trigger, "zui-trigger-fired", function(event){
+                        trigger.prime();
+                        this.model.listenToOnce(trigger, "zui-trigger-consumed", function(event){
                             button.disabled = false;
                         });
                     }
@@ -126,6 +130,9 @@ define(['zui'], function(zui){
                 }
                 else if(e.target.nodeName.toLowerCase() === 'input' && e.target.classList.contains('resetAfterFire')){
                     this.resetAfterFire = e.target.checked;
+                }
+                else if(e.target.nodeName.toLowerCase() === 'input' && e.target.classList.contains('sticky')){
+                    this.sticky = e.target.checked;
                 }
 
             }

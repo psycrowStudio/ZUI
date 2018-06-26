@@ -1,4 +1,4 @@
-define(['underscore', 'backbone', 
+define(['underscore', 'backbone',
     'zuiRoot/common',
     'zuiRoot/logger',
     'zuiRoot/models/TriggerAssemblyModel'], function(_, Backbone, Common, Logger, TriggerAssembly){
@@ -8,41 +8,38 @@ define(['underscore', 'backbone',
             return new (function(settings){
                 settings = typeof settings === 'undefined' ? {} : settings;
                 var _assembly = TriggerAssembly.fab({});  
-                
+                var _isUnderEvaluation = false;
+
                 var _fire = function() {
                     if(this.get('state') === "primed") {
-                        this.set('state', 'fired');
+                        this.set({
+                            'state' : 'fired',
+                            'firedCount': this.get('firedCount') +1,
+                            'lastFired': Date.now()
+                        });
                         _inform(this, "zui-trigger-fired");
-                        if(!this.get('keepAlive')) {
-                            _cleanup.call(this);
-                        } else if(this.get('resetAfterFire')) {
+                        if(this.get('resetAfterFire') === true && this.get('firedLimit') > 0 && this.get('firedCount') < this.get('firedLimit')) {
                             _reset.call(this);
+                        } else if(!this.get('keepAlive')) {
+                            _cleanup.call(this);
                         }
                    }
                 };
                 
                 var _reset = function() {	
+                    this.set('state', 'primed');
                     _assembly.reset(); 
                     _inform(this, "zui-trigger-reset");
-                    _prime();
+                    this.prime();
                 };
                 
                var _cleanup = function() {
                     _inform(this, "zui-trigger-consumed");    
                     _assembly.cleanup();
-                    this.stopListening();
+                    //required interface? add on addAssembly?
+                    //this.ownedBy(consumeTrigger)
                     this.ownedBy = null;
                 };
-
-                var _processAssemblyEvents = function(event, args) {
-                    _inform(this, event);
-                    //console.log(event, args);
-                    if(event === "zui-triggerAssembly-evaluate-success" || 
-                    event === "zui-triggerAssembly-evaluate-fail" ||
-                    event === "zui-triggerAssembly-created") {
-                        this.prime();
-                    }
-                }
 
                 return { 
                     defaults : {
@@ -50,8 +47,8 @@ define(['underscore', 'backbone',
                         'state' : 'unprimed', // 'primed', fired', 'consumed'
                         'keepAlive': settings.keepAlive || false,
                         'resetAfterFire': settings.resetAfterFire || false,
-                        'resetCount': 0,
-                        'lastRest' : 0,
+                        'lastReset' : 0,
+                        'firedLimit' : settings.firedLimit || 0,
                         'firedCount': 0,
                         'lastFired': 0
                     },
@@ -62,23 +59,21 @@ define(['underscore', 'backbone',
         
                     state: function() {	return this.get('state') },
                     ownedBy: settings.target,
+                    assemblyPromise: {},
 
                     addAssembly: function(link){
-                        if(_assembly)
-                        {
-                            this.stopListening(_assembly);
-                        }
-                        
+                        _assembly.cleanup();
+                        this.set('state', 'unprimed');
                         link.ownedBy = this;
+                        // TODO add the cancelation / cleanup routine to trigger owner
                         _assembly = link;
                         
-                        this.listenTo(_assembly, "all", _processAssemblyEvents);
-                        // TODO consider listneing to prop:status changed, to trigger re-eval
                         this.prime();
                     },
     
                     // AKA initialize
                     prime: function(){
+                        _trigger = this;
                         if(!this.ownedBy) {
                             _cleanup.call(this);
                             return false;
@@ -87,14 +82,33 @@ define(['underscore', 'backbone',
                         if(this.get('state') === "unprimed") {
                             this.set('state', 'primed');
                             _inform(this, "zui-trigger-primed");
+                            return;
                         }
 
-                        if(_assembly.get('status') === true || _assembly.evaluate() === true){	
-                            _fire.call(this);
-                            return true;
+                        this.assemblyPromise = _MakeQuerablePromise(_assembly);
+                        _isUnderEvaluation = true;
+                        this.assemblyPromise = this.assemblyPromise.then(function(data){
+                            _fire.call(_trigger);
+                        }).catch(function(err){
+                          _inform(_trigger, 'zui-trigger-evaluation-error', err); 
+                        }).finally(function(){
+                            _isUnderEvaluation = false;
+
+                            //if keepalive === false
+                            // _cleanup.call(_trigger);
+                        });
+                    },
+                    cancelEvaluation: function(reason){
+                        reason = reason || 'Manually Canceled...';
+                        if(_isUnderEvaluation){
+                            this.assemblyPromise.handle.reject(reason);
                         }
-                        return false;
+                        _assembly.cancelEvaluation(reason);
+                    },
+                    cleanup: function(){
+                        _cleanup.call(this);
                     }
+
                 };
             })(settings);
         };
@@ -111,7 +125,8 @@ define(['underscore', 'backbone',
                     switch(options.template) {
                         case "timer-basic":
                             var timerAssembly = TriggerAssembly.fab({
-                                target: trigger
+                                target: trigger,
+                                sticky: options.templateVars.sticky
                             },{
                                 template: "timer-basic",
                                 templateVars: {
@@ -144,41 +159,19 @@ define(['underscore', 'backbone',
                         message: "Trigger Fired",
                         logLevel: 1
                     },
-                    "zui-trigger-reset": {
-                        message: "Trigger Reset",
+                    "zui-trigger-evaluation-error": {
+                        message: "Trigger Evaluation Rejected",
+                        logLevel: 1,
+                        tags: ["error"]
                     },
                     "zui-trigger-consumed": {
                         message: "Trigger Consumed",
                         logLevel: 1
                     },
-                    "zui-triggerAssembly-evaluate-success": {
-                        message: "Trigger Assembly Evaluate Success",
+                    "zui-trigger-reset": {
+                        message: "Trigger Reset",
                         logLevel: 1
-                    },
-                    "zui-triggerAssembly-evaluate-fail": {
-                        message: "Trigger Assembly Evaluate Fail"
-                    },
-                    "zui-triggerAssembly-evaluate-error": {
-                        message: "Trigger Assembly Evaluate Error"
-                    },
-                    "zui-triggerAssembly-created": {
-                        message: "Trigger Assembly Created",
-                        logLevel: 1,
-                        tags: ["zui-create"]
                     }
-
-                    /*
-                    * assembly events;
-                    *   - added
-                    *   - evaluate (success)
-                    *   - conditions changed
-                    *   - 
-                    * assembly rule evemts:
-                    *   - added
-                    *   - evaluate (success)
-                    *   - conditions changed
-                    *   
-                    */
                 }
             }
         })();
@@ -204,6 +197,39 @@ define(['underscore', 'backbone',
             Logger.log(callee.get('id') + ' -- ' + logSettings.message, logSettings);
             callee.trigger(event, eventObject);
         };
+
+        function _MakeQuerablePromise(assembly) {
+            // Don't modify any promise that has been already modified.
+            var handle = {};
+            var promise = assembly.evaluate(handle);
+
+            if (promise.isResolved) return promise;
+        
+            // Set initial state
+            var isPending = true;
+            var isRejected = false;
+            var isFulfilled = false;
+        
+            //  Observe the promise, saving the fulfillment in a closure scope.
+            var result = promise.then(
+                function(v) {
+                    isFulfilled = true;
+                    isPending = false;
+                    return v; 
+                }, 
+                function(e) {
+                    isRejected = true;
+                    isPending = false;
+                    throw e; 
+                }
+            );
+        
+            result.handle =  handle;
+            result.isFulfilled = function() { return isFulfilled; };
+            result.isPending = function() { return isPending; };
+            result.isRejected = function() { return isRejected; };
+            return result;
+        }
    
         _prius = Backbone.Model.extend({}, staticMethods);
         return _prius;
