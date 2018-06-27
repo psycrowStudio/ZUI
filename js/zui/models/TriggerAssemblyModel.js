@@ -15,52 +15,45 @@
 
             return new (function(settings){
                 settings = typeof settings === 'undefined' ? {} : settings;
-                var _conditions = {};
+                
+                var _eval = function(handle){
 
-                var _successCallback = function(handle){
+                    return new Promise(function(resolve, reject) {
+                        handle.resolve = resolve;
+                        //console.log(resolve);
+                        handle.reject = reject;
+                        setTimeout(resolve, Math.floor(Math.random()*(2500-1000+1)+1000));
+                    });
+                }
+
+                var _successCallback = function(result, handle){
+                    console.log('success', result);
                     this.set('underEvaluation', false);
 
-                    // if(this.get('mode') === 'parallel' && this.get('binding') === 'AND') {
-
-                    // }
-                    //else
-                    if(this.get('mode') === 'parallel' && this.get('binding') === 'OR' && this.get('status') === true) {
-                        //check to make sure not already set to true
-                        // resolve all existing promises...
-                        handle.resolve("boy!!");
-                        return Promise.resolve(true);
-                    }
-                    // else if(this.get('mode') === 'serial' && this.get('binding') === 'AND') {
-
-                    // }
-                    // else if(this.get('mode') === 'serial' && this.get('binding') === 'OR') {
-
-                    // }
-
-                    //TODO Check timing settings, to see if expired.
-
-                    handle.resolve("yeah!");
+                    
                     this.set('status', true);
-                    this.trigger("zui-triggerAssembly-evaluate-success");
-
                     // sticky enables this to remain true after a successful evaluation
                     if(this.get('becameTrueAt') === 0 || this.get('sticky') === false) {
                         this.set('becameTrueAt', Date.now());
                     }
-                    
-                    return Promise.resolve(true);
+                    handle.resolve(result);
+                    this.trigger("zui-triggerAssembly-evaluate-success");
+
+                    return Promise.resolve(result);
                 };
 
                 var _failCallback = function(input){
                     this.trigger("zui-triggerAssembly-evaluate-fail");
                     this.set('underEvaluation', false);
-                    return Promise.reject(false);
+                    return Promise.reject(input);
                 };
 
                 var _errorCallback = function(status){
                     this.trigger("zui-triggerAssembly-evaluate-error");
                     this.set('underEvaluation', false);
-                    return Promise.reject(false);
+
+                    //TODO check for other conditions, to determine if we should cleanup or not
+                    return Promise.reject(status);
                 };
 
                 var _timerCallback = function(duration){
@@ -68,6 +61,27 @@
                     return new Promise(function(resolve) {
                         setTimeout(resolve, duration);
                     });
+                };
+
+                var _checkAfterResolve = function(result, handle){
+                    if(this.get('binding') === 'OR') {
+                        //check to make sure not already set to true
+                        // resolve all existing promises...
+                        if(!this.get('status'))
+                        {
+                            return _successCallback.call(this,result, handle);
+                        }
+                    } else if(this.get('binding') === 'AND') {
+                        // store success, or reference the handles?
+                        //  check over the whole promises array for successes? // or keep a count remaining, and when = 0, then proceed
+                        //  fails will end this immediately
+                    }
+                };
+
+                var _checkAfterReject = function(result, handle){
+                    if(this.get('binding') === 'AND') {
+                        return _failCallback.call(this, result, handle);
+                    }
                 };
 
                 return {
@@ -79,7 +93,7 @@
                         'sticky': typeof settings.sticky !== 'undefined' ? settings.sticky : false,
                         'underEvaluation' : false,
 						'binding' : settings.binding ? settings.binding : 'OR',
-						'mode' : settings.mode ? settings.mode : 'parallel',  // or serial
+						'mode' : settings.mode ? settings.mode : 'serial',  // or serial
 						'timing' : settings.timing ? settings.timing : '',  //window or delay
                         'delayLength' : 0,
                         'windowLength' : 0,
@@ -96,13 +110,22 @@
 						this.set('state', 'initialized');
                     },
 
-                    status: function() {	return this.get('status') },
+                    status: function() {   return this.get('status'); },
                     ownedBy: settings.target, //trigger
 
                     //properties for evaluation:
                     evaluations: [],
                     //
                     promises: [],
+                    
+                    conditions: [
+                        {
+                            evaluate:_eval
+                        },
+                        {
+                            evaluate:_eval
+                        }
+                    ],
 
                     // AKA initialize
                     evaluate: function(handle){
@@ -131,51 +154,65 @@
 
                                 var continueEvaluation = function(){
                                     if(_scope.get('mode') === 'parallel' && _scope.get('binding') === 'AND') {
-                                        for(var each in _conditions) {
-                                            _scope.evaluations.push(_conditions[each].evaluate());
+                                        _conditions.forEach(function(el){
+                                            _scope.evaluations.push(el.evaluate());
                                             //rule / assembly responds with promise, or if solved, promise.resolve(true/false)
-                                        }
+                                        });
     
-                                        return _scope.evaluations.length === 0 ? _successCallback.call(_scope, handle) : Promise.all(_scope.evaluations)
-                                            .then(function() {
-                                                return _successCallback.call(_scope, handle);
-                                            }, function(){
-                                                return _failCallback.call(_scope);
-                                            }).catch(function(){
-                                                return _errorCallback.call(_scope);
+                                        return _scope.evaluations.length === 0 ? _successCallback.call(_scope, undefined, handle) : Promise.all(_scope.evaluations)
+                                            .then(function(result) {
+                                                return _successCallback.call(_scope, result, handle);
+                                            }, function(result){
+                                                return _failCallback.call(_scope, result);
+                                            }).catch(function(error){
+                                                return _errorCallback.call(_scope, error);
                                             });
                                     }
                                     else if(_scope.get('mode') === 'parallel' && _scope.get('binding') === 'OR') {
                                         //       start all
                                         //       return after the first is true
-    
-                                        return this.evaluations.length === 0 ? _successCallback.call(_scope, handle) : new Promise(function(resolve,reject){
-                                            _conditions.forEach(function(element){
+
+                                        return _scope.conditions.length === 0 ? _successCallback.call(_scope, handle) : new Promise(function(resolve,reject){
+                                            _scope.conditions.forEach(function(element){
                                                 var pHandle = {};
-                                                var promise = element.evaluate(pHandle)
+                                                var promise = element.evaluate(pHandle);
     
-                                                pHandle.resolution = promise.then(function() {
-                                                   return _successCallback.call(_scope, handle);
-                                                }, function(){
-                                                    _failCallback.call(_scope);
-                                                }).catch(function(){
-                                                    _errorCallback.call(_scope);
+                                                pHandle.resolution = promise.then(function(result) {
+                                                   return _checkAfterResolve.call(_scope, result, handle);
+                                                }, function(result){
+                                                    _checkAfterReject.call(_scope, result, handle);
+                                                }).catch(function(error){
+                                                    _errorCallback.call(_scope, error);
                                                 });
     
-                                                this.promises.push(pHandle);
+                                                _scope.promises.push(pHandle);
                                             });
-                                        })
+                                        });
     
                                     }
-                                    else if(_scope.get('mode') === 'serial' && _scope.get('binding') === 'AND') {
-                                        //       sequentially eval
-                                        //       return if fail
-                                        return Promise.reject();
-                                    }
-                                    else if(_scope.get('mode') === 'serial' && _scope.get('binding') === 'OR') {
-                                        //       sequentially eval
-                                        //       return if  true
-                                        return Promise.reject();
+                                    else if(_scope.get('mode') === 'serial') {
+                                        // FOR BOTH AND AND OR
+
+                                        // var chain = Promise.resolve();
+                                        // for (let i = 0; i < aniMap.length; i++) {
+                                        //     chain = chain.then(_ => _startAnimation(aniMap[i].element, aniMap[i].animation, i));
+                                        // }
+                                        return _scope.conditions.length === 0 ? _successCallback.call(_scope, handle) : new Promise(function(resolve,reject){                                          
+                                            var chain = Promise.resolve();
+                                            _scope.conditions.forEach(function(element){
+                                                var pHandle = {};
+                                                chain = chain.then(function() {
+                                                    return element.evaluate(pHandle).then(function(result) {
+                                                        return _checkAfterResolve.call(_scope, result, handle);
+                                                     }, function(result){
+                                                        return _checkAfterReject.call(_scope, result, handle);
+                                                     }).catch(function(error){
+                                                        return _errorCallback.call(_scope, error);
+                                                     });
+                                                });
+                                                _scope.promises.push(pHandle);
+                                            });  
+                                        });
                                     }
                                 }
     
@@ -187,6 +224,7 @@
                                     });
                                 }
                                 else if(_scope.get('status') === false && _scope.get('timing') === 'window'){
+                                    //TODO this is a promise race case
                                     continueEvaluation.call(_scope);
                                     return timerCallback.call(_scope, _scope.get('delayLength')).then(function(){
                                        //this.evaluate(); // call at the end of the window, to re-evaluate?
