@@ -22,7 +22,12 @@
                         handle.resolve = resolve;
                         //console.log(resolve);
                         handle.reject = reject;
-                        setTimeout(resolve, Math.floor(Math.random()*(2500-1000+1)+1000));
+                        var delay = Math.floor(Math.random()*(8000-5000+1)+5000);
+                        console.log(delay);
+                        setTimeout(function(){
+                            resolve('TIME UP');
+                            console.log('end');
+                        }, delay);
                     });
                 }
 
@@ -64,23 +69,70 @@
                 };
 
                 var _checkAfterResolve = function(result, handle){
-                    if(this.get('binding') === 'OR') {
-                        //check to make sure not already set to true
-                        // resolve all existing promises...
-                        if(!this.get('status'))
-                        {
-                            return _successCallback.call(this,result, handle);
-                        }
-                    } else if(this.get('binding') === 'AND') {
-                        // store success, or reference the handles?
-                        //  check over the whole promises array for successes? // or keep a count remaining, and when = 0, then proceed
-                        //  fails will end this immediately
+                    //check to make sure not already set to true
+                    _scope = this;
+                    if(!_scope.get('underEvaluation')) {
+                        return;
+                    }
+
+                    if(_scope.get('binding') === 'OR') {
+                        return _successCallback.call(_scope,result, handle);
+                    } else if(_scope.get('binding') === 'AND') {
+                        var didAllPass = _scope.promises.reduce(function(acc, el){
+                            return acc ? el.isFulfilled() : false;
+                        }, true);
+
+                        if(didAllPass && _scope.conditions.length === _scope.promises.length) {
+                            return _successCallback.call(_scope, result, handle);
+                        } else if(_scope.get('mode') === 'serial' && _scope.promises.length < _scope.conditions.length) {
+                            // kick off the next condition
+                            var nextElement = _scope.conditions[_scope.promises.length];
+                            var length = _scope.promises.push(Common.QuerablePromise.call(nextElement, nextElement.evaluate));
+                            var promise = _scope.promises[length-1];
+
+                            return Promise.race([promise, _timerCallback.call(_scope, 10000)]).then(function(result) {
+                                    return _checkAfterResolve.call(_scope, result, handle);
+                                },
+                                function(result){
+                                    return _checkAfterReject.call(_scope, result, handle);
+                                }).catch(function(error){   
+                                    return _errorCallback.call(_scope, error);
+                            }); 
+                        } 
                     }
                 };
 
                 var _checkAfterReject = function(result, handle){
+                    if(!this.get('underEvaluation')) {
+                        return;
+                    }
+
                     if(this.get('binding') === 'AND') {
                         return _failCallback.call(this, result, handle);
+                    }else if(this.get('binding') === 'OR') {
+                        //var outbound = this.promises.length;
+                        var didAllFail = this.promises.reduce(function(acc, el){
+                            //outbound = el.isPending() ? outbound : outbound -1;
+                            return acc ? el.isRejected() : false;
+                        }, true);
+
+                        if(didAllFail && this.conditions.length === this.promises.length) {
+                            return _failCallback.call(this, result, handle);
+                        } else if(_scope.get('mode') === 'serial' && _scope.promises.length < _scope.conditions.length) {
+                            // kick off the next condition
+                            var nextElement = _scope.conditions[_scope.promises.length];
+                            var length = _scope.promises.push(Common.QuerablePromise.call(nextElement, nextElement.evaluate));
+                            var promise = _scope.promises[length-1];
+
+                            return Promise.race([promise, _timerCallback.call(_scope, 10000)]).then(function(result) {
+                                    return _checkAfterResolve.call(_scope, result, handle);
+                                }, 
+                                function(result){
+                                    return _checkAfterReject.call(_scope, result, handle);
+                                }).catch(function(error){   
+                                    return _errorCallback.call(_scope, error);
+                            }); 
+                        }
                     }
                 };
 
@@ -94,7 +146,7 @@
                         'underEvaluation' : false,
 						'binding' : settings.binding ? settings.binding : 'OR',
 						'mode' : settings.mode ? settings.mode : 'serial',  // or serial
-						'timing' : settings.timing ? settings.timing : '',  //window or delay
+						'timing' : settings.timing ? settings.timing : 'delay',  //window or delay
                         'delayLength' : 0,
                         'windowLength' : 0,
                         'lastEvaluation': 0,
@@ -126,20 +178,32 @@
                             evaluate:_eval
                         }
                     ],
+                    outboundPomises: 0,
 
                     // AKA initialize
                     evaluate: function(handle){
-                        //TODO use Promise.Race to get a simple, but effective timeout....
                         if(!this.ownedBy) {
-                            //TODO -- consume self here...
                             this.cleanup();
                             return false;
                         }
 
                         var _scope = this;
-                        this.evaluations = [];
-                        this.promises = [];
-                        
+                        this.promises = []; // TODO beware of mem leak here... 
+                                        
+                        var timeOut = function(multiplier){
+                            multiplier = multiplier || 1; 
+                            var base = _scope.get('evaluationTimeout');
+                            var delay = base * 1000 * multiplier;
+                            return new Promise(function(resolve, reject) {           
+                                setTimeout(function(){ 
+                                    //this.trigger("zui-triggerAssembly-timeOut");    
+                                    reject("Trigger Timed Out");
+                                    //TODO if "AND" multiply the value below by promises.length
+                                }, delay);
+                            });
+                        };
+
+
                         var P = new Promise(function(resolve, reject){
                             handle.resolve = resolve;
                             //console.log(resolve);
@@ -154,12 +218,11 @@
 
                                 var continueEvaluation = function(){
                                     if(_scope.get('mode') === 'parallel' && _scope.get('binding') === 'AND') {
-                                        _conditions.forEach(function(el){
-                                            _scope.evaluations.push(el.evaluate());
-                                            //rule / assembly responds with promise, or if solved, promise.resolve(true/false)
+                                        scope.conditions.forEach(function(element){
+                                            _scope.promises.push(Common.QuerablePromise.call(element, element.evaluate));
                                         });
     
-                                        return _scope.evaluations.length === 0 ? _successCallback.call(_scope, undefined, handle) : Promise.all(_scope.evaluations)
+                                        return _scope.promises.length === 0 ? _successCallback.call(_scope, undefined, handle) : Promise.all(_scope.promises)
                                             .then(function(result) {
                                                 return _successCallback.call(_scope, result, handle);
                                             }, function(result){
@@ -174,18 +237,15 @@
 
                                         return _scope.conditions.length === 0 ? _successCallback.call(_scope, handle) : new Promise(function(resolve,reject){
                                             _scope.conditions.forEach(function(element){
-                                                var pHandle = {};
-                                                var promise = element.evaluate(pHandle);
+                                                var promise = _scope.promises.push(Common.QuerablePromise.call(element, element.evaluate));
     
-                                                pHandle.resolution = promise.then(function(result) {
+                                                promise.then(function(result) {
                                                    return _checkAfterResolve.call(_scope, result, handle);
                                                 }, function(result){
                                                     _checkAfterReject.call(_scope, result, handle);
                                                 }).catch(function(error){
                                                     _errorCallback.call(_scope, error);
                                                 });
-    
-                                                _scope.promises.push(pHandle);
                                             });
                                         });
     
@@ -197,21 +257,20 @@
                                         // for (let i = 0; i < aniMap.length; i++) {
                                         //     chain = chain.then(_ => _startAnimation(aniMap[i].element, aniMap[i].animation, i));
                                         // }
+
+                                        //THIS IS ALSO A RACE SCENARIO, each chain should timeout independently
                                         return _scope.conditions.length === 0 ? _successCallback.call(_scope, handle) : new Promise(function(resolve,reject){                                          
-                                            var chain = Promise.resolve();
-                                            _scope.conditions.forEach(function(element){
-                                                var pHandle = {};
-                                                chain = chain.then(function() {
-                                                    return element.evaluate(pHandle).then(function(result) {
-                                                        return _checkAfterResolve.call(_scope, result, handle);
-                                                     }, function(result){
-                                                        return _checkAfterReject.call(_scope, result, handle);
-                                                     }).catch(function(error){
-                                                        return _errorCallback.call(_scope, error);
-                                                     });
-                                                });
-                                                _scope.promises.push(pHandle);
-                                            });  
+                                            var length = _scope.promises.push(Common.QuerablePromise.call(_scope.conditions[0], _scope.conditions[0].evaluate));
+                                            var promise = _scope.promises[length-1];
+
+                                            return Promise.race([promise, timeOut.call(_scope)]).then(function(result) {
+                                                    return _checkAfterResolve.call(_scope, result, handle);
+                                                }, 
+                                                function(result){
+                                                    return _checkAfterReject.call(_scope, result, handle);
+                                                }).catch(function(error){   
+                                                    return _errorCallback.call(_scope, error);
+                                            }); 
                                         });
                                     }
                                 }
@@ -245,18 +304,8 @@
                         });
 
                         handle.promise = P;
-//                        return P;
-                        
-                        var timeOut = new Promise(function(resolve, reject) {
-                                                    
-                                setTimeout(function(){ 
-                                    //this.trigger("zui-triggerAssembly-timeOut");    
-                                    reject("Trigger Timed Out");
-                                    
-                                }, _scope.get('evaluationTimeout') * 1000);
-                            });
-
-                        return _scope.get('evaluationTimeout') < 0 ? P : Promise.race([P, timeOut]).then(function(){
+                        var extraDelay = _scope.get('mode') === 'serial' ? _scope.conditions.length : undefined;
+                        return _scope.get('evaluationTimeout') < 0 ? P : Promise.race([P, timeOut.call(_scope, extraDelay)]).then(function(){
                             return Promise.resolve();
                         },
                         function(err){
@@ -310,7 +359,6 @@
                     createResetPoint : function(){
                         // rules.forEach().createResetPoint()
                     }
-
                 };
             })(settings);
         };

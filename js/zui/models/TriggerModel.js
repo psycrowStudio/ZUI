@@ -85,7 +85,7 @@ define(['underscore', 'backbone',
                             return;
                         }
 
-                        this.assemblyPromise = _MakeQuerablePromise(_assembly);
+                        this.assemblyPromise = Common.QuerablePromise.call(_assembly, _assembly.evaluate);
                         _isUnderEvaluation = true;
                         this.assemblyPromise = this.assemblyPromise.then(function(data){
                             _fire.call(_trigger);
@@ -197,39 +197,6 @@ define(['underscore', 'backbone',
             Logger.log(callee.get('id') + ' -- ' + logSettings.message, logSettings);
             callee.trigger(event, eventObject);
         };
-
-        function _MakeQuerablePromise(assembly) {
-            // Don't modify any promise that has been already modified.
-            var handle = {};
-            var promise = assembly.evaluate(handle);
-
-            if (promise.isResolved) return promise;
-        
-            // Set initial state
-            var isPending = true;
-            var isRejected = false;
-            var isFulfilled = false;
-        
-            //  Observe the promise, saving the fulfillment in a closure scope.
-            var result = promise.then(
-                function(v) {
-                    isFulfilled = true;
-                    isPending = false;
-                    return v; 
-                }, 
-                function(e) {
-                    isRejected = true;
-                    isPending = false;
-                    throw e; 
-                }
-            );
-        
-            result.handle =  handle;
-            result.isFulfilled = function() { return isFulfilled; };
-            result.isPending = function() { return isPending; };
-            result.isRejected = function() { return isRejected; };
-            return result;
-        }
    
         _prius = Backbone.Model.extend({}, staticMethods);
         return _prius;
