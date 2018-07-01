@@ -94,6 +94,7 @@ define(['underscore', 'backbone',
                         }).finally(function(){
                             _isUnderEvaluation = false;
 
+                            // TODO trigger a eval complete event
                             //if keepalive === false
                             // _cleanup.call(_trigger);
                         });

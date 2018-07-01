@@ -93,9 +93,15 @@ define(['backbone', 'underscore'], function(Backbone, _){
 
             return result;
         },
-        DelayPromise: function(delay){
+        DelayPromise: function(delay, rejectAfter){
             return new Promise(function(resolve, reject){
-                setTimeout(resolve, delay);
+                setTimeout(function(){
+                    if(rejectAfter) {
+                        reject();
+                    } else {
+                        resolve();
+                    }
+                }, delay);
             });
         }
     };

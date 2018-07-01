@@ -61,13 +61,6 @@
                     return Promise.reject(status);
                 };
 
-                var _timerCallback = function(duration){
-                    this.trigger("zui-triggerAssembly-timer");
-                    return new Promise(function(resolve) {
-                        setTimeout(resolve, duration);
-                    });
-                };
-
                 var _checkAfterResolve = function(result, handle){
                     //check to make sure not already set to true
                     _scope = this;
@@ -90,7 +83,7 @@
                             var length = _scope.promises.push(Common.QuerablePromise.call(nextElement, nextElement.evaluate));
                             var promise = _scope.promises[length-1];
 
-                            return Promise.race([promise, _timerCallback.call(_scope, 10000)]).then(function(result) {
+                            return Promise.race([promise, Common.DelayPromise(10000)]).then(function(result) {
                                     return _checkAfterResolve.call(_scope, result, handle);
                                 },
                                 function(result){
@@ -124,7 +117,7 @@
                             var length = _scope.promises.push(Common.QuerablePromise.call(nextElement, nextElement.evaluate));
                             var promise = _scope.promises[length-1];
 
-                            return Promise.race([promise, _timerCallback.call(_scope, 10000)]).then(function(result) {
+                            return Promise.race([promise, Common.DelayPromise(10000)]).then(function(result) {
                                     return _checkAfterResolve.call(_scope, result, handle);
                                 }, 
                                 function(result){
@@ -166,10 +159,7 @@
                     ownedBy: settings.target, //trigger
 
                     //properties for evaluation:
-                    evaluations: [],
-                    //
                     promises: [],
-                    
                     conditions: [
                         {
                             evaluate:_eval
@@ -178,7 +168,6 @@
                             evaluate:_eval
                         }
                     ],
-                    outboundPomises: 0,
 
                     // AKA initialize
                     evaluate: function(handle){
@@ -188,21 +177,7 @@
                         }
 
                         var _scope = this;
-                        this.promises = []; // TODO beware of mem leak here... 
-                                        
-                        var timeOut = function(multiplier){
-                            multiplier = multiplier || 1; 
-                            var base = _scope.get('evaluationTimeout');
-                            var delay = base * 1000 * multiplier;
-                            return new Promise(function(resolve, reject) {           
-                                setTimeout(function(){ 
-                                    //this.trigger("zui-triggerAssembly-timeOut");    
-                                    reject("Trigger Timed Out");
-                                    //TODO if "AND" multiply the value below by promises.length
-                                }, delay);
-                            });
-                        };
-
+                        this.promises = []; // TODO beware of mem leak here...    
 
                         var P = new Promise(function(resolve, reject){
                             handle.resolve = resolve;
@@ -252,8 +227,10 @@
                                         return _scope.conditions.length === 0 ? _successCallback.call(_scope, handle) : new Promise(function(resolve,reject){                                          
                                             var length = _scope.promises.push(Common.QuerablePromise.call(_scope.conditions[0], _scope.conditions[0].evaluate));
                                             var promise = _scope.promises[length-1];
+                                            var base = _scope.get('evaluationTimeout');
+                                            var delay = base * 1000 * multiplier;
 
-                                            return Promise.race([promise, timeOut.call(_scope)]).then(function(result) {
+                                            return Promise.race([promise, Common.DelayPromise(delay, true)]).then(function(result) {
                                                     return _checkAfterResolve.call(_scope, result, handle);
                                                 }, 
                                                 function(result){
@@ -268,16 +245,16 @@
                                 // if timing, start window or delay.
                                 if(_scope.get('status') === false && _scope.get('timing') === 'delay')
                                 {
-                                    return _timerCallback.call(_scope, _scope.get('delayLength')).then(function(result) {
+                                    return Common.DelayPromise(_scope.get('delayLength')).then(function(result) {
                                         return continueEvaluation.call(_scope, result);
                                     });
                                 }
                                 else if(_scope.get('status') === false && _scope.get('timing') === 'window'){
-                                    //TODO this is a promise race case
+                                    //TODO this is a promise race case //TODO clean this up, as this is the same as the timeout...
                                     continueEvaluation.call(_scope);
-                                    return timerCallback.call(_scope, _scope.get('delayLength')).then(function(){
-                                       //this.evaluate(); // call at the end of the window, to re-evaluate?
-                                       if(_scope.get('status') === true) {
+                                    return Common.DelayPromise(_scope.get('windowLength')).then(function(){
+                                       
+                                        if(_scope.get('underEvaluation') === false && _scope.get('status') === true) {
                                             return _successCallback.call(_scope, handle);
                                        }
                                        else {
@@ -289,14 +266,12 @@
                                     return continueEvaluation.call(_scope);
                                 }
                             }    
-
-                            //this.get('underEvaluation') === false ? Promise.reject(false) :
                         });
 
                         handle.promise = P;
-                        var extraDelay = _scope.get('mode') === 'serial' ? _scope.conditions.length : undefined;
-                        return _scope.get('evaluationTimeout') < 0 ? P : Promise.race([P, timeOut.call(_scope, extraDelay)]).then(function(){
-                            return Promise.resolve();
+                        var extraDelay = _scope.get('mode') === 'serial' ? _scope.conditions.length * _scope.get('evaluationTimeout') : _scope.get('evaluationTimeout');
+                        return _scope.get('evaluationTimeout') < 0 ? P : Promise.race([P, Common.DelayPromise(extraDelay * 1000, true)]).then(function(result){
+                            return Promise.resolve(result);
                         },
                         function(err){
                            throw "Trigger Timed Out";;
