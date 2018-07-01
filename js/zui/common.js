@@ -92,6 +92,11 @@ define(['backbone', 'underscore'], function(Backbone, _){
             result.isRejected = function() { return isRejected; };
 
             return result;
+        },
+        DelayPromise: function(delay){
+            return new Promise(function(resolve, reject){
+                setTimeout(resolve, delay);
+            });
         }
     };
     

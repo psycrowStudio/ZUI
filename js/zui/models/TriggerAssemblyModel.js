@@ -145,10 +145,10 @@
                         'sticky': typeof settings.sticky !== 'undefined' ? settings.sticky : false,
                         'underEvaluation' : false,
 						'binding' : settings.binding ? settings.binding : 'OR',
-						'mode' : settings.mode ? settings.mode : 'serial',  // or serial
-						'timing' : settings.timing ? settings.timing : 'delay',  //window or delay
+						'mode' : settings.mode ? settings.mode : 'parallel',  // or serial
+						'timing' : settings.timing ? settings.timing : 'window',  //window or delay
                         'delayLength' : 0,
-                        'windowLength' : 0,
+                        'windowLength' : 5000,
                         'lastEvaluation': 0,
                         'evaluationCount' : 0,
                         'evaluationTimeout': 10,
@@ -218,7 +218,7 @@
 
                                 var continueEvaluation = function(){
                                     if(_scope.get('mode') === 'parallel' && _scope.get('binding') === 'AND') {
-                                        scope.conditions.forEach(function(element){
+                                        _scope.conditions.forEach(function(element){
                                             _scope.promises.push(Common.QuerablePromise.call(element, element.evaluate));
                                         });
     
@@ -232,12 +232,10 @@
                                             });
                                     }
                                     else if(_scope.get('mode') === 'parallel' && _scope.get('binding') === 'OR') {
-                                        //       start all
-                                        //       return after the first is true
-
                                         return _scope.conditions.length === 0 ? _successCallback.call(_scope, handle) : new Promise(function(resolve,reject){
                                             _scope.conditions.forEach(function(element){
-                                                var promise = _scope.promises.push(Common.QuerablePromise.call(element, element.evaluate));
+                                                var length = _scope.promises.push(Common.QuerablePromise.call(element, element.evaluate));
+                                                var promise = _scope.promises[length-1];
     
                                                 promise.then(function(result) {
                                                    return _checkAfterResolve.call(_scope, result, handle);
@@ -251,14 +249,6 @@
     
                                     }
                                     else if(_scope.get('mode') === 'serial') {
-                                        // FOR BOTH AND AND OR
-
-                                        // var chain = Promise.resolve();
-                                        // for (let i = 0; i < aniMap.length; i++) {
-                                        //     chain = chain.then(_ => _startAnimation(aniMap[i].element, aniMap[i].animation, i));
-                                        // }
-
-                                        //THIS IS ALSO A RACE SCENARIO, each chain should timeout independently
                                         return _scope.conditions.length === 0 ? _successCallback.call(_scope, handle) : new Promise(function(resolve,reject){                                          
                                             var length = _scope.promises.push(Common.QuerablePromise.call(_scope.conditions[0], _scope.conditions[0].evaluate));
                                             var promise = _scope.promises[length-1];
