@@ -11,13 +11,6 @@ define(['backbone',
     // var _defaultPageEvents = {
     //     "activePageChanged": pagesEventListener
     // };
-    
-    //TODO move events into logger
-    // _pages.listenTo('add', pagesEventListener);
-
-    // var pagesEventListener = function(pageModel, collection, options) {
-    //     _pages.trigger('pageAdded', window.zui.event({targetObj: pageModel}));
-    // }
 
     return {
         addPage : function( page ) { 

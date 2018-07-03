@@ -1,6 +1,9 @@
 define(['zui'], function(zui){
-   
-    var testPage = zui.factory.page.addPage(zui.factory.page.instantiatePage({ 'title' : 'Test Page' }));
+    // var pm = this;
+    // var _activePage = null;
+    // var _previousPage = null;
+    // var _pages = new Backbone.Collection(null, { model: Types.Page });
+    var testPage = zui.types.Page.fab({ 'title' : 'ZUI Trigger Test Page', 'isActive': true });
         zui.factory.component.fabricate( { id:'header', parentModel: testPage } );
         zui.factory.component.fabricate( { id:'content', parentModel: testPage } );
         zui.factory.component.fabricate( { id:'footer', parentModel: testPage } );
@@ -77,7 +80,7 @@ define(['zui'], function(zui){
             }
         });
 
-    zui.factory.page.setActivePage(testPage);
+    //zui.factory.page.setActivePage(testPage);
 
     zui.factory.component.fabricate({ 
         id:'TriggerSandbox', 
