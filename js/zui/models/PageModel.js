@@ -19,7 +19,7 @@ define(['underscore', 'backbone',
                     },
         
                     initialize : function(){   
-                        _inform(this, "zui-page-created");
+                        _inform(this, "zui-component-created");
                         this.view = new (Backbone.View.extend({ 
                             model: this,
                             el: 'body',
@@ -44,6 +44,7 @@ define(['underscore', 'backbone',
                                 }
                             }
                         }))();
+                        
                         //
                         this.components =  new Backbone.Collection(null, {
                             model: Component
@@ -54,7 +55,7 @@ define(['underscore', 'backbone',
 
                     addComponent: function(component) {
                         //TODO add the logic for this
-                        if(component instanceof Component && this.components )
+                        if(this.components)
                         {
                             if(!this.components.get(component))
                             {

@@ -1,5 +1,10 @@
 define(['backbone', 'underscore'], function(Backbone, _){   
 //mouse-move, button-click, create, destroy, http, router, renderer, 
+var _externalComponentTypes = {};
+var _loadingCount = 0;
+var _externalComponentSrc = [
+    //'js/zui/components/menu_horizontal.js' // TODO move this component over to RequireJS pattern
+];
 
 // PUBLIC     
     var common = {
@@ -103,7 +108,30 @@ define(['backbone', 'underscore'], function(Backbone, _){
                     }
                 }, delay);
             });
+        },
+        LoadExternalComponents(callback)
+        {
+            for(let z = 0; z < _externalComponentSrc.length; z++)
+            {
+                let capture = _externalComponentSrc[z];
+               _loadingCount++;
+                $.getScript( capture, function()
+                {
+                    Logger.log(capture + ' loaded.', { tags:'zui-http', logeLevel:1 });
+                    --_loadingCount >= 0 ? _loadingCount : 0;
+                    
+                    if(_loadingCount === 0)
+                    {
+                        //done loading
+                        if(callback && typeof callback === 'function')
+                        {
+                            callback();
+                        }
+                    }
+                });
+            }
         }
+
     };
     
     return common;

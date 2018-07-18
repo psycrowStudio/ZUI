@@ -3,86 +3,86 @@ define(['zui'], function(zui){
     // var _activePage = null;
     // var _previousPage = null;
     // var _pages = new Backbone.Collection(null, { model: Types.Page });
-    var testPage = zui.types.Page.fab({ 'title' : 'ZUI Trigger Test Page', 'isActive': true });
-        zui.factory.component.fabricate( { id:'header', parentModel: testPage } );
-        zui.factory.component.fabricate( { id:'content', parentModel: testPage } );
-        zui.factory.component.fabricate( { id:'footer', parentModel: testPage } );
+    var testPage = zui.types.page.fab({ 'title' : 'ZUI Trigger Test Page', 'isActive': true });
+    zui.types.component.fab( { id:'header', parentModel: testPage } );
+    zui.types.component.fab( { id:'content', parentModel: testPage } );
+    zui.types.component.fab( { id:'footer', parentModel: testPage } );
 
 //         //zui.componentFactory.instantiate( 'horizontalMenu', { id:'mainMenu', parentModel: testPage.components.get('header'),  parentElementSelector: '#header'} );
 //         //TODO static components (ones that dont take events, or change)
-        zui.factory.component.fabricate({ 
-            id:'box_01', 
-            parentModel: testPage.components.get('content'), 
-            parentElementSelector: '#content',
-            className:'status-error',
-            events: {
-                click: function(e) {
-                    console.log(this);
-                    this.model.toggleViewState();
-                    return false;
-                }
+    zui.types.component.fab({ 
+        id:'box_01', 
+        parentModel: testPage.components.get('content'), 
+        parentElementSelector: '#content',
+        className:'status-error',
+        events: {
+            click: function(e) {
+                console.log(this);
+                this.model.toggleViewState();
+                return false;
             }
-        });
+        }
+    });
 
-        zui.factory.component.fabricate({ 
-            id:'box_02', 
-            parentModel: testPage.components.get('content'), 
-            parentElementSelector: '#content',
-            className:'status-active',
-            events: {
-                click: function(e) {
-                    console.log(this);
-                    this.model.toggleViewState();
-                    return false;
-                }
+    zui.types.component.fab({ 
+        id:'box_02', 
+        parentModel: testPage.components.get('content'), 
+        parentElementSelector: '#content',
+        className:'status-active',
+        events: {
+            click: function(e) {
+                console.log(this);
+                this.model.toggleViewState();
+                return false;
             }
-        });
+        }
+    });
 
-        zui.factory.component.fabricate({ 
-            id:'box_03', 
-            parentModel: testPage.components.get('content'), 
-            parentElementSelector: '#content',
-            className:'status-inactive',
-            events: {
-                click: function(e) {
-                    console.log(this);
-                    this.model.toggleViewState();
-                    return false;
-                }
+    zui.types.component.fab({ 
+        id:'box_03', 
+        parentModel: testPage.components.get('content'), 
+        parentElementSelector: '#content',
+        className:'status-inactive',
+        events: {
+            click: function(e) {
+                console.log(this);
+                this.model.toggleViewState();
+                return false;
             }
-        });
+        }
+    });
 
-        zui.factory.component.fabricate({ 
-            id:'box_04', 
-            parentModel: testPage.components.get('content'), 
-            parentElementSelector: '#content',
-            className:'status-disabled',
-            events: {
-                click: function(e) {
-                    console.log(this);
-                    this.model.toggleViewState();
-                    return false;
-                }
+    zui.types.component.fab({ 
+        id:'box_04', 
+        parentModel: testPage.components.get('content'), 
+        parentElementSelector: '#content',
+        className:'status-disabled',
+        events: {
+            click: function(e) {
+                console.log(this);
+                this.model.toggleViewState();
+                return false;
             }
-        });
+        }
+    });
 
-        zui.factory.component.fabricate({ 
-            id:'box_05', 
-            parentModel: testPage.components.get('content'), 
-            parentElementSelector: '#content',
-            className:'status-loading',
-            events: {
-                click: function(e) {
-                    console.log(this);
-                    this.model.toggleViewState();
-                    return false;
-                }
+    zui.types.component.fab({ 
+        id:'box_05', 
+        parentModel: testPage.components.get('content'), 
+        parentElementSelector: '#content',
+        className:'status-loading',
+        events: {
+            click: function(e) {
+                console.log(this);
+                this.model.toggleViewState();
+                return false;
             }
-        });
+        }
+    });
 
     //zui.factory.page.setActivePage(testPage);
 
-    zui.factory.component.fabricate({ 
+    zui.types.component.fab({ 
         id:'TriggerSandbox', 
         parentModel: testPage.components.get('content'), 
         parentElementSelector: '#content',
@@ -91,8 +91,7 @@ define(['zui'], function(zui){
                            <button> Start </button> \
                            <input type="checkbox" title="keep alive" class="keepAlive">\
                            <input type="checkbox" title="reset after fire" class="resetAfterFire">\
-                           <input type="checkbox" title="sticky" class="sticky">\
-        ',
+                           <input type="checkbox" title="sticky" class="sticky">',
         events: {
             click: function(e) {
                 if(e.target.nodeName.toLowerCase() === "button") {
@@ -106,7 +105,7 @@ define(['zui'], function(zui){
                         this.listenToOnce(this, 'zui-trigger-primed', function(input){ 
                             console.log(arguments, input);
                         }); 
-                        var trigger = zui.types.Trigger.fab(
+                        var trigger = zui.types.trigger.fab(
                             { 
                                 target: this.model,
                                 keepAlive: this.keepAlive ? this.keepAlive : false,
