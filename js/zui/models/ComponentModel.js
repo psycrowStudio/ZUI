@@ -15,7 +15,8 @@ define(['underscore', 'backbone',
                         'echo': false,
                         'isActive': settings && settings.isActive ? settings.isActive : true,
                         'isLoading': false,
-                        'parentElementSelector': settings && settings.parentElementSelector ? settings.parentElementSelector : 'body'
+                        'parentElementSelector': settings && settings.parentElementSelector ? settings.parentElementSelector : 'body',
+                        // TODO sort by : 'drawOrder': settings && settings.parentElementSelector ? settings.parentElementSelector : 0
                     },
         
                     initialize : function(){   
@@ -28,14 +29,31 @@ define(['underscore', 'backbone',
                             className: typeof settings.className !== "undefined" ? 'zui-component ' + settings.className : 'zui-component',
                             el: typeof settings.el !== "undefined" ? settings.el : undefined,
                             //TODO make template a module loading function that returns promise
-                            template : typeof settings.template !== "undefined" ? _.template(settings.template, this.model) : _.template(' <p>I am <%= get("id") %></p>', this.model) , //TODO create the default template for components
+                            template : typeof settings.template !== "undefined" ? _.template(settings.template, this.model) : _.template(' <p>I am <%= get("id") %></p>', this.model), //TODO create the default template for components
                             //domSections : typeof settings.domSections !== "undefined" ? settings.domSections : null, //{ key map for sections} 'MAPPING TO THE RELEVANT SECTIONS WITHIN THIS COMPONENT'
+                            modifiers : typeof settings.modifiers !== "undefined" ? settings.modifiers : [],
+                            //TODO add & sort / remove modifiers
                             render : typeof settings.renderer === "function" ? settings.renderer : function(){
                                 //queue render call if loading
                                 if(!this.model.get('isActive'))
                                     return;
                                 
-                                //TODO -- grab sub-components put on doc-frag, and then re-add them
+                                for(var z = 0; z < this.modifiers.length; z++){
+                                    // TODO save post-render modifiers until the end? [a finnally f()?]
+                                    if(this.modifiers[z].render.call(this) === false)
+                                    {
+                                        return;
+                                    }
+                                }
+
+                                var clipboard = document.createDocumentFragment();
+                                this.model.childComponents.forEach(function(child){
+                                    if(child.view.el)
+                                    {
+                                        clipboard.appendChild(child.view.el);
+                                    }
+                                });
+
                                 this.el.innerHTML = this.template(this.model);
     
                                 if(!this.el.parentElement){
@@ -45,16 +63,15 @@ define(['underscore', 'backbone',
                                     }
                                 }
     
-                                for(var component in this.model.childComponents.models) {
-                                    this.model.childComponents.models[component].view.render();
-                                }
-                                // for(var z = 0; z < this.model.childComponents.length; z++){
-                                //     if(this.model.childComponents[z].view && this.model.childComponents[z].view instanceof Backbone.View){
-                                //         this.model.childComponents[z].view.render();
-                                //     }
-                                // }
-    
-                                //TODO (post render?)
+                                this.model.childComponents.forEach(function(child){
+                                    if(child.view.el)
+                                    {
+                                        child.view.render();
+                                    }
+                                });
+
+                                //if post renerer modifiers, call them here
+
                                 return this;
                             },
                             attributes: typeof settings.viewAttributes === 'object' ? this.set(settings.viewAttributes) : '',
