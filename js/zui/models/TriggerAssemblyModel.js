@@ -15,21 +15,6 @@
 
             return new (function(settings){
                 settings = typeof settings === 'undefined' ? {} : settings;
-                
-                var _eval = function(handle){
-
-                    return new Promise(function(resolve, reject) {
-                        handle.resolve = resolve;
-                        //console.log(resolve);
-                        handle.reject = reject;
-                        var delay = Math.floor(Math.random()*(8000-5000+1)+5000);
-                        console.log(delay);
-                        setTimeout(function(){
-                            resolve('TIME UP');
-                            console.log('end');
-                        }, delay);
-                    });
-                }
 
                 var _successCallback = function(result, handle){
                     console.log('success', result);
@@ -41,16 +26,15 @@
                     if(this.get('becameTrueAt') === 0 || this.get('sticky') === false) {
                         this.set('becameTrueAt', Date.now());
                     }
-                    handle.resolve(result);
-                    this.trigger("zui-triggerAssembly-evaluate-success");
 
-                    return Promise.resolve(result);
+                    this.trigger("zui-triggerAssembly-evaluate-success");
+                    handle.resolve(result);      
                 };
 
-                var _failCallback = function(input){
+                var _failCallback = function(input, handle){
                     this.trigger("zui-triggerAssembly-evaluate-fail");
                     this.set('underEvaluation', false);
-                    return Promise.reject(input);
+                    handle.reject(input);
                 };
 
                 var _errorCallback = function(status){
@@ -69,7 +53,7 @@
                     }
 
                     if(_scope.get('binding') === 'OR') {
-                        return _successCallback.call(_scope,result, handle);
+                        return _successCallback.call(_scope, result, handle);
                     } else if(_scope.get('binding') === 'AND') {
                         var didAllPass = _scope.promises.reduce(function(acc, el){
                             return acc ? el.isFulfilled() : false;
@@ -139,7 +123,7 @@
                         'underEvaluation' : false,
 						'binding' : settings.binding ? settings.binding : 'OR',
 						'mode' : settings.mode ? settings.mode : 'parallel',  // or serial
-						'timing' : settings.timing ? settings.timing : 'window',  //window or delay
+						'timing' : settings.timing ? settings.timing : '', //'window',  //window or delay
                         'delayLength' : 0,
                         'windowLength' : 5000,
                         'lastEvaluation': 0,
@@ -150,25 +134,39 @@
                     },
 
                     initialize : function(){
-                        this.createResetPoint();
+                        this.createSavePoint();
                         this.trigger("zui-triggerAssembly-created");
-						this.set('state', 'initialized');
+                        this.set('state', 'initialized');
+                        
+                        // traverse owner to find myTrigger.
                     },
 
                     status: function() {   return this.get('status'); },
-                    ownedBy: settings.target, //trigger
+                    ownedBy: settings.target, 
+                    //myTrigger: 
 
                     //properties for evaluation:
                     promises: [],
-                    conditions: [
-                        {
-                            evaluate:_eval
-                        },
-                        {
-                            evaluate:_eval
-                        }
-                    ],
+                    // rules
+                    conditions: [],
 
+
+
+                    // clear on destroy
+                    // need accessor / setter methods
+                    // variables: {
+                    //     ruleId : {
+                    //         custom: '',
+                    //         variables: 000,
+                    //         here: []
+                    //     }
+                    // }
+                    //     INTERNAL VARIABLES:
+                    //         * count / increment(x)
+                    //         * average, sum
+                    //         * max
+                    //         * min
+                    
                     // AKA initialize
                     evaluate: function(handle){
                         if(!this.ownedBy) {
@@ -207,7 +205,7 @@
                                             });
                                     }
                                     else if(_scope.get('mode') === 'parallel' && _scope.get('binding') === 'OR') {
-                                        return _scope.conditions.length === 0 ? _successCallback.call(_scope, handle) : new Promise(function(resolve,reject){
+                                        return _scope.conditions.length === 0 ? _successCallback.call(_scope, undefined, handle) : new Promise(function(resolve,reject){
                                             _scope.conditions.forEach(function(element){
                                                 var length = _scope.promises.push(Common.QuerablePromise.call(element, element.evaluate));
                                                 var promise = _scope.promises[length-1];
@@ -215,16 +213,16 @@
                                                 promise.then(function(result) {
                                                    return _checkAfterResolve.call(_scope, result, handle);
                                                 }, function(result){
-                                                    _checkAfterReject.call(_scope, result, handle);
+                                                   return _checkAfterReject.call(_scope, result, handle);
                                                 }).catch(function(error){
                                                     _errorCallback.call(_scope, error);
                                                 });
                                             });
-                                        });
+                                        }).catch(function(err){ console.log(err); });
     
                                     }
                                     else if(_scope.get('mode') === 'serial') {
-                                        return _scope.conditions.length === 0 ? _successCallback.call(_scope, handle) : new Promise(function(resolve,reject){                                          
+                                        return _scope.conditions.length === 0 ? _successCallback.call(_scope, undefined, handle) : new Promise(function(resolve,reject){                                          
                                             var length = _scope.promises.push(Common.QuerablePromise.call(_scope.conditions[0], _scope.conditions[0].evaluate));
                                             var promise = _scope.promises[length-1];
                                             var base = _scope.get('evaluationTimeout');
@@ -240,7 +238,7 @@
                                             }); 
                                         });
                                     }
-                                }
+                                };
     
                                 // if timing, start window or delay.
                                 if(_scope.get('status') === false && _scope.get('timing') === 'delay')
@@ -255,7 +253,7 @@
                                     return Common.DelayPromise(_scope.get('windowLength')).then(function(){
                                        
                                         if(_scope.get('underEvaluation') === false && _scope.get('status') === true) {
-                                            return _successCallback.call(_scope, handle);
+                                            return _successCallback.call(_scope, undefined, handle);
                                        }
                                        else {
                                             return _failCallback.call(_scope);
@@ -274,7 +272,7 @@
                             return Promise.resolve(result);
                         },
                         function(err){
-                           throw "Trigger Timed Out";;
+                           throw err || "Trigger Timed Out";
                         });
                         
                     },
@@ -321,8 +319,8 @@
                         }
                     },
 
-                    createResetPoint : function(){
-                        // rules.forEach().createResetPoint()
+                    createSavePoint : function(){
+                        // rules.forEach().createSavePoint()
                     }
                 };
             })(settings);
@@ -332,7 +330,7 @@
         var staticMethods = (function() {
             return {
                 fab: function( objValues,  options){
-                    var linkage = new (_prius.extend(generateScope(objValues)))();
+                    var assembly = new (_prius.extend(generateScope(objValues)))();
 
                     options = options ? options : {};
 
@@ -340,14 +338,40 @@
                     switch(options.template) {
                         case "timer-basic":
                             //add
-                            linkage.set('timing', 'delay');
-                            linkage.set('delayLength', options.templateVars.duration);
+                            assembly.set('timing', 'delay');
+                            assembly.set('delayLength', options.templateVars.duration);
+                        break;
+
+                        case "function-runner":
+                            // this is a poor rule, used for testing the logic in the assembly
+
+                            var ruleSettings = {
+                                target: assembly,
+                                evalPredicate: options.templateVars.evalPredicate
+                            }
+                            var rule = Rule.fab(ruleSettings);
+
+
+                            assembly.conditions.push(rule);
+                            /* types of rules: 
+                            * function runner, chain runner (template), option to respect return vals or not
+                            * Object exists 
+                            //         * evalPredicate()^: 
+                            //             * EventEquality: _evName == ev.name && ev.data === _evExactMatch || {_variables contained match _evContians }
+                            //             * linkagesEquality: does a _var[] property match a pattern
+                            //             * triggerEquality: does a specific trigger match a pattern
+                            //             * objectExists: does a specific JS object exist in memory?
+                            //         * EventEquality: does an event name, and or body match a pattern
+                            //         * linkagesEquality: does a _var[] property match a pattern
+                            //         * triggerEquality: does a specific trigger match a pattern
+                            * property compare (include internal #s)
+                            */ 
                         break;
                     }
 
                     // TODO for reset, set save point ??
 
-                    return linkage;
+                    return assembly;
                 }
             }
         })();

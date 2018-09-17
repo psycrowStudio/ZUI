@@ -72,13 +72,14 @@ define(['underscore', 'backbone'], function(_, Backbone){
             var tags = settings && settings.tags ? settings.tags : 'misc' ;
             var obj = settings && settings.obj ? settings.obj : undefined;
             var logLevel = settings && settings.logLevel ? settings.logLevel : 3;
+            var fireEvent = settings && settings.fireEvent ? settings.fireEvent : false;
             
             // TODO - add the event object to include, or ensure that settings.obj meets the needs
             if(Array.isArray(tags)){
                 var sendOutputFilter = false;
                 for(var key in tags)
                 {  
-                    if(this.eventChannels.hasOwnProperty(tags[key])) {
+                    if(fireEvent && this.eventChannels.hasOwnProperty(tags[key])) {
                         this.eventChannels[tags[key]].trigger(tags[key], obj);
                     } 
 
@@ -92,7 +93,7 @@ define(['underscore', 'backbone'], function(_, Backbone){
                 }
             }
             else {
-                if(this.eventChannels.hasOwnProperty(tags) && settings.eventName) {
+                if(fireEvent && this.eventChannels.hasOwnProperty(tags) && settings.eventName) {
                     this.eventChannels[tags].trigger(settings.eventName, obj);
                 } 
                 if(logOutputFilter.hasOwnProperty(tags) && logOutputFilter[tags] >= logLevel) {
@@ -111,9 +112,9 @@ define(['underscore', 'backbone'], function(_, Backbone){
             }
         },
 
-        registerChannel : function(name, handler){
-            if(!this.eventChannels.hasOwnProperty(channel)) {
-                this.eventChannels[name] = _.extend(handler, Backbone.Events);
+        registerChannel : function(name, channel){
+            if(!this.eventChannels.hasOwnProperty(name)) {
+                this.eventChannels[name] = _.extend(channel, Backbone.Events);
             }
         },
         eventChannels : {

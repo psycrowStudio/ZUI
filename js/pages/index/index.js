@@ -100,11 +100,36 @@ define(['zui'], function(zui){
 
                     if(input && input.value > 0){
                         button.disabled = true;
-                        //TODO create trigger from factory and attach to this object.   
                         //console.log("Setting " + input.value + "(s) Trigger")
                         this.listenToOnce(this, 'zui-trigger-primed', function(input){ 
                             console.log(arguments, input);
                         }); 
+
+
+                        var _eval = function(handle){
+
+                            return new Promise(function(resolve, reject) {
+                                var _pScope = this;
+                                //handle.resolve = resolve;
+                                //console.log(resolve);
+                                //handle.reject = reject;
+                                var delay = Math.floor(Math.random()*(5000-3000+1)+3000);
+                                console.log(delay);
+                                try{
+                                    setTimeout(function(){
+                                        console.log('end');
+                                        resolve('TIME UP');
+                                        //reject('Player Died');
+                                        //throw "HTTP Error";
+                                    }, delay);
+                                } catch (err) {
+                                    throw err;
+                                }
+
+                            });
+                        };
+
+
                         var trigger = zui.types.trigger.fab(
                             { 
                                 target: this.model,
@@ -112,17 +137,26 @@ define(['zui'], function(zui){
                                 resetAfterFire: this.resetAfterFire ? this.resetAfterFire : false,
                                 firedLimit: 3
                             }, 
+                            // {
+                            //     template: "timer-basic", 
+                            //     templateVars:{
+                            //         duration:input.value,
+                            //         sticky: this.sticky ? this.sticky : false,
+                            //     }
                             {
-                                template: "timer-basic", 
+                                template: "function-runner", 
                                 templateVars:{
-                                    duration:input.value,
-                                    sticky: this.sticky ? this.sticky : false,
+                                    evalPredicate: _eval
                                 }
                         });
                         trigger.prime();
                         this.model.listenToOnce(trigger, "zui-trigger-consumed", function(event){
                             button.disabled = false;
                         });
+                        this.model.listenToOnce(trigger, "zui-trigger-evaluation-error", function(event){
+                            button.disabled = false;
+                        });
+
                     }
                     return false;
                 }

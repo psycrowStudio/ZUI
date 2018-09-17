@@ -15,144 +15,144 @@
 
             return new (function(settings){
                 settings = typeof settings === 'undefined' ? {} : settings;
-                var _conditions = {};
 
-                var _successCallback = function(input){
-                    this.set('underEvaluation', false);
+                var _successCallback = function(input, handle){
+                    this.set('state', 'initialized');
 
                     this.set('status', true);
-                    this.trigger("zui-triggerAssembly-evaluate-success");
+                    this.trigger("zui-triggerRule-evaluate-success");
 
                     // sticky enables this to remain true after a successful evaluation
                     if(this.get('becameTrueAt') === 0 || this.get('sticky') === false) {
                         this.set('becameTrueAt', Date.now());
                     }
-                    return true;
+                    handle.resolve(input);
                 };
 
-                var _failCallback = function(input){
-                    this.trigger("zui-triggerAssembly-evaluate-fail");
-                    this.set('underEvaluation', false);
-                    return false;
+                var _failCallback = function(input, handle){
+                    this.trigger("zui-triggerRule-evaluate-fail");
+                    this.set('status', false);
+                    this.set('state', 'initialized');
+                    handle.reject(input);
                 };
 
                 var _errorCallback = function(status){
-                    this.trigger("zui-triggerAssembly-evaluate-error");
-                    this.set('underEvaluation', false);
-                    return false;
+                    this.trigger("zui-triggerRule-evaluate-error");
+                    this.set('state', 'initialized');
+                    throw status;
                 };
 
-                var _eventCallback = function(event){
-                    this.trigger("zui-triggerRule-event-callback");
+                var _resetVariables = function(){
+                    //this.owner, check if saved vars exist, if not
+                    //this.myAssembly.restoreVariables(this.get('id'));
                 };
+
+                var _clearVariables = function(){
+                    //this.myAssembly.clearVariables(this.get('id'));
+                };
+
+                var _saveVariables = function(){
+                    //this.myAssembly.saveVariables(this.get('id'));
+                };
+                //var _rulescope = this;
 
                 return {
                     defaults : {
                         'id' : Common.genId(),
                         'state' : 'uninitialized', //'initialized', 'evaluating'
-                        'status' : typeof settings.status !== 'undefined' ? settings.status : false,
+                        'status' : false,
                         'sticky': typeof settings.sticky !== 'undefined' ? settings.sticky : false,
-                        'underEvaluation' : false,
+                        'clearVariablesOnReset': typeof settings.clearVariablesOnReset !== 'undefined' ? settings.clearVariablesOnReset : false,
                         'lastEvaluation': 0,
                         'evaluationCount' : 0,
                         'evaluationTimeout': 10,
-                        'evaluationExpiration': 0,
-						'becameTrueAt': 0
+                        'becameTrueAt': 0
                     },
 
                     initialize : function(){
-                        this.createResetPoint();
-                        this.trigger("zui-triggerAssembly-created");
+                        if(this.rulePrime && this.get('state') === 'uninitialized') {
+                            this.rulePrime.call(this);
+                        }
+
                         this.set('state', 'initialized');
-                        
+                        this.createSavePoint();
+                        this.trigger("zui-triggerRule-created"); 
                     },
 
-                    status: function() {	return this.get('status') },
-                    ownedBy: settings.target,
-                    //triggerOwner: settings.trigger,
-                    //root assembly
+                    status: function() { return this.get('status') },
+                    myAssembly: settings.target,
+                    evalPredicate: settings.evalPredicate,
+                    rulePrime: settings.prime,
+                    ruleUnprime: settings.unprime,
 
-                    // AKA initialize
-                    //{}
-                    // 
-                    evaluate: function(externalRef){
-                        if(!this.ownedBy) {
-                            //TODO -- consume self here...
-                            this.cleanup();
-                            return false;
-                        }
+                    // handle refers to the object reference within a queryable promise
+                    evaluate: function(handle){
+                        var _scope = this;
+                        var _currentEvaluation;
 
-                        if(this.get('underEvaluation') === false && (this.get('status') === false || this.get('sticky') === false)) {
-                            var _scope = this;
-                            var expiration = new Date(Date.now());
-                            this.evaluations = {};
-                            this.set('evaluationExpiration', expiration.setSeconds(expiration.getSeconds() + this.get('evaluationTimeout')));
-                            this.set('lastEvaluation', Date.now());
-                            this.set('underEvaluation', true);
-                            this.set('state', 'evaluating');
-
-                            /* types of rules: 
-                            * function runner, chain runner (template), option to respect return vals or not
-                            * event response
-                            *   RESPONSES:
-                            *   - function runner
-                            *   - trigger event
-                            *   - consume trigger?
-                            *   - 
-                            */ 
-                           if(this.functionToRun){
-                               var x = this.functionToRun();
-                           }
-
-                           //else if(this.) Does event call this?
-
-                            var continueEvaluation = function(result){
-                                //inject cancelation
-                                return _successCallback.call(_scope);
+                        var rulePromise = new Promise(function(resolve, reject){
+                            if(!_scope.myAssembly) {
+                                _scope.cleanup();
+                                return reject();
                             }
-                        }
+                            handle.resolve = resolve;
+                            handle.reject = reject;
+    
+                            if(_scope.get('state') !== 'evaluating' && (_scope.get('status') === false || _scope.get('sticky') === false)) {
+                                var currnetCount = _scope.get('evaluationCount');
+                                _scope.set('evaluationCount', currnetCount+=1);
+                                _scope.set('lastEvaluation', Date.now());
+                                _scope.set('state', 'evaluating');
+                                
+                                if(_scope.evalPredicate){
+                                     //TODO make this query able?
+                                     // To add an automatic timeout, modify the following
+                                     // Promise.race([promise, Common.DelayPromise(delay, true)]).then(function(result) {
+                                    _currentEvaluation = _scope.evalPredicate.call(_scope, {}).then(function(asyncResolve){
+                                        _successCallback.call(_scope, asyncResolve, handle);
+                                    }, function(asyncReject){
+                                        _failCallback.call(_scope, asyncReject, handle);
+                                        //reject(asyncReject);
+                                    }).catch(function(err){
+                                        _errorCallback.call(_scope, err);
+                                    });
+                                }
+                            }
+                            
+                            if(_scope.get('state') !== 'evaluating'){
+                                return _scope.get('status') ? resolve() : reject();
+                            }
+                        });
 
-                        return this.get('underEvaluation') !== false ? false : this.get('status');
-                    },
-
-                    addRule: function(rule){
-                       //TODO subscribe to rule object for events...
-                        _conditions.add(rule);
+                        return rulePromise;
                     },
 
                     //TODO rule event handler
-
                     cleanup : function() {
-                        this.trigger("zui-triggerAssembly-consumed");
-                        //_rules.cleanup();+
-                        
+                        if(this.ruleUnprime){
+                            this.ruleUnprime();
+                        }
+                        _clearVariables.call(this);
+                        this.trigger("zui-triggerRule-consumed");
                         this.stopListening();
-                        this.ownedBy = null;
+                        this.myAssembly = null;
                     },
-                    reset : function() {
-                        //rules.reset();
-                        this.trigger("zui-triggerAssembly-reset");
+                    reset : function(){
+                        // if(this.evalPredicate) {
+                        //     delete this.evalPredicate
+                        // }
+                        _resetVariables.call(this);
+                        this.trigger("zui-triggerRule-reset");
                         this.set({
                             'state': 'initialized',
                             'status': false,
-                            'underEvaluation' : false,
-                            'evaluationExpiration': 0,
                             'becameTrueAt': 0
                         });
                     },
 
-                    cancelEvaluation: function(){
-                        if(this.get('underEvaluation') === true)
-                        {
-                            // do some stuff
-                            this.set('underEvaluation', false);
-                        }
-                    },
-
-                    createResetPoint : function(){
-                        // rules.forEach().createResetPoint()
+                    createSavePoint : function(){
+                        _saveVariables.call(this);
                     }
-
                 };
             })(settings);
         };
@@ -160,28 +160,8 @@
         //These are the static methods that this type will inherit
         var staticMethods = (function() {
             return {
-                fab: function( objValues,  options){
+                fab: function( objValues){
                     var rule = new (_prius.extend(generateScope(objValues)))();
-
-                    options = options ? options : {};
-
-                    // handling template & template settings
-                    switch(options.template) {
-                        case "function-runner":
-                            /* types of rules: 
-                            * function runner, chain runner (template), option to respect return vals or not
-                            * event response
-                            *   RESPONSES:
-                            *   - function runner
-                            *   - trigger event
-                            *   - consume trigger?
-                            *   - count 
-                            * Object exists 
-                            * property compare (include internal #s)
-                            */ 
-                        break;
-                    }
-
                     // TODO for reset, set save point ??
                     return rule;
                 }
@@ -191,48 +171,3 @@
         _prius = Backbone.Model.extend(generateSuperScope(), staticMethods);
         return _prius;
 });
-
-    // == RULE ==
-    //     TYPE: 
-    //         * EventEquality: does an event name, and or body match a pattern
-    //         * linkagesEquality: does a _var[] property match a pattern
-    //         * triggerEquality: does a specific trigger match a pattern
-    //         * objectExists: does a specific JS object exist in memory?
-    //         * DOMObjectExists: same as above but for DOM selectors
-    //     STATES: 
-    //         * idle: intial state
-    //         * pending: an async evaluation is underway
-    //         * satisfied: evaluation is complete and satisfies the condition
-
-    //     METHODS:
-    //         * prime()^: Called automatically on init(), makes registrations, sets variables and counters, 
-    //             * EventEquality: subscribe to _evChannel for _evName and call evaluate()
-    //             * linkagesEquality: create
-    //             * triggerEquality: does a specific trigger match a pattern
-    //             * objectExists: does a specific JS object exist in memory?
-
-                            
-                        // if event based, we need trigger target or global space filter
-                            // listen to subs
-                            // payload match
-                        // if time based
-                            // timeA (at a point in the future): setListenInterval
-                            // timeB 
-                        // if event and time based, do both
-
-    //         * evaluate()^: 
-    //             * EventEquality: _evName == ev.name && ev.data === _evExactMatch || {_variables contained match _evContians }
-    //             * linkagesEquality: does a _var[] property match a pattern
-    //             * triggerEquality: does a specific trigger match a pattern
-    //             * objectExists: does a specific JS object exist in memory?
-    //         * reset()^: Called to reset the trigger to the unprimed state. 
-
-    //     MODIFIERS:
-    //         * clearCustomVarsOnReset
-    //         * clearInternalVarsOnReset
-   
-    //     INTERNAL VARIABLES:
-    //         * count / increment(x)
-    //         * average, sum
-    //         * max
-    //         * min

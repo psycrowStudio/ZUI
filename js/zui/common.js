@@ -66,37 +66,34 @@ var _externalComponentSrc = [
 
         },
         QuerablePromise: function(generator){
-            // Don't modify any promise that has been already modified.
-            var handle = {};
-            var promise = generator.call(this, handle);
+            if(generator.handle)
+            {
+                return generator;
+            }
 
-            if (promise.isResolved) return promise;
-        
             // Set initial state
+            var handle = {};
             var isPending = true;
             var isRejected = false;
             var isFulfilled = false;
-        
-            //  Observe the promise, saving the fulfillment in a closure scope.
-            var result = promise.then(
-                function(v) {
+            var promise = generator.call(this, handle).then(
+                function(fufliment) {
                     isFulfilled = true;
                     isPending = false;
-                    return v; 
+                    return fufliment; 
                 }, 
-                function(e) {
+                function(rejection) {
                     isRejected = true;
                     isPending = false;
-                    throw e; 
+                    throw rejection; 
                 }
             );
-        
-            result.handle =  handle;
-            result.isFulfilled = function() { return isFulfilled; };
-            result.isPending = function() { return isPending; };
-            result.isRejected = function() { return isRejected; };
+            promise.handle =  handle;
+            promise.isFulfilled = function() { return isFulfilled; };
+            promise.isPending = function() { return isPending; };
+            promise.isRejected = function() { return isRejected; };
 
-            return result;
+            return promise;
         },
         DelayPromise: function(delay, rejectAfter){
             return new Promise(function(resolve, reject){
@@ -109,6 +106,8 @@ var _externalComponentSrc = [
                 }, delay);
             });
         },
+        // objectExists: does a specific JS object exist in memory?
+        // DOMObjectExists: same as above but for DOM selectors
         LoadExternalComponents(callback)
         {
             for(let z = 0; z < _externalComponentSrc.length; z++)

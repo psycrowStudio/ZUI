@@ -1,9 +1,8 @@
 define(['zuiRoot/common', 
     'zuiRoot/types', 
-    'zuiRoot/logger',
-    'zuiRoot/fact'
+    'zuiRoot/logger'
 ], 
-    function(common, types, logger, factories){ 
+    function(common, types, logger){ 
         logger.subscribe('zui-all', 'zui-load', function(options) {
             logger.log('All ZUI modules loaded!', { tags: 'ZUI', logLevel:1 });
         });
@@ -11,7 +10,6 @@ define(['zuiRoot/common',
         return {
             common: common,
             logger: logger,
-            types: types,
-            factory: factories
+            types: types
         }
     });

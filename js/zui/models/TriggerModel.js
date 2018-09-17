@@ -109,7 +109,6 @@ define(['underscore', 'backbone',
                     cleanup: function(){
                         _cleanup.call(this);
                     }
-
                 };
             })(settings);
         };
@@ -137,7 +136,20 @@ define(['underscore', 'backbone',
                             });
 
                             trigger.addAssembly(timerAssembly);
-                        break;
+                            break;
+                        case "function-runner":
+                            var timerAssembly = TriggerAssembly.fab({
+                                target: trigger,
+                                evaluationTimeout: options.templateVars.evaluationTimeout || 10,
+                            },{
+                                template: "function-runner",
+                                templateVars: {
+                                    evalPredicate: options.templateVars.evalPredicate
+                                }
+                            });
+
+                            trigger.addAssembly(timerAssembly);
+                            break;
                     }
 
                     return trigger;
