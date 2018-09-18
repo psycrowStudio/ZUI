@@ -123,9 +123,9 @@
                         'underEvaluation' : false,
 						'binding' : settings.binding ? settings.binding : 'OR',
 						'mode' : settings.mode ? settings.mode : 'parallel',  // or serial
-						'timing' : settings.timing ? settings.timing : '', //'window',  //window or delay
+						'timing' : settings.timing ? settings.timing : 'window', //'window',  //window or delay
                         'delayLength' : 0,
-                        'windowLength' : 5000,
+                        'windowLength' : 2000,
                         'lastEvaluation': 0,
                         'evaluationCount' : 0,
                         'evaluationTimeout': 10,
@@ -256,7 +256,7 @@
                                             return _successCallback.call(_scope, undefined, handle);
                                        }
                                        else {
-                                            return _failCallback.call(_scope);
+                                            return _failCallback.call(_scope, 'Trigger Window Timeout', handle);
                                        }
                                     }, _scope.get('windowLength'));
                                 }

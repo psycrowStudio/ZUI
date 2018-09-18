@@ -9,5 +9,5 @@ define(['zuiRoot/models/ComponentModel',
         component : componentModel,
         page: pageModel,
         trigger: triggerModel
-    }
+    };
 });

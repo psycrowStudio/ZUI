@@ -7,6 +7,15 @@ define(['zui'], function(zui){
     zui.types.component.fab( { id:'header', parentModel: testPage } );
     zui.types.component.fab( { id:'content', parentModel: testPage } );
     zui.types.component.fab( { id:'footer', parentModel: testPage } );
+    var dialogLayer = zui.components.dialogLayer.addToPage(testPage);
+
+    dialogLayer.triggerDialog();
+
+    zui.common.DelayPromise(3000).then(function() {
+        dialogLayer.toggleOverlay();
+        dialogLayer.triggerDialog();
+    })
+
 
 //         //zui.componentFactory.instantiate( 'horizontalMenu', { id:'mainMenu', parentModel: testPage.components.get('header'),  parentElementSelector: '#header'} );
 //         //TODO static components (ones that dont take events, or change)
@@ -118,7 +127,7 @@ define(['zui'], function(zui){
                                 try{
                                     setTimeout(function(){
                                         console.log('end');
-                                        resolve('TIME UP');
+                                        resolve('WINNER');
                                         //reject('Player Died');
                                         //throw "HTTP Error";
                                     }, delay);
@@ -146,7 +155,8 @@ define(['zui'], function(zui){
                             {
                                 template: "function-runner", 
                                 templateVars:{
-                                    evalPredicate: _eval
+                                    evalPredicate: _eval,
+                                    evaluationTimeout: -1
                                 }
                         });
                         trigger.prime();
