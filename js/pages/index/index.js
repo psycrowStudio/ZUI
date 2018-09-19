@@ -9,10 +9,8 @@ define(['zui'], function(zui){
     zui.types.component.fab( { id:'footer', parentModel: testPage } );
     var dialogLayer = zui.components.dialogLayer.addToPage(testPage);
 
-    dialogLayer.triggerDialog();
-
     zui.common.DelayPromise(3000).then(function() {
-        dialogLayer.toggleOverlay();
+        //dialogLayer.toggleOverlay();
         dialogLayer.triggerDialog();
     })
 

@@ -151,9 +151,12 @@
 
 			#dialogLayer .overlay {
 				background-color: rgba(55,55,55,0.85);
-				position: relative;
+				position: absolute;
 				height: 100%;
 				width: 100%;
+				top: 0;
+				left: 0;
+				
 			}
 
 			#dialogLayer .dialogContainer {
@@ -162,7 +165,69 @@
 				width: 100%;
 			}
 
+			.zui-dialog {
+				width: 50%;
+				height: 50%;
+				margin: 100px auto 0;
+				background-color: #f00;
+				cursor:crosshair;
+			}
+			.zui-dialog > .edge {
+				background-color:#c1c1c1;
+				position: absolute;
+				top: 2px;
+				bottom:2px;
+				left:2px;
+				right: 2px;
+				cursor: initial;
+			}
 
+			.zui-dialog .titleBar {
+				padding: 8px;
+				background-color: #999;
+				cursor: move;
+				overflow: auto;
+				position: absolute;
+				top:0;
+				left: 0;
+				right: 0;
+				z-index: 5;
+			}
+			.zui-dialog .titleBar .buttons {
+				float: right;
+			}
+			.zui-dialog .footer {
+				background-color: #999;
+				position: absolute;
+				bottom:0;
+				left: 0;
+				right: 0;
+				z-index: 3;
+				padding: 8px;
+			}
+			.zui-dialog .footer .buttons {
+				float: right;
+				overflow: auto;
+			}
+
+			.zui-dialog .content {
+				position: absolute;
+				margin: 45px 0;
+				top:0;
+				left:0;
+				right:0;
+				bottom:0;
+				overflow-y: auto;
+				z-index: 2;
+				padding: 10px;
+			}
+
+			.zui-dialog .content:after {
+				content: "";
+				display: block;
+				height: 50px;
+				width: 100%;
+			}
 
 	/*.zui-component:hover	{
 				outline: 2px solid #999 !important;

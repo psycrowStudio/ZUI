@@ -9,7 +9,7 @@ define(['underscore', 'backbone',
 
                 return { 
                     defaults : {
-                        'id': settings.id !== "undefined" ? settings.id : Common.genId(),
+                        'id': settings.id || Common.genId(),
                         'title': settings && settings.title ? settings.title : 'New Page',
                         'state': 'solo',
                         'echo': false,
