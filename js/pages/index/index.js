@@ -11,7 +11,13 @@ define(['zui'], function(zui){
 
     zui.common.DelayPromise(3000).then(function() {
         //dialogLayer.toggleOverlay();
-        dialogLayer.triggerDialog();
+        var myDialog = dialogLayer.triggerDialog();
+
+        myDialog.then(function(resolve){
+            console.log('resolved', resolve);
+        }).catch(function(error){
+            console.log('rejected', error);
+        });
     })
 
 

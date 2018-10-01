@@ -20,7 +20,7 @@ define(['underscore', 'backbone',
                     },
         
                     initialize : function(){   
-                        _inform(this, "zui-page-created");
+                        _inform(this, "zui-component-created");
                         settings = typeof settings === 'undefined' ? {} : settings;
                         this.view = new (Backbone.View.extend({
                             model: this,
@@ -74,7 +74,6 @@ define(['underscore', 'backbone',
 
                                 return this;
                             },
-                            attributes: typeof settings.viewAttributes === 'object' ? this.set(settings.viewAttributes) : '',
                             initialize: function() {
                                 //this.listenTo(this.model, 'all', this.onComponentEvent)
                                 this.listenTo(this.model, "change", function(model, options){
@@ -162,6 +161,7 @@ define(['underscore', 'backbone',
                         //domSections { 'name' : 'selector' }
                         Logger.log('Component Created', { tags: 'create' });
                     },
+                    attributes: typeof settings.viewAttributes === 'object' ? settings.viewAttributes : {},
                     
                     //model instance properties and methods 
                     parentModel : typeof settings.parentModel !== "undefined" ? settings.parentModel : null,      
