@@ -192,6 +192,12 @@
 				left: 0;
 				right: 0;
 				z-index: 5;
+				-webkit-touch-callout: none; /* iOS Safari */
+				-webkit-user-select: none; /* Safari */
+				-khtml-user-select: none; /* Konqueror HTML */
+				-moz-user-select: none; /* Firefox */
+				-ms-user-select: none; /* Internet Explorer/Edge */
+				user-select: none; /* Non-prefixed version, currntly */
 			}
 			.zui-dialog .titleBar .buttons {
 				float: right;
@@ -228,7 +234,12 @@
 				height: 50px;
 				width: 100%;
 			}
+			
 
+			.zui-dialog.zui-drag {
+				position: absolute;
+				margin: 0;
+			}
 	/*.zui-component:hover	{
 				outline: 2px solid #999 !important;
                         // if(_action && typeof _action === 'function'){

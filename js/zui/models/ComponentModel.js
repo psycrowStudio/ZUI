@@ -325,7 +325,7 @@ define(['underscore', 'backbone',
 
                 messageDefaults: {
                     "zui-component-created": {
-                        message: "Trigger Created",
+                        message: "Component Created",
                         logLevel: 1,
                         tags: ["zui-create"]
                     }
@@ -343,7 +343,7 @@ define(['underscore', 'backbone',
             };
             var logSettings = {
                 message: message ? message :  _prius.messageDefaults.hasOwnProperty(event) ? _prius.messageDefaults[event].message : '--',
-                tags: _prius.messageDefaults.hasOwnProperty(event) && _prius.messageDefaults[event].tags ? ["ZUI", "zui-trigger"].concat(_prius.messageDefaults[event].tags) : ["ZUI", "zui-trigger"],
+                tags: _prius.messageDefaults.hasOwnProperty(event) && _prius.messageDefaults[event].tags ? ["ZUI", "zui-component"].concat(_prius.messageDefaults[event].tags) : ["ZUI", "zui-component"],
                 eventName: callee,
                 obj: eventObject,
                 logLevel: _prius.messageDefaults.hasOwnProperty(event) && _prius.messageDefaults[event].logLevel 

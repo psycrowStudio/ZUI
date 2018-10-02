@@ -1,20 +1,110 @@
 define(['underscore', 'backbone',
     'zuiRoot/common',
     'zuiRoot/logger', 'zuiRoot/types'], function(_, Backbone, Common, Logger, Types){
-    
-        function _generateTemplate(){
-            return '<div class="edge">\
-            <div class="titleBar"><span class="title"> <%= get("dialogTitle") %> </span>\
-            <span class="buttons">\
-                <button class="dismissPanel" title="Escape">X</button></div>\
-            </span>\
-            <div class="content"> <%= get("dialogContent") %> </div>\
-            <div class="footer"><span class="buttons">\
-                    <button class="dismissPanel" title="Escape">Cancel</button>\
-                    <button class="confirmPanel" title="Continue">Accept</button>\
-                </span>\
-            </div>\
-            </div>';
+        var _builtinTemplates = {
+            confirm: function(settings){
+                
+                return '<div class="edge zui-dialog-confirm">\
+                    <div class="titleBar"><span class="title">Confimation</span><span class="buttons"></span></div>\
+                    <div class="content"> <p>'+( settings.query || 'Do you want to continue?' ) + '</p></div>\
+                    <div class="footer"><span class="buttons">\
+                            <button class="confirmPanel">' + (settings.buttonLabels[0] || 'Yes' ) + '</button>\
+                            <button class="dismissPanel">' + (settings.buttonLabels[1] || 'No' ) + '</button>\
+                        </span>\
+                    </div>\
+                </div>';
+            }
+        };
+
+        function _generateTemplate(settings){
+            var template;
+            switch(settings.type){
+                case 'confirm':
+                    template = _builtinTemplates['confirm'](settings.typeSettings);
+                break;
+                default:
+                    template = '<div class="edge">\
+                        <div class="titleBar"><span class="title"> <%= get("dialogTitle") %> </span>\
+                        <span class="buttons">\
+                            <button class="dismissPanel" title="Escape">X</button>\
+                        </span>\</div>\
+                        <div class="content"> <%= get("dialogContent") %> </div>\
+                        <div class="footer"><span class="buttons">\
+                                <button class="dismissPanel" title="Escape">Cancel</button>\
+                                <button class="confirmPanel" title="Continue">Accept</button>\
+                            </span>\
+                        </div>\
+                    </div>';
+            }
+            
+            return template
+        }
+
+        function _move(x,y) {
+            var rawX =  x;
+            rawX = rawX < 0 ? 0 : rawX;
+            rawX = rawX > window.innerWidth - this.view.el.offsetWidth ? window.innerWidth - this.view.el.offsetWidth : rawX;
+
+
+            var rawY = y;
+            rawY = rawY < 0 ? 0 : rawY;
+            rawY = rawY > window.innerHeight - this.view.el.offsetHeight ? window.innerHeight - this.view.el.offsetHeight : rawY;
+
+            this.view.el.style.left = rawX + "px";
+            this.view.el.style.top  = rawY + "px";
+        }
+
+        function _mouseMoveHandler(e) {
+            e = e || window.event;
+        
+            if(!this.get('isDragging')){ return true };
+        
+            console.log('dragging!');
+
+            var offsetX = this.get('offsetX');
+            var offsetY = this.get('offsetY');
+
+            var x = e.clientX; //_mouseX(e);
+            var y = e.clientY;//_mouseY(e);
+            if (x != offsetX || y != offsetY) {
+                _move.call(this, x - offsetX, y - offsetY);
+                offsetX = x;
+                offsetY = y;
+            }
+            return false;
+        };
+
+        function _startDrag(e) {
+            e = e || window.event;
+      
+            var rect = this.view.el.getBoundingClientRect();
+            console.log('starting drag...', rect);
+            
+            this.set('offsetX', e.clientX - rect.left);
+            this.set('offsetY', e.clientY - rect.top);
+            this.set('isDragging', true);
+            var _scope = this;
+
+            this.parentModel.view.el.onmousemove = function(ev){
+                _mouseMoveHandler.call(_scope, ev);
+                return false;
+            };
+
+            this.parentModel.view.el.onmouseup = function(ev){
+                _stopDrag.call(_scope, ev);
+                return false;
+            };
+            
+            return false;
+        }
+
+        var _stopDrag = function () {
+            this.set('isDragging', false);      
+      
+            console.log('stopping drag...');
+            this.parentModel.view.el.onmousemove = null;
+            this.parentModel.view.el.onmouseup = null;
+            return false;
         }
 
         //floating panel
@@ -22,8 +112,8 @@ define(['underscore', 'backbone',
             var panel = Types.component.fab({  
                 parentModel: this,
                 parentElementSelector: '.dialogContainer',
-                className:' zui-panel zui-dialog',
-                template: _generateTemplate(),
+                className:' zui-panel zui-dialog zui-drag',
+                template: _generateTemplate(settings),
                 events: {
                     'click .dismissPanel': function(e) {
                         console.log('Dismiss Panel', e, this.model);
@@ -42,6 +132,21 @@ define(['underscore', 'backbone',
 
                         this.model.parentModel.resolveDialog(this.model.get('id'), settings);
                         return false;
+                    },
+                    'mousedown .titleBar' : function(e) {
+                        console.log('TitleBar held', this);
+                        if(this.el.classList.contains('zui-drag')){
+                            _startDrag.call(this.model,e);
+                        }
+                    },
+                    'mousedown': function(e){
+                        console.log('activating dialog:', this.model.get('id'));
+                    },
+                    'click': function(e) {
+                        if(e.target.classList.contains('zui-panel')){
+                            console.log('Resize Panel');
+                        }
+                        
                     }
                 }
             });
@@ -49,6 +154,7 @@ define(['underscore', 'backbone',
             //TODO need a more modular way to do this.
             panel.set('dialogTitle', settings.title);
             panel.set('dialogContent', settings.content);
+        
 
             // for(var v in settings.viewAttributes) {
             //     if(settings.viewAttributes.hasOwnProperty(v)) {
@@ -69,7 +175,18 @@ define(['underscore', 'backbone',
                     className:'zui-hidden',
                     template:'<div class="overlay">\
                     <div class="dialogContainer"></div>\
-                    </div>'
+                    </div>',
+                    events:{
+                        // 'mouseup' : function(e) {
+                        //     _stopDrag.call(this.model,e);
+                        // },
+                        'click' : function(e) {
+                            if(e.target.classList.contains('dialogContainer')){
+                                console.log('deactivating non-modal dialogs...');
+                            }
+                        },
+
+                    }
                 });
 
                 prius.triggerDialog = this.triggerDialog.bind(prius);
@@ -82,13 +199,18 @@ define(['underscore', 'backbone',
             // COMMON BOUND TO INSTANCE METHODS
             triggerDialog: function(settings){ 
                 this.toggleOverlay(true);
-                var settings = {
-                    title: 'Blank Dialog',
-                    content: 'some test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content here'
-                }
                 var panel = _createPanel.call(this, settings);
                 _activeDialogs.push(panel);
                 this.view.render();
+                
+
+                //APPLY MODIFIERS:
+                panel.set('isDragging', false);
+                panel.set('offsetX', 0);
+                panel.set('offsetY', 0);
+                panel.view.el.style.left = (window.innerWidth /2 - panel.view.el.offsetWidth /2) + 'px';
+                panel.view.el.style.top = (window.innerHeight /2 - panel.view.el.offsetHeight /2) + 'px';
+
                 
                 //TODO start here
                 var generator =  function(handle){
