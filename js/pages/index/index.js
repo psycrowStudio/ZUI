@@ -44,6 +44,26 @@ define(['zui'], function(zui){
             click: function(e) {
                 console.log(this);
                 this.model.toggleViewState();
+
+                var settings = {
+                    //title: 'Blank Dialog',
+                    //content: 'some test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content here',
+                    type:'confirm',
+                    // windowSettings: {
+                        //state
+                        //modifiers
+                    // },
+                    typeSettings: {
+                        query: "Would you care for some lemonade?",
+                        buttonLabels: ['Accept', 'Cancel']
+                    }
+                };
+                var confirmation = dialogLayer.triggerDialog(settings).then(function(resolve){
+                    console.log('resolved', resolve);
+                }).catch(function(error){
+                    console.log('rejected', error);
+                });
+
                 return false;
             }
         }

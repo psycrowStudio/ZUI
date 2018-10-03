@@ -156,7 +156,6 @@
 				width: 100%;
 				top: 0;
 				left: 0;
-				
 			}
 
 			#dialogLayer .dialogContainer {
@@ -169,9 +168,14 @@
 				width: 50%;
 				height: 50%;
 				margin: 100px auto 0;
-				background-color: #f00;
+				/* background-color: #333; */
 				cursor:crosshair;
 			}
+
+			.zui-dialog.active{
+				background-color: #f00;
+			}
+
 			.zui-dialog > .edge {
 				background-color:#c1c1c1;
 				position: absolute;
@@ -240,6 +244,84 @@
 				position: absolute;
 				margin: 0;
 			}
+
+			.zui-dialog .resize-N {
+				position: absolute;
+				cursor: ns-resize;
+				top: 0;
+				left: 10%;
+				right: 10%;
+				height: 10%;
+			}
+			.zui-dialog .resize-NW {
+				position: absolute;
+				cursor: nw-resize;
+				top: 0;
+				left: 0;
+				width: 10%;
+				height: 10%;
+			}
+
+			.zui-dialog .resize-NE {
+				position: absolute;
+				cursor: ne-resize;
+				top: 0;
+				right: 0;
+				width: 10%;
+				height: 10%;
+			}			
+			
+			.zui-dialog .resize-S {
+				position: absolute;
+				cursor: ns-resize;
+				bottom: 0;
+				left: 10%;
+				right: 10%;
+				height: 10%;
+			}			
+			
+			.zui-dialog .resize-SE {
+				position: absolute;
+				cursor: se-resize;
+				bottom: 0;
+				right: 0;
+				width: 10%;
+				height: 10%;
+			}			
+			
+			.zui-dialog .resize-SW {
+				position: absolute;
+				cursor: sw-resize;
+				bottom: 0;
+				left: 0;
+				width: 10%;
+				height: 10%;
+			}			
+			
+			.zui-dialog .resize-E {
+				position: absolute;
+				cursor: ew-resize;
+				right: 0;
+				top: 10%;
+				bottom: 10%;
+				width: 10%;
+			}			
+			
+			.zui-dialog .resize-W {
+				position: absolute;
+				cursor: ew-resize;
+				left: 0;
+				top: 10%;
+				bottom: 10%;
+				width: 10%;
+			}
+
+
+
+
+
+
+
 	/*.zui-component:hover	{
 				outline: 2px solid #999 !important;
                         // if(_action && typeof _action === 'function'){
