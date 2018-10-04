@@ -178,10 +178,17 @@ define(['underscore', 'backbone',
                             {
                                 Logger.log('adding sub-component', { tags: 'ZUI' });
                                 return this.childComponents.add(component);
-                            }
-                            else
+                            }      
+                        }
+                    },
+
+                    removeComponent: function(component){
+                        if(this.childComponents )
+                        {
+                            if(this.childComponents.get(component))
                             {
-                                Logger.log('component already exists', { tags: 'warn' });
+                                Logger.log('removing sub-component', { tags: 'ZUI' });
+                                return this.childComponents.remove(component);
                             }       
                         }
                     },

@@ -8,33 +8,8 @@ define(['zui'], function(zui){
     zui.types.component.fab( { id:'content', parentModel: testPage } );
     zui.types.component.fab( { id:'footer', parentModel: testPage } );
     var dialogLayer = zui.components.dialogLayer.addToPage(testPage);
-
-    zui.common.DelayPromise(3000).then(function() {
-        //dialogLayer.toggleOverlay();
-
-        var settings = {
-            //title: 'Blank Dialog',
-            //content: 'some test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content here',
-            type:'confirm',
-            // windowSettings: {
-                //state
-                //modifiers
-            // },
-            typeSettings: {
-                query: "Would you care for some lemonade?",
-                buttonLabels: ['Accept', 'Cancel']
-            }
-        };
-        var confirmation = dialogLayer.triggerDialog(settings).then(function(resolve){
-            console.log('resolved', resolve);
-        }).catch(function(error){
-            console.log('rejected', error);
-        });
-    })
-
-
-//         //zui.componentFactory.instantiate( 'horizontalMenu', { id:'mainMenu', parentModel: testPage.components.get('header'),  parentElementSelector: '#header'} );
-//         //TODO static components (ones that dont take events, or change)
+    
+    //zui.componentFactory.instantiate( 'horizontalMenu', { id:'mainMenu', parentModel: testPage.components.get('header'),  parentElementSelector: '#header'} );
     zui.types.component.fab({ 
         id:'box_01', 
         parentModel: testPage.components.get('content'), 
@@ -46,13 +21,7 @@ define(['zui'], function(zui){
                 this.model.toggleViewState();
 
                 var settings = {
-                    //title: 'Blank Dialog',
-                    //content: 'some test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content heresome test content here',
                     type:'confirm',
-                    // windowSettings: {
-                        //state
-                        //modifiers
-                    // },
                     typeSettings: {
                         query: "Would you care for some lemonade?",
                         buttonLabels: ['Accept', 'Cancel']
@@ -78,6 +47,39 @@ define(['zui'], function(zui){
             click: function(e) {
                 console.log(this);
                 this.model.toggleViewState();
+                
+                var settings = {
+                    type:'mc',
+                    typeSettings: {
+                        query: "Pick a number?",
+                        buttons: [{
+                            label: 'One',
+                            value: '1'
+                        },
+                        {
+                            label: 'Two',
+                            value: '2'
+                        },
+                        {
+                            label: 'Three',
+                            value: '3'
+                        },
+                        {
+                            label: 'Four',
+                            value: '4'
+                        },{
+                            label: 'Five',
+                            value: '5'
+                        }]
+                    }
+                };
+
+                var confirmation = dialogLayer.triggerDialog(settings).then(function(resolve){
+                    console.log('resolved', resolve);
+                }).catch(function(error){
+                    console.log('rejected', error);
+                });
+
                 return false;
             }
         }
@@ -92,6 +94,21 @@ define(['zui'], function(zui){
             click: function(e) {
                 console.log(this);
                 this.model.toggleViewState();
+                var settings = {
+                    type:'inputField',
+                    typeSettings: {
+                        query: 'What is your name?',
+                        subtype: 'text',
+                        buttonLabels: ['Make introduction', 'Nevermind']
+                    },
+                    
+                };
+
+                var confirmation = dialogLayer.triggerDialog(settings).then(function(resolve){
+                    console.log('resolved', resolve);
+                }).catch(function(error){
+                    console.log('rejected', error);
+                });
                 return false;
             }
         }

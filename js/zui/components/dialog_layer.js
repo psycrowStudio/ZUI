@@ -3,17 +3,66 @@ define(['underscore', 'backbone',
     'zuiRoot/logger', 'zuiRoot/types'], function(_, Backbone, Common, Logger, Types){
         var _builtinTemplates = {
             confirm: function(settings){
+                var _confirmLabel = settings.buttonLabels[0] || 'Confirm';
+                var _cancelLabel = settings.buttonLabels[1] || 'Cancel';
                 
                 return '<div class="edge zui-dialog-confirm">\
                     <div class="titleBar"><span class="title">Confimation</span><span class="buttons"></span></div>\
                     <div class="content"> <p>'+( settings.query || 'Do you want to continue?' ) + '</p></div>\
                     <div class="footer"><span class="buttons">\
-                            <button class="confirmPanel">' + (settings.buttonLabels[0] || 'Yes' ) + '</button>\
-                            <button class="dismissPanel">' + (settings.buttonLabels[1] || 'No' ) + '</button>\
+                            <button class="confirmPanel">' + _confirmLabel + '</button>\
+                            <button class="dismissPanel">' + _cancelLabel + '</button>\
                         </span>\
                     </div>\
                 </div>';
+            },
+            inputField: function(settings){
+                var _injectField = function(buttons){
+                    return '<input class="dialog-input" type="'+(settings.subtype || 'text') +'" value="'+ (settings.defaultValue || '') +'" placeholder="' + (settings.placeholder || 'Text here') + '" title="'+ (settings.hoverText || '') +'" autofocus="true"/>';
+                };
+
+                var _confirmLabel = settings.buttonLabels[0] || 'Confirm';
+                var _cancelLabel = settings.buttonLabels[1] || 'Cancel';
+                //TODO validation from regex pattern
+                // TODO min / max length 
+                // validate call
+                
+                return '<div class="edge zui-dialog-confirm">\
+                    <div class="titleBar"><span class="title">Input Field</span><span class="buttons"></span></div>\
+                    <div class="content"> <h3>'+( settings.query || 'Do you want to continue?' ) + '</h3>\
+                        <div class="field-box">'+ _injectField(settings) +'</div>\
+                    </div>\
+                    <div class="footer"><span class="buttons">\
+                            <button class="panelResult">' +  _confirmLabel + '</button>\
+                            ' + (!settings.buttonLabels[1] ? '' : '<button class="dismissPanel">' +  _cancelLabel + '</button>') +'\
+                        </span>\
+                    </div>\
+                </div>';
+            },
+            mc: function(settings){
+                
+                var _injectButtons = function(buttons){
+                    var buttonHTML = '';
+                    if(buttons && Array.isArray(buttons)){
+                        buttons.forEach(function(btn, i){
+                            buttonHTML += '<button id="opt_'+i+'" class="mc-option panelResult" data-value="'+ btn.value +'">' + btn.label +'</button>';
+                        });
+                    }
+
+                    return buttonHTML;
+                };
+
+                return '<div class="edge zui-dialog-confirm">\
+                    <div class="titleBar"><span class="title">Multiple Choice</span><span class="buttons"><button class="dismissPanel" title="Escape">X</button></span></div>\
+                    <div class="content"> <h3>'+( settings.query || 'Do you want to continue?' ) + '</h3>\
+                        <div class="mc-box">' + _injectButtons(settings.buttons) + '</div>\
+                    </div>\
+                    <div class="footer"><span class="buttons"></div>\
+                </div>';
             }
+            // text
+            // form
+            // custom / blank
         };
 
         function _generateTemplate(settings){
@@ -24,20 +73,25 @@ define(['underscore', 'backbone',
                                  <span draggable="false" class="resize-S"></span>\
                                  <span draggable="false" class="resize-SW"></span>\
                                  <span draggable="false" class="resize-W"></span>\
-                                 <span draggable="false" class="resize-NW"></span>\
-                                 ';
+                                 <span draggable="false" class="resize-NW"></span>';
             var template;
             switch(settings.type){
                 case 'confirm':
                     template = _builtinTemplates['confirm'](settings.typeSettings);
                 break;
+                case 'mc':
+                    template = _builtinTemplates['mc'](settings.typeSettings);
+                break;
+                case 'inputField':
+                    template = _builtinTemplates['inputField'](settings.typeSettings);
+                break;
                 default:
                     template = '<div class="edge">\
-                        <div class="titleBar"><span class="title"> <%= get("dialogTitle") %> </span>\
+                        <div class="titleBar"><span class="title"></span>\
                         <span class="buttons">\
                             <button class="dismissPanel" title="Escape">X</button>\
                         </span>\</div>\
-                        <div class="content"> <%= get("dialogContent") %> </div>\
+                        <div class="content"></div>\
                         <div class="footer"><span class="buttons">\
                                 <button class="dismissPanel" title="Escape">Cancel</button>\
                                 <button class="confirmPanel" title="Continue">Accept</button>\
@@ -46,7 +100,7 @@ define(['underscore', 'backbone',
                     </div>';
             }
             
-            return panelHitBoxes + template
+            return settings.resizable === false ? template : panelHitBoxes + template;
         }
 
         function _move(x,y) {
@@ -212,6 +266,27 @@ define(['underscore', 'backbone',
             return false;
         };
 
+        var _panelEval = function(event){
+            var settings = { isResolved: false };
+            switch(this.get('dialogType')){
+                case 'mc':
+                settings.isResolved = true;    
+                settings.data = event.target.getAttribute('data-value');
+                break;
+                case 'inputField':
+                    settings.isResolved = true;    
+                    inputField = this.view.el.querySelector('.dialog-input');
+                    settings.data = inputField.value;
+                    if(!settings.data){
+                         //TODO add custom eval & messaging
+                        settings.abort = true;
+                    }
+                break;
+            }
+
+            return settings;
+        };
+
         //floating panel
         var _createPanel = function(settings) {
             var panel = Types.component.fab({  
@@ -220,6 +295,37 @@ define(['underscore', 'backbone',
                 className:' zui-panel zui-dialog zui-drag',
                 template: _generateTemplate(settings),
                 events: {
+                    // 'zui-dialog-resolution': function(e) {
+
+                    // },
+                    // 'zui-dialog-rejection': function(e) {
+                        
+                    // },
+                    'keypress input': function(e){
+                        if(e.keyCode === 13)
+                        {
+                            console.log('Eval Panel', e, this.model);
+                            var settings = _panelEval.call(this.model, e) || { isResolved: false };
+                            
+                            if(!settings.abort){
+                                this.model.parentModel.resolveDialog(this.model.get('id'), settings);
+                            }
+                            
+                            return false;
+                        }
+                    },
+
+                    'click .panelResult': function(e) {
+                        console.log('Eval Panel', e, this.model);
+                        var settings = _panelEval.call(this.model, e) || { isResolved: false };
+                        
+                        // have a check if continue (ex failed input validation)
+                        if(!settings.abort){
+                            this.model.parentModel.resolveDialog(this.model.get('id'), settings);
+                        }
+                        
+                        return false;
+                    },
                     'click .dismissPanel': function(e) {
                         console.log('Dismiss Panel', e, this.model);
                         var settings = {
@@ -239,13 +345,11 @@ define(['underscore', 'backbone',
                         return false;
                     },
                     'mousedown .titleBar' : function(e) {
-                        console.log('TitleBar held', this);
                         if(this.el.classList.contains('zui-drag')){
                             _startDrag.call(this.model,e);
                         }
                     },
                     'mousedown': function(e){
-                        console.log('activating dialog:', this.model.get('id'));
                         this.model.parentModel.activateDialog(this.model.get('id'));
                     },
                     'mousedown .resize-N': function(e) {
@@ -276,10 +380,10 @@ define(['underscore', 'backbone',
             });
 
             //TODO need a more modular way to do this.
+            panel.set('dialogType', settings.type);
             panel.set('dialogTitle', settings.title);
             panel.set('dialogContent', settings.content);
-        
-
+    
             // for(var v in settings.viewAttributes) {
             //     if(settings.viewAttributes.hasOwnProperty(v)) {
             //         panel.set(v, settings.viewAttributes[v]);
@@ -352,6 +456,7 @@ define(['underscore', 'backbone',
                 var promise = Common.QuerablePromise.call(panel, generator);
                 return promise;
             },
+            //trigger dialog series
             toggleOverlay: function(state){ 
                 if(state === true){
                     this.view.el.classList.remove('zui-hidden');
@@ -372,8 +477,6 @@ define(['underscore', 'backbone',
                 }
                 else if (activeInstance && !settings.isResolved){
                     activeInstance.handle.reject(settings)
-                } else {
-                    activeInstance.handle.reject('Canceled');
                 }
 
                 if(activeInstance && activeInstance.view.el && activeInstance.view.el.parentNode){
@@ -381,8 +484,7 @@ define(['underscore', 'backbone',
                 }
 
                 if(activeInstance){
-                   // need a better way to clean up these, probably a method on the layer model
-                    activeInstance.parentModel.childComponents.remove(activeInstance);
+                    activeInstance.parentModel.removeComponent(activeInstance);
                     _activeDialogs.splice(_activeDialogs.indexOf(activeInstance), 1);
                 }
                 
@@ -401,9 +503,10 @@ define(['underscore', 'backbone',
                     _active = null;
                 }
                 else {
-                    console.log('Activating:', id);
+                    
                     var next = _activeDialogs.find(function(item){ return item.get('id') === id; });
-                    if(next){
+                    if(next && next != _active){
+                        console.log('Activating:', id);
                         if(_active)
                         {
                             _active.view.el.classList.remove('active');
