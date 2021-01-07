@@ -14,4 +14,5 @@ define(['zuiRoot/common',
             types: types,
             components: components
         }
-    });
+    }
+);

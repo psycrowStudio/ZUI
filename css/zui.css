@@ -1,0 +1,301 @@
+body {
+    overflow: hidden;
+    margin: 0;
+    font-size: 14px;
+    font-family: "Helvetica Neue", Helvetica;
+}
+
+[id *= "box_"] {
+    background-color: #f1f1f1;
+    margin: 15px;
+    padding: 24px;
+}
+
+.zui-component {
+    position: relative;
+    /* box method, font, color, etc*/
+}
+
+.zui-component.status-error	{
+    border: 1px dotted red !important; 
+}
+
+.zui-component.status-error::before {
+    content: '\f06a';
+    font-family: 'FontAwesome';
+    color:red;
+    position: absolute;
+    z-index: 100;
+    top:5px;
+    left:5px;
+}
+
+.zui-component.status-active	{
+    border: 2px solid #333 !important; 
+}
+
+.zui-component.status-inactive	{
+    border: 1px solid #666 !important; 
+    color: #666;
+}
+
+.zui-component.status-disabled	{
+    border: 1px solid #999 !important; 
+    color: #999 !important;
+    pointer-events: none !important;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.zui-component.status-disabled *	{
+    user-select: inherit !important;
+}
+
+.zui-component.status-disabled::before {
+    content: '\f056 ';
+    font-family: 'FontAwesome';
+    color:#666;
+    position: absolute;
+    z-index: 100;
+    top:5px;
+    left:5px;
+}
+
+.zui-component.status-loading	{
+    border:  1px solid #AAA !important; 
+    color: #AAA;
+}
+
+.zui-component.status-loading::before {
+    content: '\f013';
+    font-family: 'FontAwesome';
+    color: rgba(51,51,51 0.6);
+    position: absolute;
+    z-index: 100;
+    top:5px;
+    left:5px;
+    -webkit-animation: infinite-spinning 1.5s infinite linear; /* Safari 4+ */
+    -moz-animation:    infinite-spinning 1.5s infinite linear; /* Fx 5+ */
+    -o-animation:      infinite-spinning 1.5s infinite linear; /* Opera 12+ */
+    animation:         infinite-spinning 1.5s infinite linear; /* IE 10+, Fx 29+ */
+}
+
+/* Partials */
+.zui-screen {
+    position: absolute;
+    display: table;
+    z-index: 99;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(0,0,0,0.7);
+    pointer-events: none;
+}
+
+.zui-message {
+    position: relative;
+    display: table-cell;
+    vertical-align: middle;
+}
+
+/* Modifiers */
+.zui-invis {
+    visibility: hidden !important;
+}
+
+.zui-hidden {
+    visibility: hidden !important;
+    z-index: -999999 !important;
+    position: fixed !important;
+}
+
+.zui-noDisplay {
+    display: none !important;
+}
+
+.bgClear {
+    background-color: transparent !important;
+}
+
+#dialogLayer {
+    position: fixed;
+    top:0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 9999999;
+    background-color: transparent;
+}
+
+
+#dialogLayer .overlay {
+    background-color: rgba(55,55,55,0.85);
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+}
+
+#dialogLayer .dialogContainer {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.zui-dialog {
+    width: 50%;
+    height: 50%;
+    margin: 100px auto 0;
+    /* background-color: #333; */
+    cursor:crosshair;
+}
+
+.zui-dialog.active{
+    background-color: #f00;
+}
+
+.zui-dialog > .edge {
+    background-color:#c1c1c1;
+    position: absolute;
+    top: 2px;
+    bottom:2px;
+    left:2px;
+    right: 2px;
+    cursor: initial;
+}
+
+.zui-dialog .titleBar {
+    padding: 8px;
+    background-color: #999;
+    cursor: move;
+    overflow: auto;
+    position: absolute;
+    top:0;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currntly */
+}
+.zui-dialog .titleBar .buttons {
+    float: right;
+}
+.zui-dialog .footer {
+    background-color: #999;
+    position: absolute;
+    bottom:0;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    padding: 8px;
+}
+.zui-dialog .footer .buttons {
+    float: right;
+    overflow: auto;
+}
+
+.zui-dialog .content {
+    position: absolute;
+    margin: 45px 0;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    overflow-y: auto;
+    z-index: 2;
+    padding: 10px;
+}
+
+.zui-dialog .content:after {
+    content: "";
+    display: block;
+    height: 50px;
+    width: 100%;
+}
+
+
+.zui-dialog.zui-drag {
+    position: absolute;
+    margin: 0;
+}
+
+.zui-dialog .resize-N {
+    position: absolute;
+    cursor: ns-resize;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 10%;
+}
+.zui-dialog .resize-NW {
+    position: absolute;
+    cursor: nw-resize;
+    top: 0;
+    left: 0;
+    width: 10%;
+    height: 10%;
+}
+
+.zui-dialog .resize-NE {
+    position: absolute;
+    cursor: ne-resize;
+    top: 0;
+    right: 0;
+    width: 10%;
+    height: 10%;
+}			
+
+.zui-dialog .resize-S {
+    position: absolute;
+    cursor: ns-resize;
+    bottom: 0;
+    left: 10%;
+    right: 10%;
+    height: 10%;
+}			
+
+.zui-dialog .resize-SE {
+    position: absolute;
+    cursor: se-resize;
+    bottom: 0;
+    right: 0;
+    width: 10%;
+    height: 10%;
+}			
+
+.zui-dialog .resize-SW {
+    position: absolute;
+    cursor: sw-resize;
+    bottom: 0;
+    left: 0;
+    width: 10%;
+    height: 10%;
+}			
+
+.zui-dialog .resize-E {
+    position: absolute;
+    cursor: ew-resize;
+    right: 0;
+    top: 10%;
+    bottom: 10%;
+    width: 10%;
+}			
+
+.zui-dialog .resize-W {
+    position: absolute;
+    cursor: ew-resize;
+    left: 0;
+    top: 10%;
+    bottom: 10%;
+    width: 10%;
+}

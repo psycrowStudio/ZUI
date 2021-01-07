@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>Actor Encounter Simulator</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+
+		<!-- <script src="https://npmcdn.com/react@15.3.0/dist/react.js"></script> -->
+		<!-- <script src="https://npmcdn.com/react-dom@15.3.0/dist/react-dom.js"></script> -->
+		
+
+	    <script src="./js/d3.v3.min.js"></script>
+		<script src="./js/RadarChart.js"></script>
+
+		<link rel="stylesheet" href="https://opensource.keycdn.com/fontawesome/4.6.3/font-awesome.min.css" integrity="sha384-Wrgq82RsEean5tP3NK3zWAemiNEXofJsTwTyHmNb/iL3dP/sZJ4+7sOld1uqYJtE" crossorigin="anonymous">
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		
+		<script type="text/javascript" src="js/actor.js"></script>
+		<link rel="stylesheet" type="text/css" href="css/main.css">
+
+
+	<style>
+		body {
+		  overflow: hidden;
+		  margin: 0;
+		  font-size: 14px;
+		  font-family: "Helvetica Neue", Helvetica;
+		}
+	</style>
+	</head>
+	
+	<body>
+		<section id="header"><h2>Role Generator</h2></section>
+		<section id="content">
+			<section id="actorA"> 
+				<section class="details">
+					<div class="actorName">
+						Actor A
+					</div>
+					<div class="actorOptions">
+						<span subSectionAction="Randomize"><i class="fa fa-random" aria-hidden="true"></i></span> | <span subSectionAction="Edit"><i class="fa fa-pencil" aria-hidden="true"></i></span> | <span subSectionAction="Template">TEMPLATE</span> | <span subSectionAction="Json">JSON</span> | <span subSectionAction="Schedule">SCHEDULE</span>
+					</div>
+					<div class="actorSubSectionContainer">
+						<div class="foldable expanded category">Attributes &amp; Modifiers </div>
+						<div class="actorAttributesContainer foldable content">
+							<table class="actorAttributesMatrix" cellspacing="0" cellpadding="0"> 
+								<tr>
+									<td class="total" title="You have X total attributes.">TOTAL:(<span class="base">0</span><span class="mod">+0</span>)</td>
+									<td class="attrbuteTotal mental" title="The score used to compute Mental Checks">MENTAL:(<span class="base">0</span><span class="mod">+0</span>)</td>
+									<td class="attrbuteTotal physical" title="The score used to compute Physical Checks">PHYSICAL:(<span class="base">0</span><span class="mod">+0</span>)</td>
+									<td class="attrbuteTotal social" title="The score used to compute Social Checks">SOCIAL:(<span class="base">0</span><span class="mod">+0</span>)</td>
+								</tr>
+								<tr>
+									<td class="attrbuteTotal power" title="The score used to compute Power Checks">POWER:(<span class="base">0</span><span class="mod">+0</span>)</td>
+									<td class="attrbute power mental" title="Intelligence (INT)"><span class="base">0</span><span class="mod">+0</span></td>
+									<td class="attrbute power physical" title="Strength (STR)"><span class="base">0</span><span class="mod">+0</span></td>
+									<td class="attrbute power social" title="Presence (PRE)"><span class="base">0</span><span class="mod">+0</span></td>
+								</tr>
+								<tr>
+									<td class="attrbuteTotal finesse" title="The score used to compute Finesse Checks">FINESSE:(<span class="base">0</span><span class="mod">+0</span>)</td>
+									<td class="attrbute finesse mental" title="Wits (WIT)"><span class="base">0</span><span class="mod">+0</span></td>
+									<td class="attrbute finesse physical" title="Dexterity (DEX)"><span class="base">0</span><span class="mod">+0</span></td>
+									<td class="attrbute finesse social" title="Manipulation (MAN)"><span class="base">0</span><span class="mod">+0</span></td>
+								</tr>
+								<tr>
+									<td class="attrbuteTotal resilience" title="The score used to compute Resilience Checks">RESILIENCE:(<span class="base">0</span><span class="mod">+0</span>)</td>
+									<td class="attrbute resilence mental" title="Resolve (RES)"><span class="base">0</span><span class="mod">+0</span></td>
+									<td class="attrbute resilence physical" title="Staminia (STA)"><span class="base">0</span><span class="mod">+0</span></td>
+									<td class="attrbute resilence social" title="Composure (COM)"><span class="base">0</span><span class="mod">+0</span></td>
+								</tr>
+							</table>
+							<div class="txAlignC"><a href="#">View All Modifiers</a></div>
+						</div>
+						<div class="foldable expanded category">Demographic <a href="#"><i class="fa fa-pencil" aria-hidden="true"></i></a></div>
+						<div class="foldable content">
+							<div class="actorDemographicContainer">
+								CONTENT
+							</div>	
+						</div>
+
+						<div class="foldable collapsed category">Personality <a href="#"><i class="fa fa-pencil" aria-hidden="true"></i></a></div>
+						<div class="foldable content">
+							<div class="actorDemographicContainer">
+								<div id="body">
+								  <div id="chart"></div>
+							    </div>
+							</div>	
+						</div>
+						<div class="foldable collapsed category">Log Book <a href="#"><i class="fa fa-pencil" aria-hidden="true"></i></a></div>
+						<div class="foldable collapsed category">Resources <a href="#"><i class="fa fa-pencil" aria-hidden="true"></i></a> </div>
+					</div>
+				</section>
+
+				<section id="actions"> 
+					<ul id="actionsList">
+						<li>Scan</li>
+						<li>Approach</li>
+						<li>Greet</li>
+						<li>Converse</li>
+						<li>Interact</li>
+						<li>Quests</li>
+						<li>Employment</li>
+					</ul>
+				</section>
+
+
+
+			</section>
+			<section id="actorB"> 
+				<section class="details">
+					<div class="actorName">
+						Actor B
+						<span class="actorId"></span>
+					</div>
+					<div class="actorOptions">
+						<span subSectionAction="Randomize">RANDOMIZE</span> | <span subSectionAction="Edit">EDIT</span> | <span subSectionAction="Template">TEMPLATE</span> | <span subSectionAction="Json">JSON</span> | <span subSectionAction="Schedule">SCHEDULE</span>
+					</div>
+					<div class="actorSubSectionContainer">
+						<div class="foldable collapsed category">Attributes &amp; Modifiers</div>
+						<div class="actorAttributesContainer">
+							<table class="actorAttributesMatrix" cellspacing="0" cellpadding="0"> 
+								<tr>
+									<td class="total" title="You have X total attributes.">TOTAL:(<span class="base">0</span><span class="mod">+0</span>)</td>
+									<td class="attrbuteTotal mental">MENTAL:(<span class="base">0</span><span class="mod">+0</span>)</td>
+									<td class="attrbuteTotal physical">PHYSICAL:(<span class="base">0</span><span class="mod">+0</span>)</td>
+									<td class="attrbuteTotal social">SOCIAL:(<span class="base">0</span><span class="mod">+0</span>)</td>
+								</tr>
+								<tr>
+									<td class="attrbuteTotal power">POWER:(<span class="base">0</span><span class="mod">+0</span>)</td>
+									<td class="attrbute power mental"><span class="base">0</span><span class="mod">+0</span></td>
+									<td class="attrbute power physical"><span class="base">0</span><span class="mod">+0</span></td>
+									<td class="attrbute power social"><span class="base">0</span><span class="mod">+0</span></td>
+								</tr>
+								<tr>
+									<td class="attrbuteTotal finesse">FINESSE:(<span class="base">0</span><span class="mod">+0</span>)</td>
+									<td class="attrbute finesse mental"><span class="base">0</span><span class="mod">+0</span></td>
+									<td class="attrbute finesse physical"><span class="base">0</span><span class="mod">+0</span></td>
+									<td class="attrbute finesse social"><span class="base">0</span><span class="mod">+0</span></td>
+								</tr>
+								<tr>
+									<td class="attrbuteTotal resilience">RESILIENCE:(<span class="base">0</span><span class="mod">+0</span>)</td>
+									<td class="attrbute resilence mental"><span class="base">0</span><span class="mod">+0</span></td>
+									<td class="attrbute resilence physical"><span class="base">0</span><span class="mod">+0</span></td>
+									<td class="attrbute resilence social"><span class="base">0</span><span class="mod">+0</span></td>
+								</tr>
+							</table>
+							<div class="txAlignC"><a href="#">View All Modifiers</a></div>
+						</div>
+						<div class="foldable collapsed category">Demographic</div>
+						<!-- <div class="foldable content">Demographic</div> -->
+						
+						<div class="foldable collapsed category">Personality</div>
+						<div class="foldable collapsed category">Log Book</div>
+						<div class="foldable collapsed category">Resources</div>
+					</div>
+				</section>
+			</section>
+		</section>
+		<section id="lowerBar" class="collapsed">
+			
+			<section id="lowerBarContent">
+				<a id="collapseLowerBar" href="#">COLLAPSE</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a id="clearOutputlog" href="#" onclick="ClearOutputLog();">CLEAR</a>
+				<section id="outputlog">
+				</section>
+			</section>
+	
+		</section>
+	</body>
+
+
+	<script src="js/page.js"></script>
+	<script type="text/javascript" src="./js/data.js"></script>
+</html>
