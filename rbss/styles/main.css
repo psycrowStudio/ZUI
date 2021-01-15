@@ -13,6 +13,7 @@ html, body {
 	position: absolute;
 	top:0;
 	left: 0;
+	background-color: #c1c1c1;
 }
 
 div, section, nav, figure, textarea
@@ -21,16 +22,74 @@ div, section, nav, figure, textarea
 	margin: 0;
 }
 
-#header
+#footer
 {
-	height: 5%;
-	min-height: 35px;
+    position: absolute;
+    height: 35px;
+    padding: 8px 20px 0;
+    border-top: 1px solid crimson;
+    background-color: #666;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
+/* RBSS - Component Styles */
+
+.context-bar {
+	height: 40px;
+	padding: 4px 20px;
+	border-top: 1px solid crimson;
+	border-bottom: 1px  solid crimson;
+	background-color: #999;
+}
+
+.scrolling_box {
+	padding: 4px 20px;
+    border-bottom: 1px solid #333;
+    background-color: #c1c1c1;
+    position: absolute;
+    bottom: 0;
+    top: 40px;
+    right: 0;
+    left: 0;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+#rbss_tools {
+	text-align: center;
+}
+
+.tooltile {
+	display: inline-block;
+	font-size: 3rem;
+	border: 1px solid crimson;
+	min-height: 320px;
+	min-width: 150px;
+	background-color: #999;
+	text-align: center;
+	margin: 20px 10px;
+	padding:20px;
+
+}
+
+.tooltile:hover {
+	background-color: #666;
+	outline: 4px crimson solid;
+	cursor: pointer;
+	color: crimson;
+
+}
+
+/*  -- styles to clean up below -- */
 
 #content
 {
-	width: 100%;
-	height: 90%;
+	position: absolute;
+	top:35px;
+	left: 0;
+	right: 0;
+	bottom: 35px;
 	overflow: hidden;
 	z-index: 0;
 }
@@ -301,19 +360,4 @@ div, section, nav, figure, textarea
 .foldable.expanded + .foldable.content
 {
 	display: block;
-}
-
-/* CSS shorthand */
-.txAlignC
-{
-	text-align: center;
-}
-
-@keyframes infinite-spinning {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }

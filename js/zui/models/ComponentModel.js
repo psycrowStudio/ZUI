@@ -55,7 +55,11 @@ define(['underscore', 'backbone',
                                 });
 
                                 this.el.innerHTML = this.template(this.model);
-    
+
+                                if(this.model.afterTemplateGenerate) {
+                                    this.model.afterTemplateGenerate(this.el);
+                                }
+                            
                                 if(!this.el.parentElement){
                                     var parent = document.querySelector(this.model.get('parentElementSelector'));
                                     if(parent){
@@ -165,6 +169,7 @@ define(['underscore', 'backbone',
                     
                     //model instance properties and methods 
                     parentModel : typeof settings.parentModel !== "undefined" ? settings.parentModel : null,      
+                    afterTemplateGenerate : typeof settings.afterTemplateGenerate === "function" ? settings.afterTemplateGenerate : null,
                     childComponents : new Backbone.Collection(null, {
                         model : _prius
                         //TODO make this a sorted collection that forces render order

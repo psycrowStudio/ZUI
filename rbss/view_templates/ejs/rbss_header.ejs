@@ -1,0 +1,10 @@
+<span title="<%= titleHover || "" %>">
+    <%= titleText || "" %>
+</span>  
+<span class="apps">
+    <% if (typeof links !== 'undefined') { %>  
+        <% links.forEach(function(link){ %>
+            <a href="<%= link.linkText %>" title="<%= link.linkHover %>"><%= link.linkText %></a>
+        <% });%>
+    <% }%>
+</span>

@@ -1,10 +1,4 @@
-define([
-    'zui',
-    'rbss'
-], function(
-    zui,
-    rbss
-){
+define(['zui'], function(zui){
     // var pm = this;
     // var _activePage = null;
     // var _previousPage = null;
@@ -243,7 +237,5 @@ define([
             }
         }
     });
-
-    testPage.clearExistingBody();
     testPage.redraw();
 });
