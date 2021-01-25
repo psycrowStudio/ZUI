@@ -186,7 +186,20 @@ define(['underscore', 'backbone',
                             }      
                         }
                     },
+                    findChildComponent: function(c) {
+                        var found = this.childComponents.get(c)
 
+                        if(!found)
+                        {
+                            this.childComponents.each(function(model, index, list){
+                                if(!found){
+                                    found = model.findChildComponent(c);
+                                }
+                            });
+                            return found || null;
+                        }
+                        return found;  
+                    },
                     removeComponent: function(component){
                         if(this.childComponents )
                         {

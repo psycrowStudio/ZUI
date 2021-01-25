@@ -70,6 +70,20 @@ define(['underscore',
                             }       
                         }
                     },
+                    findChildComponent: function(c) {
+                        var found = this.components.get(c)
+
+                        if(!found)
+                        {
+                            this.components.each(function(model, index, list){
+                                if(!found){
+                                    found = model.findChildComponent(c);
+                                }
+                            });
+                            return found || null;
+                        }
+                        return found;
+                    },
                     activate: function() {
                         this.set('isActive', true);
                     },
