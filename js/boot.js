@@ -1,14 +1,21 @@
 requirejs.config({
     // appDir: window["s5config"]["domain_root"],
     // baseUrl: window["s5config"]["static_root"],
-    baseUrl: "./js/",
+    appDir: window.location.origin,
+    baseUrl: window.location.origin + "/js", //"./js/",
     shim: {
         // for non-AMD libraries
+        'backbone': {
+            deps: ['underscore', 'jquery'],
+            exports: 'Backbone'
+        },
         underscore: { exports: "_" },
         jquery: { exports: '$' },
         luxon: { exports: 'luxon' },
     },
     paths: {
+        "router": "./routes",
+
         // requireJS plugins
         "text": './3rdPArty/require_text',
         underscore: './3rdParty/underscore.amd',  
@@ -48,25 +55,56 @@ requirejs.config({
     }
 });
 
-var bootScript = document.querySelector('#data-main');
-var initalPage = bootScript ? bootScript.getAttribute('data-initalPage') : "";
+//var bootScript = document.querySelector('#data-main');
+//var initalPage = bootScript ? bootScript.getAttribute('data-initalPage') : "";
 
 require([
     'zui', 
-    initalPage, 
+    // initalPage, 
     'backbone',
     'jquery',
     'underscore',
-    'luxon'
+    'luxon',
+    'router'
 ], function(
     zui, 
-    index, 
+    // index, 
     backbone,
     jquery,
     underscore,
-    luxon
+    luxon,
+    router
 ) {
+    
+    console.log('ZUI initialized');
     zui.logger.log('Zui Loaded!', { tags:'zui-all', eventName: 'zui-load' });
+
+    // require([
+    //     'router'
+    // ], function(
+    //     router
+    // ) {
+    //     console.log('route initialized');
+    //     if(Backbone.history.start({
+    //         root: '/',
+    //         pushState: (window.history && window.history.pushState),
+    //         hashChange: false,
+    //         silent: false
+    //         }
+    //     )){
+    //         var current = window.location.pathname + window.location.search + window.location.hash;
+    //         Backbone.history.navigate(current, { trigger: true });
+    //     }
+    //     else {
+    //         console.log('no route found...');
+    //     }
+
+        
+        
+        
+    //     // some code here 
+    // });
+
 
    // console.log(zui.factory['trigger'].fabricate());
 
