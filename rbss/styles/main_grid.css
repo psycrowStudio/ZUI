@@ -22,21 +22,30 @@ div, section, nav, figure, textarea
 	margin: 0;
 }
 
+.page_grid {
+	display: grid;
+	grid-template-rows: minmax(35px, auto) minmax(0, 1fr) minmax(35px, auto);
+	grid-template-columns: 1fr;
+}
+
+#content
+{
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: minmax(40px, auto) minmax(0, 1fr);
+}
+
 #footer
 {
-    position: absolute;
-    height: 35px;
     padding: 8px 20px 0;
     border-top: 1px solid crimson;
     background-color: #666;
-    bottom: 0;
-    left: 0;
-    right: 0;
 }
+
 /* RBSS - Component Styles */
 
 .context-bar {
-	height: 40px;
+	grid-column: 1 / -1;
 	padding: 4px 20px;
 	border-top: 1px solid crimson;
 	border-bottom: 1px  solid crimson;
@@ -47,17 +56,17 @@ div, section, nav, figure, textarea
 	padding: 4px 20px;
     border-bottom: 1px solid #333;
     background-color: #c1c1c1;
-    position: absolute;
-    bottom: 0;
-    top: 40px;
-    right: 0;
-    left: 0;
     overflow-x: hidden;
-    overflow-y: scroll;
-}
+	overflow-y: scroll;
+
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+} 
+
 
 #rbss_tools {
 	text-align: center;
+	grid-column: 1 / -1;
 }
 
 .tooltile {
@@ -83,16 +92,6 @@ div, section, nav, figure, textarea
 
 /*  -- styles to clean up below -- */
 
-#content
-{
-	position: absolute;
-	top:35px;
-	left: 0;
-	right: 0;
-	bottom: 35px;
-	overflow: hidden;
-	z-index: 0;
-}
 
 #lowerBar
 {

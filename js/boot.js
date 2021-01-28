@@ -78,29 +78,7 @@ require([
     
     console.log('ZUI initialized');
     zui.logger.log('Zui Loaded!', { tags:'zui-all', eventName: 'zui-load' });
-
-    // require([
-    //     'router'
-    // ], function(
-    //     router
-    // ) {
-    //     console.log('route initialized');
-    //     if(Backbone.history.start({
-    //         root: '/',
-    //         pushState: (window.history && window.history.pushState),
-    //         hashChange: false,
-    //         silent: false
-    //         }
-    //     )){
-    //         var current = window.location.pathname + window.location.search + window.location.hash;
-    //         Backbone.history.navigate(current, { trigger: true });
-    //     }
-    //     else {
-    //         console.log('no route found...');
-    //     }
-
-        
-        
+      
         
     //     // some code here 
     // });

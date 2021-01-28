@@ -97,7 +97,7 @@
             var _styleBlock;
             var _CreateStyleBlock = function () {
                 _styleBlock = document.createElement('style');
-                _styleBlock.id = "s5-styles";
+                _styleBlock.id = "rbss-styles";
 
                 document.head.insertAdjacentElement('beforeend', _styleBlock);
                 return _styleBlock;

@@ -9,28 +9,22 @@ define(['backbone'], function (backbone) {
         },
 
         home: function (){
-            // ../rbss/tools/actorEditor/pages/index
-            //../rbss/pages/index
-            console.log('home initialized');
-            require(['rbssRoot/pages/index'], function(index){
-                console.log('index initialized');
-            });
-
+            require(['rbssRoot/pages/index'], function(index){});
         },
 
         ActorEditor_Home: function () {
-            console.log('ActorEditor_Home initialized');
-            require(['rbssRoot/tools/actorEditor/pages/index'], function(index){
-                console.log('actorEditor initialized');
-            });
+            require(['rbssRoot/tools/actorEditor/pages/index'], function(index){});
         },
     })
 
     var zui_router = new _router();
-    Backbone.history.start({
+    if(!Backbone.history.start({
         hashChange: false,
         silent: false
-    });
+    }))
+    {
+        // 404
+    }
 
     return zui_router;
 });

@@ -1,7 +1,7 @@
 define([
     'zui',
     'rbss',
-    'rbssRoot/layouts/base'
+    'rbssRoot/layouts/base_grid'
 ], function(
     zui,
     rbss,
@@ -9,7 +9,11 @@ define([
 ){
     var MODULE_NAME = "RBSS_PAGE_Index";
 
-    var testPage = zui.types.page.fab({ 'title' : 'R.B.S.S. Home', 'isActive': true });
+    var testPage = zui.types.page.fab({ 
+        'title' : 'R.B.S.S. Home', 
+        'isActive': true,
+        'bodyClasses': ['page_grid']
+    });
     layout_base.generate(testPage);
 
     var scroll_box = testPage.findChildComponent('scrolling_box');
@@ -21,15 +25,13 @@ define([
         parentElementSelector: '#scrolling_box',
         className:'rbss_tools',
         events: {
-            "click #AC" : function(){
+            "click #AE" : function(){
                 console.log('loading actor creator');
-                require(["rbssRoot/tools/actorEditor/pages/index"], function(index){
-
-                });
+                window.location.assign("/tools/actorEditor");
             }
         },
         template:'\
-        <div id="AC" class="tooltile" title="Actor Creator"><div class="fa fa-id-card"><div>AC</div></div></div>\
+        <div id="AE" class="tooltile" title="Actor Editor"><div class="fa fa-id-card"><div>AE</div></div></div>\
         <div id="WB" class="tooltile" title="World Builder"><div class="fa fa-globe"><div>WB</div></div></div>\
         <div id="AS" class="tooltile" title="Action Sequencer"><div class="fa fa-cubes"><div>AS</div></div></div>\
         '

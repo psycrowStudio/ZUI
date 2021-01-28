@@ -1,10 +1,10 @@
-<span title="<%= titleHover || "" %>">
-    <%= titleText || "" %>
+<span title="<%= titleHover || '' %>">
+    <a href="<%= titleUrl || '' %>"> <%= titleText || "" %> </a>
 </span>  
 <span class="apps">
     <% if (typeof links !== 'undefined') { %>  
         <% links.forEach(function(link){ %>
-            <a href="<%= link.linkText %>" title="<%= link.linkHover %>"><%= link.linkText %></a>
+            <a href="<%= link.url %>" title="<%= link.hover %>"><%= link.text %></a>
         <% });%>
     <% }%>
 </span>

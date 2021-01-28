@@ -2,7 +2,7 @@ define([
     'mod/dom_helper',
     'zui',
     'rbss',
-    'rbssRoot/layouts/base',
+    'rbssRoot/layouts/base_grid',
     // 'rbssRoot/framework/factories/actor',
     "rbssRoot/tools/actorEditor/view_templates/actor_viewer",
     // 'rbssRoot/tools/actorEditor/modules/page',
@@ -19,12 +19,16 @@ define([
 ){
     var MODULE_NAME = "3";
 
-    var testPage = zui.types.page.fab({ 'title' : 'RBSS Actor Creator Index', 'isActive': true });
+    var testPage = zui.types.page.fab({ 
+        'title' : 'RBSS Actor Creator Index', 
+        'isActive': true,
+        'bodyClasses': ['page_grid']
+    });
     layout_base.generate(testPage);
 
     var scroll_box = testPage.findChildComponent('scrolling_box');
 
-    // get content componet -- #scrolling_box
+   // get content componet -- #scroll_box
     zui.types.component.fab( {
         id:'actor_viewer', 
         parentModel: scroll_box, 

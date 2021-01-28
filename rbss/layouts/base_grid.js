@@ -2,7 +2,7 @@ define([
     'mod/dom_helper',
     'zui',
     "/rbss/view_templates/rbss_header.js",
-    "text!/rbss/styles/main.css"
+    "text!/rbss/styles/main_grid.css"
 
 ], function(
     mod_dom,
@@ -21,19 +21,19 @@ define([
                 titleUrl : "/",
                 links: [
                     {
-                        linkText : "ActorCreator",
-                        linkHover : "Create and Edit your characters",
-                        linkUrl : "/",
+                        text : "ActorCreator",
+                        hover : "Create and Edit your characters",
+                        url : "/tools/actorEditor",
                     },
                     {
-                        linkText : "WorldBuilder",
-                        linkHover : "Create and Edit your Environment",
-                        linkUrl : "/",
+                        text : "WorldBuilder",
+                        hover : "Create and Edit your Environment",
+                        url : "/",
                     },
                     {
-                        linkText : "ActionSequencer",
-                        linkHover : "Create and Edit your Triggers & RuleSets",
-                        linkUrl : "/",
+                        text : "ActionSequencer",
+                        hover : "Create and Edit your Triggers & RuleSets",
+                        url : "/",
                     },
                 ]
             });

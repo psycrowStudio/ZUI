@@ -17,7 +17,8 @@ define(['underscore',
                         'state': 'solo',
                         'echo': false,
                         'isActive': (settings && settings.isActive) ? settings.isActive : false,
-                        'isLoading': false
+                        'isLoading': false,
+                        'bodyClasses': settings && Array.isArray(settings.bodyClasses) ? settings.bodyClasses : []
                     },
         
                     initialize : function(){   
@@ -35,12 +36,11 @@ define(['underscore',
                                     return;
         
                                 $('head title').html(this.model.get('title'));
-        
+
+                                document.body.className = this.model.get('bodyClasses').join(' ');
+
                                 this.model.output('rendering page: ' + this.model.get('title'));
-                                // this.el.innerHTML = '<div id="header">' + this.model.get('title') + '</div">';
-                                // this.el.innerHTML +=  '<div id="content">&nbsp;</div>' + '<div id="header">&nbsp;</div>';
-        
-                                //_.each(his.model.components, alert);
+
                                 for(var component in this.model.components.models) {
                                     this.model.components.models[component].view.render();
                                 }

@@ -19,7 +19,6 @@
 
 #header
 {
-	height: 35px;
 	padding: 10px 20px 4px;
 	border-bottom: 1px solid crimson;
 	background-color: #333;
@@ -29,7 +28,8 @@
 #header a
 {
 	color: #c1c1c1;
-	text-decoration: none;
+    text-decoration: none;
+    display: inline-block;
 }
 
 #header a:visited:hover,
