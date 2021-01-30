@@ -16,6 +16,7 @@ define(['underscore', 'backbone',
                         'isActive': settings && settings.isActive ? settings.isActive : true,
                         'isLoading': false,
                         'parentElementSelector': settings && settings.parentElementSelector ? settings.parentElementSelector : 'body',
+                        'classes': settings && Array.isArray(settings.classes) ? ['zui-component'].concat(settings.classes) : ['zui-component']
                         // TODO sort by : 'drawOrder': settings && settings.parentElementSelector ? settings.parentElementSelector : 0
                     },
         
@@ -26,7 +27,6 @@ define(['underscore', 'backbone',
                             model: this,
                             id: typeof settings.id !== "undefined" ? settings.id : this.get('id'),
                             tagName: typeof settings.tagName !== "undefined" ? settings.tagName : 'div',
-                            className: typeof settings.className !== "undefined" ? 'zui-component ' + settings.className : 'zui-component',
                             el: typeof settings.el !== "undefined" ? settings.el : undefined,
                             //TODO make template a module loading function that returns promise
                             template : typeof settings.template !== "undefined" ? _.template(settings.template, this.model) : _.template(' <p>I am <%= get("id") %></p>', this.model), //TODO create the default template for components
@@ -55,6 +55,10 @@ define(['underscore', 'backbone',
                                 });
 
                                 this.el.innerHTML = this.template(this.model);
+                                // possible issue if we do not have a single element for this.el... not checked
+
+                                this.el.className = this.model.get('classes').join(' ');
+
 
                                 if(this.model.afterTemplateGenerate) {
                                     this.model.afterTemplateGenerate(this.el);

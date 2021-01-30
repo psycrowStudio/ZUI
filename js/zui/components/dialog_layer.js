@@ -292,7 +292,7 @@ define(['underscore', 'backbone',
             var panel = Types.component.fab({  
                 parentModel: this,
                 parentElementSelector: '.dialogContainer',
-                className:' zui-panel zui-dialog zui-drag',
+                classes: ['zui-panel', 'zui-dialog', 'zui-drag'],
                 template: _generateTemplate(settings),
                 events: {
                     // 'zui-dialog-resolution': function(e) {
@@ -401,7 +401,7 @@ define(['underscore', 'backbone',
                 var prius = Types.component.fab({ 
                     id:'dialogLayer', 
                     parentModel: page,
-                    className:'zui-hidden',
+                    classes: ['zui-hidden'],
                     template:'<div class="overlay">\
                     <div class="dialogContainer"></div>\
                     </div>',

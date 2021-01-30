@@ -35,7 +35,7 @@ define(['underscore',
 //     return function(settings) {
 //         if(_isTemplateLoaded)
 //         {
-//             settings.className ='horizontalMenu';
+//             settings.classes =['horizontalMenu'];
 //             settings.template = _template;
 //             return window.zui.componentFactory.fabricate(settings);
 //         }

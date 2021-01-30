@@ -26,7 +26,7 @@ define(['underscore',
                         this.view = new (Backbone.View.extend({ 
                             model: this,
                             el: 'body',
-                            className: 'zui-page',
+                            classes: ['zui-page'],
                             attributes: {
                                 'id' : Common.genId(),
                                 'disabled': false

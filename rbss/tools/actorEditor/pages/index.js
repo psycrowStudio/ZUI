@@ -33,7 +33,7 @@ define([
         id:'actor_viewer', 
         parentModel: scroll_box, 
         parentElementSelector: '#scrolling_box',
-        className:'actor_viewer',
+        classes:['actor_viewer'],
         events: {},
         template:rbss_actor_view_tempalte.compile()
     });

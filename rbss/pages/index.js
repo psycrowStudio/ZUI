@@ -23,7 +23,7 @@ define([
         id:'rbss_tools', 
         parentModel: scroll_box, 
         parentElementSelector: '#scrolling_box',
-        className:'rbss_tools',
+        classes:['rbss_tools', 'g-row'],
         events: {
             "click #AE" : function(){
                 console.log('loading actor creator');

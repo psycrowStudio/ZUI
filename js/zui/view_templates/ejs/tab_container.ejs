@@ -1,0 +1,25 @@
+<div class="tab_col g-col-16 g-h-24">
+    <div class="tabs_row g-row-1">
+        <% var activeContent = null %>  
+        <% if (Array.isArray(tabs)) { %>  
+            <% tabs.forEach(function(tab){ %>
+                <span id="<%= tab.tabId %>" 
+                    title="<%= tab.hover %>" 
+                    class="zui-tab <%= typeof activeTab !== 'undefined' && activeTab === tab.tabId ? 'active' : '' %>">
+                        <%= tab.label %>
+                </span>
+                
+                <% if (typeof activeTab !== 'undefined' && activeTab === tab.tabId) {
+                    activeContent = tab.content;
+                }%>
+            <% });%>
+        <% }%>
+    </div>
+    <div class="tabs_content_row">
+        <% if (typeof activeContent !== null) { %>
+            <%= activeContent %> 
+        <% } else if(Array.isArray(tabs) && tabs.length > 0) { %> 
+            <%= tabs[0].content %> 
+        <% }%>
+    </div>
+</div>

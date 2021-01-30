@@ -58,7 +58,7 @@ define([
                 id:'context_bar', 
                 parentModel: content, 
                 parentElementSelector: '#content',
-                className:'context-bar',
+                classes:['context-bar'],
                 events: {
                 },
                 template:''
@@ -68,7 +68,7 @@ define([
                 id:'scrolling_box', 
                 parentModel: content, 
                 parentElementSelector: '#content',
-                className:'scrolling_box',
+                classes:['scrolling_box'],
                 events: {
                 },
                 template:''

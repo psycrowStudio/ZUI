@@ -14,7 +14,7 @@ define(['zui'], function(zui){
         id:'box_01', 
         parentModel: testPage.components.get('content'), 
         parentElementSelector: '#content',
-        className:'status-error',
+        classes:['status-error'],
         events: {
             click: function(e) {
                 console.log(this);
@@ -42,7 +42,7 @@ define(['zui'], function(zui){
         id:'box_02', 
         parentModel: testPage.components.get('content'), 
         parentElementSelector: '#content',
-        className:'status-active',
+        classes:['status-active'],
         events: {
             click: function(e) {
                 console.log(this);
@@ -89,7 +89,7 @@ define(['zui'], function(zui){
         id:'box_03', 
         parentModel: testPage.components.get('content'), 
         parentElementSelector: '#content',
-        className:'status-inactive',
+        classes:['status-inactive'],
         events: {
             click: function(e) {
                 console.log(this);
@@ -118,7 +118,7 @@ define(['zui'], function(zui){
         id:'box_04', 
         parentModel: testPage.components.get('content'), 
         parentElementSelector: '#content',
-        className:'status-disabled',
+        classes:['status-disabled'],
         events: {
             click: function(e) {
                 console.log(this);
@@ -132,7 +132,7 @@ define(['zui'], function(zui){
         id:'box_05', 
         parentModel: testPage.components.get('content'), 
         parentElementSelector: '#content',
-        className:'status-loading',
+        classes:['status-loading'],
         events: {
             click: function(e) {
                 console.log(this);
@@ -148,7 +148,7 @@ define(['zui'], function(zui){
         id:'TriggerSandbox', 
         parentModel: testPage.components.get('content'), 
         parentElementSelector: '#content',
-        className:'status-active',
+        class:['status-active'],
         template:'<label>Trigger Timer</label> <input type="number" min="1000" step="500" placeholder="DELAY IN SECONDS"></input>\
                            <button> Start </button> \
                            <input type="checkbox" title="keep alive" class="keepAlive">\
