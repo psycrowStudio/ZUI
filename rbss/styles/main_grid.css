@@ -39,7 +39,11 @@ div, section, nav, figure, textarea
 {
     padding: 8px 20px 0;
     border-top: 1px solid crimson;
-    background-color: #666;
+	background-color: #666;
+	color: #333;
+	text-shadow:  2px 2px crimson;
+	text-align: center;
+	
 }
 
 /* RBSS - Component Styles */

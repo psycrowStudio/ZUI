@@ -38,14 +38,10 @@ define([
                 ]
             });
         
-            var header_compiled_stripped = header_compiled.replace(/\s\s+/g, '');
-            //.replace(/\s\s+/g, '')
-            //.replace(/^\s*(.*)\s*/, '$1')
-        
             zui.types.component.fab( { 
                 id:'header', 
                 parentModel: pageModel,
-                template: header_compiled_stripped,
+                template: header_compiled,
             });
         
             var content = zui.types.component.fab({ 
@@ -74,7 +70,10 @@ define([
                 template:''
             });
         
-            zui.types.component.fab( { id:'footer', parentModel: pageModel } );
+            zui.types.component.fab( { id:'footer', 
+                parentModel: pageModel,                 
+                template:' &copy;2020 PsyCrow Studio &#x03A8;&#x16E6;' 
+            });
 
             //var dialogLayer = zui.components.dialogLayer.addToPage(testPage);
         }

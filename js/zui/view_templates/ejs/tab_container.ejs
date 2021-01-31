@@ -1,25 +1,15 @@
-<div class="tab_col g-col-16 g-h-24">
-    <div class="tabs_row g-row-1">
+<div class="tab_box">
+    <div class="tabs_row">
         <% var activeContent = null %>  
-        <% if (Array.isArray(tabs)) { %>  
-            <% tabs.forEach(function(tab){ %>
-                <span id="<%= tab.tabId %>" 
-                    title="<%= tab.hover %>" 
-                    class="zui-tab <%= typeof activeTab !== 'undefined' && activeTab === tab.tabId ? 'active' : '' %>">
-                        <%= tab.label %>
+        <% if (tabs) { %>  
+            <% for (key in tabs) { %>
+                <span id="<%= key %>" 
+                    title="<%= tabs[key].hover %>" 
+                    class="zui-tab <%= tabs[key].disabled === true ? 'disabled' : '' %>">
+                        <%= tabs[key].label %>
                 </span>
-                
-                <% if (typeof activeTab !== 'undefined' && activeTab === tab.tabId) {
-                    activeContent = tab.content;
-                }%>
-            <% });%>
+            <% };%>
         <% }%>
     </div>
-    <div class="tabs_content_row">
-        <% if (typeof activeContent !== null) { %>
-            <%= activeContent %> 
-        <% } else if(Array.isArray(tabs) && tabs.length > 0) { %> 
-            <%= tabs[0].content %> 
-        <% }%>
-    </div>
+    <div class="tabs_content_row"></div>
 </div>

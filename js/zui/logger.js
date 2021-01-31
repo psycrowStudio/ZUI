@@ -66,6 +66,39 @@ define(['underscore', 'backbone'], function(_, Backbone){
         //router, html-dom, pageActions
     } ;
 
+        //storing here until we can refactor it across the framework
+        // messageDefaults: {
+        //     "zui-component-created": {
+        //         message: "Component Created",
+        //         logLevel: 1,
+        //         tags: ["zui-create"]
+        //     }
+        // }
+
+        //storing here until we can refactor it across the framework
+        //These are private methods shared by the entire class
+        // function _inform(callee, event, message) {
+        //     //var messageDefaults = {}; //TODO bring message defaults in here ?? 
+            
+        //     var eventObject = {
+        //         id: callee.get('id'),
+        //         source: callee
+        //     };
+        //     var logSettings = {
+        //         message: message ? message :  _prius.messageDefaults.hasOwnProperty(event) ? _prius.messageDefaults[event].message : '--',
+        //         tags: _prius.messageDefaults.hasOwnProperty(event) && _prius.messageDefaults[event].tags ? ["ZUI", "zui-component"].concat(_prius.messageDefaults[event].tags) : ["ZUI", "zui-component"],
+        //         eventName: callee,
+        //         obj: eventObject,
+        //         logLevel: _prius.messageDefaults.hasOwnProperty(event) && _prius.messageDefaults[event].logLevel 
+        //                     ? _prius.messageDefaults[event].logLevel 
+        //                     : 3,
+        //     }
+                
+        //     Logger.log(callee.get('id') + ' -- ' + logSettings.message, logSettings);
+        //     callee.trigger(event, eventObject);
+        // };
+
+
     // todo make a context return setup for proper scope.
     return {
         log : function(msg, settings) {

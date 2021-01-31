@@ -38,6 +38,8 @@ define(['underscore', 'backbone',
                                 if(!this.model.get('isActive'))
                                     return;
                                 
+        
+
                                 for(var z = 0; z < this.modifiers.length; z++){
                                     // TODO save post-render modifiers until the end? [a finnally f()?]
                                     if(this.modifiers[z].render.call(this) === false)
@@ -79,7 +81,8 @@ define(['underscore', 'backbone',
                                 });
 
                                 //if post renerer modifiers, call them here
-
+                                this.trigger('render', { "hello": true } );
+                                
                                 return this;
                             },
                             initialize: function() {

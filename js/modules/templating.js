@@ -24,7 +24,10 @@ define([
                 return _templateCache[key];
             },
             compileToRawHtml: function(key, data){
-                return _templateCache.hasOwnProperty(key) ? _templateCache[key](data) : "";
+                // alternate formatters
+                //.replace(/\s\s+/g, '')
+                //.replace(/^\s*(.*)\s*/, '$1')
+                return _templateCache.hasOwnProperty(key) ? _templateCache[key](data).replace(/\s\s+/g, '') : "";
             },
             buildTemplateHarness: function(settings){
                 // cache our template code

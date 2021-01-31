@@ -4,7 +4,7 @@ define([
     'rbss',
     'rbssRoot/layouts/base_grid',
     // 'rbssRoot/framework/factories/actor',
-    "rbssRoot/tools/actorEditor/view_templates/actor_viewer",
+    "rbssRoot/tools/actorEditor/components/actor_viewer",
     // 'rbssRoot/tools/actorEditor/modules/page',
     // 'rbssRoot/data/data',
 ], function(
@@ -13,11 +13,11 @@ define([
     rbss,
     layout_base,
     // rbss_actor_factory,
-    rbss_actor_view_tempalte,
+    rbss_actor_view,
     // page_logic,
     // page_data
 ){
-    var MODULE_NAME = "3";
+    var MODULE_NAME = "actor_editor_index";
 
     var testPage = zui.types.page.fab({ 
         'title' : 'RBSS Actor Creator Index', 
@@ -27,17 +27,23 @@ define([
     layout_base.generate(testPage);
 
     var scroll_box = testPage.findChildComponent('scrolling_box');
-
-   // get content componet -- #scroll_box
-    zui.types.component.fab( {
-        id:'actor_viewer', 
-        parentModel: scroll_box, 
-        parentElementSelector: '#scrolling_box',
-        classes:['actor_viewer'],
-        events: {},
-        template:rbss_actor_view_tempalte.compile()
-    });
+    var actor_viewer = rbss_actor_view.init(scroll_box, '#scrolling_box')
     
     testPage.clearExistingBody();
     testPage.redraw();
+
+    // testing new view
+    // var view_test = zui.types.view.fab({ 
+    //     template:false,
+    //     insertionSelector: '#scrolling_box',
+    //     classes: ['test_view']
+    // });
+
+    // view_test.listenTo(view_test, 'render', function(ev){
+    //     console.log('view test', ev);
+    // });
+
+    // view_test.render();
+    // end testing new view
+    
 });

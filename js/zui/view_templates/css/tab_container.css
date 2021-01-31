@@ -1,5 +1,5 @@
 .tabs_row {
-    padding: 12px 0;
+    padding: 12px 0 0;
     border: dotted #333 1px;
 }
 
@@ -16,7 +16,7 @@
     border-top-right-radius: 6px;
     text-align: center;
     padding: 4px 8px 2px;
-    margin: 0 1px;
+    margin: 0;
 }
 
 .zui-tab:hover {
@@ -29,4 +29,11 @@
 .zui-tab.active {
     text-decoration: underline;
     
+}
+
+.zui-tab.disabled {
+    color: #999;
+    border: 1px solid #999;
+    pointer-events:none;
+    cursor: not-allowed;
 }
