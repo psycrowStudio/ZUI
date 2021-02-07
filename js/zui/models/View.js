@@ -4,7 +4,7 @@ define([
     'zuiRoot/logger'
 ], function(
     mod_text,
-    dom_helper,
+    mod_dom,
     Logger
     ){
         var MODULE_NAME = "zui_view";
@@ -44,6 +44,7 @@ define([
                     classes:  Array.isArray(settings.classes) ? ['zui-component'].concat(settings.classes) : ['zui-component'],
                     attributes: settings.attributes ? settings.attributes : {},
 
+                    autoInsert: typeof settings.autoInsert !== "undefined" ? settings.autoInsert : true,
                     renderOrder: typeof settings.renderOrder !== "undefined" ? settings.renderOrder : 0,
                     childViews : [],
                     
@@ -74,9 +75,15 @@ define([
                         if(!this.enabled)
                             return;
 
+                        mod_dom.clearChildren(this.el);
                         var compliled_template = _compileTemplate(this);
-                        this.el.innerHTML = compliled_template;
-
+                        if(typeof compliled_template === 'string') {
+                            this.el.innerHTML = compliled_template;
+                        }
+                        else if(mod_dom.isDomObject(compliled_template)) {
+                            this.el.appendChild(compiled);
+                        }
+                        
                         // if(this.model.afterTemplateGenerate) {
                         //     this.model.afterTemplateGenerate(this.el);
                         // }
@@ -89,13 +96,13 @@ define([
                         /// start to iron out the logger, make modules etc0
                         this.trigger('render', { "hello": true } );
 
-                        if(!this.el.parentNode){
+                        if(!this.el.parentNode && this.autoInsert){
                             var parent_dom = !this.parentView ? document.body : this.parentView instanceof Backbone.Model ? this.parentView.view.el : this.parentView.el;
                             parent_dom = this.insertionSelector ? parent_dom.querySelector(this.insertionSelector) || parent_dom : parent_dom;
 
                             if(parent_dom){
                                 if(this.clearOnInsert){
-                                    dom_helper.clearChildren(parent_dom);
+                                    mod_dom.clearChildren(parent_dom);
                                 }
     
                                 parent_dom.insertAdjacentElement(this.insertionPosition, this.el);
@@ -103,7 +110,6 @@ define([
                             else {
                                 console.warn('No parent located for: ' + this.id);
                             }
-
                         }
 
                         //if post renerer modifiers, call them here
@@ -165,8 +171,8 @@ define([
                     removeView: function(v){
                         if(this.childViews )
                         {
-                            var ndx = this.childViews.find(function(el){ return el.id === v.id; });
-                            if(ndx < 0)
+                            var ndx = this.childViews.findIndex(function(el){ return el.id === v.id; });
+                            if(ndx > -1)
                             {
                                 Logger.log('removing sub-view', { tags: 'ZUI' });
                                 v.parentView = null;

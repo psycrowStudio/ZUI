@@ -10,9 +10,12 @@ define([
     ) {
         var MODULE_NAME = "actor_viewer";
         
+
+
+    
+
         return {
             init: function(pm, pms){
-
                 var actor_viewer = zui.types.view.fab( {
                     parent: pm, 
                     insertionSelector: pms,
@@ -59,7 +62,99 @@ define([
                             label: "Skills",
                             hover: "!!!",
                             order: 0,
-                            content: "<p>Skills</p>"
+                            content: function(tab){
+                                var skills_view = zui.types.view.fab({
+                                    classes:['skills_viewer'],
+                                    events: {
+                                        "click #btn_1": function(ev){
+                                            var settings = {
+                                                type:'confirm',
+                                                typeSettings: {
+                                                    query: "Would you care for some lemonade?",
+                                                    buttonLabels: ['Accept', 'Cancel']
+                                                }
+                                            };
+
+                                            var dialog_layer = zui.components.dialogLayer.current();
+                                            var confirmation = dialog_layer.triggerDialog(settings).then(function(resolve){
+                                                console.log('resolved', resolve);
+                                            }).catch(function(error){
+                                                console.log('rejected', error);
+                                            });
+                                        },
+                                        "click #btn_2": function(ev){
+                                            var settings = {
+                                                type:'mc',
+                                                typeSettings: {
+                                                    query: "Pick a number?",
+                                                    buttons: [{
+                                                        label: 'One',
+                                                        value: '1'
+                                                    },
+                                                    {
+                                                        label: 'Two',
+                                                        value: '2'
+                                                    },
+                                                    {
+                                                        label: 'Three',
+                                                        value: '3'
+                                                    },
+                                                    {
+                                                        label: 'Four',
+                                                        value: '4'
+                                                    },{
+                                                        label: 'Five',
+                                                        value: '5'
+                                                    }]
+                                                }
+                                            };
+                            
+                                            var dialog_layer = zui.components.dialogLayer.current();
+                                            var confirmation = dialog_layer.triggerDialog(settings).then(function(resolve){
+                                                console.log('resolved', resolve);
+                                            }).catch(function(error){
+                                                console.log('rejected', error);
+                                            });                            
+                                        },
+                                        "click #btn_3": function(ev){
+                                            var settings = {
+                                                type:'inputField',
+                                                typeSettings: {
+                                                    query: 'What is your name?',
+                                                    subtype: 'text',
+                                                    buttonLabels: ['Make introduction', 'Nevermind']
+                                                },
+                                            };
+                            
+                                            var dialog_layer = zui.components.dialogLayer.current();
+                                            var confirmation = dialog_layer.triggerDialog(settings).then(function(resolve){
+                                                console.log('resolved', resolve);
+                                            }).catch(function(error){
+                                                console.log('rejected', error);
+                                            });
+                                        },
+                                        "click #btn_4": function(ev){
+                                            console.log("Button 4 clicked...");
+
+                                        },
+                                        "click #btn_5": function(ev){
+                                            console.log("Button 5 clicked...");
+
+                                        }
+                                    },
+                                    template: '\
+                                    <button id="btn_1">Confirm</button>\
+                                    <button id="btn_2">MC</button>\
+                                    <button id="btn_3">Input</button>\
+                                    <button id="btn_4">Button 4</button>\
+                                    <button id="btn_5">Button 5</button>\
+                                    ',
+                                    autoInsert: false
+                                });
+
+                                skills_view.render();
+                                return skills_view.el;
+                            }
                         },
                         "log_book": {
                             label: "Log Book",

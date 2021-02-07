@@ -1,0 +1,23 @@
+<% var query_value = typeof query !== 'undefined' ? query : 'Do you want to continue?' %>
+
+<div class="edge zui-dialog-confirm">
+    <div class="titleBar">
+        <span class="title">Multiple Choice</span>
+        <span class="buttons">
+            <button class="dismissPanel" title="Escape">X</button>
+        </span>
+    </div>
+    <div class="content"> 
+        <h3><%= query_value %></h3>
+        <div class="mc-box">
+            <% if (Array.isArray(buttons)) { %>  
+                <% buttons.forEach(function(btn, i){ %>
+                    <button id="opt_<%= i %>>" class="mc-option panelResult" data-value="<%= btn.value %>"><%= btn.label %></button>
+                <% });%>
+            <% }%>
+        </div>
+    </div>
+    <div class="footer">
+        <span class="buttons"></span>
+    </div>
+</div>

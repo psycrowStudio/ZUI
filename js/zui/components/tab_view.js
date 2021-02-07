@@ -7,7 +7,8 @@ define([
     zui_tab_container,
     mod_dom
 ) {
-
+    var MODULE_NAME = "zui_tab_view";
+   
     var _sortTabs= function(current){
         var sort_arr = [];
 
@@ -24,6 +25,22 @@ define([
             acc[key] = el;
             return acc;
         }, {});
+    };
+
+    var _compileTemplate = function(tab){
+        if(tab.content === null){
+            return '';
+        } else if(typeof tab.content === 'string'){
+            return tab.content;
+        } else if(typeof tab.content === 'function'){
+            return tab.content(tab);
+        }
+        else if(tab.content.compile){
+            return tab.content.compile(tab);
+        }
+        else {
+            return _.template(' <p><%= "Tab:" + label %></p>', view);
+        }
     };
 
     return {
@@ -64,9 +81,15 @@ define([
                             if(!tabs_content_row){
                                 tabs_content_row = _tab_view.el.querySelector('.tabs_content_row');
                             }
-                            mod_dom.clearChildren(tabs_content_row);
-                            tabs_content_row.innerHTML = settings.tabs[ev.target.id].content;
 
+                            mod_dom.clearChildren(tabs_content_row);
+                            var compiled = _compileTemplate(settings.tabs[ev.target.id]);
+                            if(typeof compiled === 'string') {
+                                tabs_content_row.innerHTML = compiled;
+                            }
+                            else if(mod_dom.isDomObject(compiled)) {
+                                tabs_content_row.appendChild(compiled);
+                            }
 
                             // TODO set default active tab
                             // investigate component creation with and without children
@@ -77,7 +100,6 @@ define([
                 template: zui_tab_container.compile(settings),
             });
 
-            //listenToOnce
             _tab_view.listenToOnce(_tab_view, "render", function(ev){
                 // on inital render, set the default tabs
                 var content_row = _tab_view.el.querySelector('.tabs_content_row');
@@ -85,7 +107,15 @@ define([
 
                 if(active_tab && content_row){
                     active_tab.classList.add('active');
-                    content_row.innerHTML = settings.tabs[active_tab.id].content;
+                    
+                    mod_dom.clearChildren(content_row);
+                    var compiled = _compileTemplate(settings.tabs[active_tab.id]);
+                    if(typeof compiled === 'string') {
+                        content_row.innerHTML = compiled;
+                    }
+                    else if(mod_dom.isDomObject(compiled)) {
+                        content_row.appendChild(compiled);
+                    }
                 }
             });
 

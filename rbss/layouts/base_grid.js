@@ -75,7 +75,7 @@ define([
                 template:' &copy;2020 PsyCrow Studio &#x03A8;&#x16E6;' 
             });
 
-            //var dialogLayer = zui.components.dialogLayer.addToPage(testPage);
+            var dialogLayer = zui.components.dialogLayer.addToPage(pageModel);
         }
     };
     

@@ -84,8 +84,8 @@ define(['underscore',
                     removeView: function(v){
                         if(this.childViews )
                         {
-                            var ndx = this.childViews.find(function(el){ return el.id === v.id; });
-                            if(ndx < 0)
+                            var ndx = this.childViews.findIndex(function(el){ return el.id === v.id; });
+                            if(ndx > -1)
                             {
                                 Logger.log('removing sub-view', { tags: 'ZUI' });
                                 v.parentView = null;
