@@ -12,14 +12,15 @@ define([
         
         return {
             init: function(pm, pms){
-                var actor_viewer = zui.types.component.fab( {
-                    id: ("000000" + Math.random().toString(16).slice(2, 8).toUpperCase()).slice(-6), 
-                    parentModel: pm, 
-                    parentElementSelector: pms,
+
+                var actor_viewer = zui.types.view.fab( {
+                    parent: pm, 
+                    insertionSelector: pms,
                     classes:['actor_viewer'],
                     events: {},
                     template: actor_editor_template.compile(),
                 });
+
                 
                 // TODO consider if these need to be a model or not...
                 var tabSettings = {
@@ -82,8 +83,8 @@ define([
                     }
                 };
 
-                var tr2 = zui_tab_view.init(tabSettings2)
-                
+                var tr2 = zui_tab_view.init(tabSettings2);
+
                 return actor_viewer;
             },
             //load

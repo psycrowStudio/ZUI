@@ -1,0 +1,29 @@
+This folder will contain an index.html css files to demonstrate how multiple CSS files can be used to easilly create localized / translated content
+
+The main premise revolves around using the content property on CSS before / after
+
+This would be an alternative to the token find & replace method commonly used with string tables
+
+/* CSS-esp */
+.trans-welcome:after {
+    content: 'Beinvenedos a el Sitio'
+}
+
+/* CSS-eng */
+.trans-welcome:after {
+    content: 'Welcome to the Site'
+}
+
+
+/* HTML */
+<body>
+    <p> 
+        <span class="trans-welcome"></span> 
+    </p>
+</body>
+
+
+
+There are some issues around accessibility tech not picking up these nodes:
+
+https://developer.mozilla.org/en-US/docs/Web/CSS/content

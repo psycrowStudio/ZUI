@@ -45,10 +45,7 @@ define([
                     attributes: settings.attributes ? settings.attributes : {},
 
                     renderOrder: typeof settings.renderOrder !== "undefined" ? settings.renderOrder : 0,
-                    childViews : new Backbone.Collection(null, {
-                        model : _prius,
-                        comparator: 'renderOrder'
-                    }),
+                    childViews : [],
                     
                     template : typeof settings.template !== "undefined" ? settings.template : null,
                     
@@ -61,7 +58,10 @@ define([
                         this.el.className = this.classes.join(' ');
                         
                         if(this.parentView) {
-                            view.parentModel.addView(this);
+                            this.renderOrder = typeof settings.renderOrder === "undefined" ? this.parentView.childViews.length + 1 : this.renderOrder;
+                            this.parentView.addView(this);
+                            
+
                         }
     
                         //_inform(this, "zui-component-created");
@@ -73,10 +73,6 @@ define([
                     render : function(){
                         if(!this.enabled)
                             return;
-                        
-                        //TODO start back here ---
-                        /// start to iron out the logger, make modules etc0
-                        this.trigger('render', { "hello": true } );
 
                         var compliled_template = _compileTemplate(this);
                         this.el.innerHTML = compliled_template;
@@ -88,16 +84,26 @@ define([
                         this.childViews.forEach(function(child){
                             child.render();
                         });
+                        
+                        //TODO start back here ---
+                        /// start to iron out the logger, make modules etc0
+                        this.trigger('render', { "hello": true } );
 
                         if(!this.el.parentNode){
-                            var parent_dom = !this.parentView ? document.body : parent.el;
-                            parent_dom = this.insertionSelector ? parent_dom.querySelector(this.insertionSelector) : parent_dom;
-                            
-                            if(this.clearOnInsert){
-                                dom_helper.clearChildren(parent_dom);
+                            var parent_dom = !this.parentView ? document.body : this.parentView instanceof Backbone.Model ? this.parentView.view.el : this.parentView.el;
+                            parent_dom = this.insertionSelector ? parent_dom.querySelector(this.insertionSelector) || parent_dom : parent_dom;
+
+                            if(parent_dom){
+                                if(this.clearOnInsert){
+                                    dom_helper.clearChildren(parent_dom);
+                                }
+    
+                                parent_dom.insertAdjacentElement(this.insertionPosition, this.el);
+                            }
+                            else {
+                                console.warn('No parent located for: ' + this.id);
                             }
 
-                            parent_dom.insertAdjacentElement(this.insertionPosition, this.el);
                         }
 
                         //if post renerer modifiers, call them here
@@ -128,23 +134,26 @@ define([
                         return defaultEventMapping;
                     },
 
-                    addView: function(view) {
+                    addView: function(v) {
                         if(this.childViews)
                         {
-                            if(!this.childViews.get(view))
+                            if(!this.childViews.find(function(el){ return el.id === v.id; }))
                             {
                                 Logger.log('adding sub-view', { tags: 'ZUI' });
-                                view.parentView = this;
-                                return this.childViews.add(view);
+                                v.parentView = this;
+                                this.childViews.push(v)
+                                this.childViews.sort(function(elA, elB){ return elA.sortOrder - elB.sortOrder; });
+                                return this.childViews.length;
                             }      
                         }
                     },
                     findChildView: function(v) {
-                        var found = this.childViews.get(v)
+                        var matchId = typeof v === "string" ? v : v.id;
+                        var found = this.childViews.find(function(el){ return el.id === matchId; });
 
                         if(!found)
                         {
-                            this.childViews.each(function(view, index, list){
+                            this.childViews.forEach(function(view, index, list){
                                 if(!found){
                                     found = view.findChildView(v);
                                 }
@@ -153,14 +162,15 @@ define([
                         }
                         return found;  
                     },
-                    removeView: function(view){
+                    removeView: function(v){
                         if(this.childViews )
                         {
-                            if(this.childViews.get(view))
+                            var ndx = this.childViews.find(function(el){ return el.id === v.id; });
+                            if(ndx < 0)
                             {
                                 Logger.log('removing sub-view', { tags: 'ZUI' });
-                                view.parentView = null;
-                                return this.childViews.remove(view);
+                                v.parentView = null;
+                                return this.childViews.splice(ndx, 1);
                             }       
                         }
                     },

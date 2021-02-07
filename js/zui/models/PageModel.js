@@ -39,50 +39,59 @@ define(['underscore',
 
                                 document.body.className = this.model.get('bodyClasses').join(' ');
 
-                                this.model.output('rendering page: ' + this.model.get('title'));
+                                //this.model.output('rendering page: ' + this.model.get('title'));
 
-                                for(var component in this.model.components.models) {
-                                    this.model.components.models[component].view.render();
+                                for(var view in this.model.childViews) {
+                                    this.model.childViews[view].render();
                                 }
+
+                                /// start to iron out the logger, make modules etc0
+                                this.trigger('render', { "hello": true } );
                             }
                         }))();
-                        
-                        //
-                        this.components =  new Backbone.Collection(null, {
-                            model: Component
-                        });
                     },
-        
+                    childViews : [],
                     state: function() {	return this.get('state') },
 
-                    addComponent: function(component) {
-                        //TODO add the logic for this
-                        if(this.components)
+                    addView: function(v) {
+                        if(this.childViews)
                         {
-                            if(!this.components.get(component))
+                            if(!this.childViews.find(function(el){ return el.id === v.id; }))
                             {
-                                this.output('adding component');
-                                return this.components.add(component);
-                            }
-                            else
-                            {
-                                this.output('component already exists', 'warn');
-                            }       
+                                Logger.log('adding sub-view', { tags: 'ZUI' });
+                                v.parentView = this;
+                                this.childViews.push(v)
+                                this.childViews.sort(function(elA, elB){ return elA.sortOrder - elB.sortOrder; });
+                                return this.childViews.length;
+                            }      
                         }
                     },
-                    findChildComponent: function(c) {
-                        var found = this.components.get(c)
+                    findChildView: function(v) {
+                        var matchId = typeof v === "string" ? v : v.id;
+                        var found = this.childViews.find(function(el){ return el.id === matchId; });
 
                         if(!found)
                         {
-                            this.components.each(function(model, index, list){
+                            this.childViews.forEach(function(view, index, list){
                                 if(!found){
-                                    found = model.findChildComponent(c);
+                                    found = view.findChildView(v);
                                 }
                             });
                             return found || null;
                         }
-                        return found;
+                        return found;  
+                    },
+                    removeView: function(v){
+                        if(this.childViews )
+                        {
+                            var ndx = this.childViews.find(function(el){ return el.id === v.id; });
+                            if(ndx < 0)
+                            {
+                                Logger.log('removing sub-view', { tags: 'ZUI' });
+                                v.parentView = null;
+                                return this.childViews.splice(ndx, 1);
+                            }       
+                        }
                     },
                     activate: function() {
                         this.set('isActive', true);
@@ -93,19 +102,19 @@ define(['underscore',
                     clearExistingBody: function(){
                         mod_dom.clearChildren(document.body);
                     },
-                    output: function(message, messageType){
-                        if(this.get('echo')) {
-                            if(!messageType || messageType === 'log') {
-                                //zui.log(message, settings);
-                            } else if(messageType === 'warn') {
+                    // output: function(message, messageType){
+                    //     if(this.get('echo')) {
+                    //         if(!messageType || messageType === 'log') {
+                    //             //zui.log(message, settings);
+                    //         } else if(messageType === 'warn') {
         
-                            }
-                            else if(messageType === 'error') {
+                    //         }
+                    //         else if(messageType === 'error') {
         
-                            }
-                            //zui.log(format, settings);
-                        }
-                    }
+                    //         }
+                    //         //zui.log(format, settings);
+                    //     }
+                    // }
 
                 };
             })(settings);

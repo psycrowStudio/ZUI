@@ -16,13 +16,13 @@ define([
     });
     layout_base.generate(testPage);
 
-    var scroll_box = testPage.findChildComponent('scrolling_box');
+    var scroll_box = testPage.findChildView('scrolling_box');
 
     // get content componet -- #scrolling_box
-    zui.types.component.fab( {
+    var tool_box = zui.types.view.fab( {
         id:'rbss_tools', 
-        parentModel: scroll_box, 
-        parentElementSelector: '#scrolling_box',
+        parent: scroll_box, 
+        insertionSelector: '#scrolling_box',
         classes:['rbss_tools', 'g-row'],
         events: {
             "click #AE" : function(){
@@ -35,6 +35,10 @@ define([
         <div id="WB" class="tooltile" title="World Builder"><div class="fa fa-globe"><div>WB</div></div></div>\
         <div id="AS" class="tooltile" title="Action Sequencer"><div class="fa fa-cubes"><div>AS</div></div></div>\
         '
+    });
+
+    testPage.view.listenToOnce(testPage.view, "render", function(ev){
+        tool_box.render();
     });
 
     testPage.redraw();

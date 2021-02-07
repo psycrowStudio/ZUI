@@ -38,40 +38,40 @@ define([
                 ]
             });
         
-            zui.types.component.fab( { 
+            zui.types.view.fab( { 
                 id:'header', 
-                parentModel: pageModel,
+                parent: pageModel,
                 template: header_compiled,
             });
         
-            var content = zui.types.component.fab({ 
+            var content = zui.types.view.fab({ 
                 id:'content', 
-                parentModel: pageModel,
+                parent: pageModel,
                 template:''
             });
-        
-            zui.types.component.fab( {
+
+            zui.types.view.fab( {
                 id:'context_bar', 
-                parentModel: content, 
-                parentElementSelector: '#content',
+                parent: content, 
+                insertionSelector: '#content',
                 classes:['context-bar'],
                 events: {
                 },
                 template:''
             });
         
-            zui.types.component.fab( {
+            zui.types.view.fab( {
                 id:'scrolling_box', 
-                parentModel: content, 
-                parentElementSelector: '#content',
+                parent: content, 
+                insertionSelector: '#content',
                 classes:['scrolling_box'],
                 events: {
                 },
                 template:''
             });
         
-            zui.types.component.fab( { id:'footer', 
-                parentModel: pageModel,                 
+            zui.types.view.fab( { id:'footer', 
+                parent: pageModel,                 
                 template:' &copy;2020 PsyCrow Studio &#x03A8;&#x16E6;' 
             });
 

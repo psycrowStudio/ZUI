@@ -32,11 +32,12 @@ define([
             
             var tabs_content_row = null;
 
+            // TODO make a vertical tabs options / styles3
             
-            var _tab_view = zui.types.component.fab( {
-                id: ("000000" + Math.random().toString(16).slice(2, 8).toUpperCase()).slice(-6), 
-                parentModel: settings.pm, 
-                parentElementSelector: settings.pms,
+            var _tab_view = zui.types.view.fab( {
+                // do we need this ID added onto the tab id's
+                parent: settings.pm, 
+                insertionSelector: settings.pms,
                 classes:['tab_view'],
                 events: {
                     "click .zui-tab":function(ev){
@@ -49,7 +50,7 @@ define([
                             // fire event - before_tab_change?
                             // save tab content state? session? internal var?
 
-                            var all_tabs = Array.from(_tab_view.view.el.querySelectorAll('.zui-tab'));
+                            var all_tabs = Array.from(_tab_view.el.querySelectorAll('.zui-tab'));
                             all_tabs.forEach(function(el){
                                 el.classList.remove('active');
                             });
@@ -61,7 +62,7 @@ define([
 
                             // TODO flesh this out for sub components, helper methods etc...
                             if(!tabs_content_row){
-                                tabs_content_row = _tab_view.view.el.querySelector('.tabs_content_row');
+                                tabs_content_row = _tab_view.el.querySelector('.tabs_content_row');
                             }
                             mod_dom.clearChildren(tabs_content_row);
                             tabs_content_row.innerHTML = settings.tabs[ev.target.id].content;
@@ -77,10 +78,10 @@ define([
             });
 
             //listenToOnce
-            _tab_view.view.listenToOnce(_tab_view.view, "render", function(ev){
+            _tab_view.listenToOnce(_tab_view, "render", function(ev){
                 // on inital render, set the default tabs
-                var content_row = _tab_view.view.el.querySelector('.tabs_content_row');
-                var active_tab = settings.activeTab ? _tab_view.view.el.querySelector('#' + settings.activeTab) : _tab_view.view.el.querySelector('.tabs_row > .zui-tab:first-child');
+                var content_row = _tab_view.el.querySelector('.tabs_content_row');
+                var active_tab = settings.activeTab ? _tab_view.el.querySelector('#' + settings.activeTab) : _tab_view.el.querySelector('.tabs_row > .zui-tab:first-child');
 
                 if(active_tab && content_row){
                     active_tab.classList.add('active');

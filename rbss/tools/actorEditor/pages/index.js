@@ -26,24 +26,10 @@ define([
     });
     layout_base.generate(testPage);
 
-    var scroll_box = testPage.findChildComponent('scrolling_box');
-    var actor_viewer = rbss_actor_view.init(scroll_box, '#scrolling_box')
-    
+    var scroll_box = testPage.findChildView('scrolling_box');
+    var actor_viewer = rbss_actor_view.init(scroll_box, '#scrolling_box');
+
+
     testPage.clearExistingBody();
-    testPage.redraw();
-
-    // testing new view
-    // var view_test = zui.types.view.fab({ 
-    //     template:false,
-    //     insertionSelector: '#scrolling_box',
-    //     classes: ['test_view']
-    // });
-
-    // view_test.listenTo(view_test, 'render', function(ev){
-    //     console.log('view test', ev);
-    // });
-
-    // view_test.render();
-    // end testing new view
-    
+    testPage.redraw();    
 });
