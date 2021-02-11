@@ -1,0 +1,28 @@
+/* TOOLBAR STYLES */
+.toolbar-container {
+    border: dotted #333 1px;
+    list-style: none;
+}
+
+.toolbar-button {
+    border: dotted #333 1px;
+    padding: 10px;
+    font-size: 1.6rem;
+    margin: 0 2px;
+}
+
+.toolbar-button:hover {
+    border: solid #333 1px;
+    background-color: crimson;
+    color: #FFF;
+    cursor: pointer;
+}
+
+
+.toolbar-button:first-child {
+    margin-left: 0;
+}
+
+.toolbar-button:last-child {
+    margin-right: 0;
+}

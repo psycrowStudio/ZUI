@@ -40,6 +40,8 @@ function (
             // text
             // form
             // custom / blank
+            // loading 
+            // list / gallery view
         }
 
     };

@@ -1,19 +1,19 @@
 define([
         'zui',
         "zuiRoot/components/tab_view",
+        "zuiRoot/components/collection_viewer",
+        "zuiRoot/components/toolbar",
         "rbssRoot/tools/actorEditor/view_templates/actor_editor",
     ],
     function (
         zui,
         zui_tab_view,
+        zui_collection_viewer,
+        zui_toolbar,
         actor_editor_template,
     ) {
         var MODULE_NAME = "actor_viewer";
         
-
-
-    
-
         return {
             init: function(pm, pms){
                 var actor_viewer = zui.types.view.fab( {
@@ -34,7 +34,31 @@ define([
                             label: "Base Stats",
                             hover: "!!!",
                             order: 0,
-                            content: "<p>Base Stats</p>"
+                            content: function(tab){
+                                var settings = {
+                                    dataset: ["One", "Two", "Three"],
+                                    autoInsert: false,
+                                    generateItemSettings: function(el, i){
+                                        return {
+                                            label: el.length,
+                                            hover_text: el
+                                        };
+                                    },
+                                    onClick:function(view, ev){
+                                        console.log("collection-list-item clicked", view.model[ev.currentTarget.id.split('_')[1]]);
+                                    }
+                                };
+
+                                var list =  zui_collection_viewer.createListViewer(settings);
+                                console.log(list);
+                                list.render();
+
+                                setTimeout(function(){
+                                    list.addItem("Eleven");
+                                }, 3000)
+
+                                return list.el;
+                            }
                         },
                         "demo": {
                             label: "Demographics",
@@ -46,7 +70,31 @@ define([
                             label: "Personality",
                             hover: "###",
                             order: 4,
-                            content: "<p>Personality</p>"
+                            content: function(tab){
+                                var settings = {
+                                    dataset: ["AAAA", "BBBBBBB", "CCC"],
+                                    autoInsert: false,
+                                    generateItemSettings: function(el, i){
+                                        return {
+                                            label: el.length,
+                                            hover_text: el
+                                        };
+                                    },
+                                    onClick:function(view, ev){
+                                        console.log("collection-grid-item clicked", view.model[ev.currentTarget.id.split('_')[1]]);
+                                    }
+                                };
+
+                                var grid =  zui_collection_viewer.createGridViewer(settings);
+                                console.log(grid);
+                                grid.render();
+
+                                setTimeout(function(){
+                                    grid.addItem("DDDDDDDDDDD");
+                                }, 3000)
+
+                                return grid.el;
+                            }
                         }
                     },
                     activeTab: "demo"
@@ -166,7 +214,57 @@ define([
                             label: "Resources",
                             hover: "###",
                             order: 4,
-                            content: "<p>Resources</p>"
+                            content: function(tab){
+                                var settings = {
+                                    buttons: [
+                                        {
+                                            label:"",
+                                            glyph_code:"home",
+                                            hover_text: "Home",
+                                            disabled: false,
+                                            visible: true,
+                                            onClick:function(view, ev){
+                                                console.log("Home", this);
+                                                var glyph = ev.currentTarget.querySelector('.glyph');
+                                                if(glyph.classList.contains('fa-' + this.glyph_code)){
+                                                    glyph.classList.remove('fa-' + this.glyph_code);
+                                                    glyph.classList.add('fa-cog');
+                                                }
+                                                else {
+                                                    glyph.classList.remove('fa-cog');
+                                                    glyph.classList.add('fa-' + this.glyph_code);
+                                                }
+                                            }
+                                        },
+                                        {
+                                            label:"",
+                                            glyph_code:"globe",
+                                            hover_text: "World Map",
+                                            disabled: false,
+                                            visible: true,
+                                            onClick:function(view, ev){
+                                                console.log("World Map", this);
+                                            }
+                                        },
+                                        {
+                                            label:"",
+                                            glyph_code:"cog",
+                                            hover_text: "Settings",
+                                            disabled: false,
+                                            visible: true,
+                                            onClick:function(view, ev){
+                                                console.log("Settings", this);
+                                            }
+                                        },
+                                    ],
+                                    autoInsert: false
+                                };
+
+                                var toolbar =  zui_toolbar.init(settings);
+                                toolbar.render();
+
+                                return toolbar.el;
+                            }
                         },
                         "art_assets": {
                             label: "Art Assets",

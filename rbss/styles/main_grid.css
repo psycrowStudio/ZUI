@@ -365,6 +365,10 @@ div, section, nav, figure, textarea
 }
 
 
+* {
+	box-sizing: border-box;
+}
+
 /*  GRID Helpers */
 .g-v-24 {
 	display: grid;

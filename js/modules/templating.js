@@ -27,7 +27,7 @@ define([
                 // alternate formatters
                 //.replace(/\s\s+/g, '')
                 //.replace(/^\s*(.*)\s*/, '$1')
-                return _templateCache.hasOwnProperty(key) ? _templateCache[key](data).replace(/\s\s+/g, '') : "";
+                return _templateCache.hasOwnProperty(key) ? _templateCache[key](data) : "";  //_templateCache[key](data).replace(/\s\s+/g, '')
             },
             buildTemplateHarness: function(settings){
                 // cache our template code
@@ -49,11 +49,11 @@ define([
                         }
                         else {
                             for(key in context){
-                                if(typeof context[key] === "function"){
-                                    // parameters?
-                                    context_exec = {};
-                                    context_exec[key] = context[key]();
-                                }
+                                // if(typeof context[key] === "function"){
+                                //     // parameters?
+                                //     context_exec = {};
+                                //     context_exec[key] = context[key]();
+                                // }
                             }
                             return _defaultTemplateCompile(settings.key, context);
                         }
