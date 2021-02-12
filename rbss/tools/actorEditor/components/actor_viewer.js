@@ -1,4 +1,5 @@
 define([
+        'mod/animation',
         'zui',
         "zuiRoot/components/tab_view",
         "zuiRoot/components/collection_viewer",
@@ -6,6 +7,7 @@ define([
         "rbssRoot/tools/actorEditor/view_templates/actor_editor",
     ],
     function (
+        mod_animation,
         zui,
         zui_tab_view,
         zui_collection_viewer,
@@ -16,6 +18,8 @@ define([
         
         return {
             init: function(pm, pms){
+                console.log('animation', mod_animation);
+                
                 var actor_viewer = zui.types.view.fab( {
                     parent: pm, 
                     insertionSelector: pms,
@@ -34,6 +38,7 @@ define([
                             label: "Base Stats",
                             hover: "!!!",
                             order: 0,
+                            glyph_code: "sliders",
                             content: function(tab){
                                 var settings = {
                                     dataset: ["One", "Two", "Three"],
@@ -64,12 +69,14 @@ define([
                             label: "Demographics",
                             hover: "@@@",
                             order: 2,
+                            glyph_code: "address-card",
                             content: "<p>Demographics</p>"
                         },
                         "personality": {
                             label: "Personality",
                             hover: "###",
                             order: 4,
+                            glyph_code: "user",
                             content: function(tab){
                                 var settings = {
                                     dataset: ["AAAA", "BBBBBBB", "CCC"],
@@ -110,6 +117,7 @@ define([
                             label: "Skills",
                             hover: "!!!",
                             order: 0,
+                            glyph_code: "flash",
                             content: function(tab){
                                 var skills_view = zui.types.view.fab({
                                     classes:['skills_viewer'],
@@ -182,7 +190,12 @@ define([
                                             });
                                         },
                                         "click #btn_4": function(ev){
-                                            console.log("Button 4 clicked...");
+                                            var dialog_layer = zui.components.dialogLayer.current();
+                                            dialog_layer.triggerLoading();
+
+                                            setTimeout(function(){
+                                                dialog_layer.clearLoading();
+                                            }, 5000);
 
                                         },
                                         "click #btn_5": function(ev){
@@ -194,7 +207,7 @@ define([
                                     <button id="btn_1">Confirm</button>\
                                     <button id="btn_2">MC</button>\
                                     <button id="btn_3">Input</button>\
-                                    <button id="btn_4">Button 4</button>\
+                                    <button id="btn_4">Loading</button>\
                                     <button id="btn_5">Button 5</button>\
                                     ',
                                     autoInsert: false
@@ -208,12 +221,14 @@ define([
                             label: "Log Book",
                             hover: "@@@",
                             order: 2,
+                            glyph_code: "book",
                             content: "<p>Log Book</p>"
                         },
                         "resources": {
                             label: "Resources",
                             hover: "###",
                             order: 4,
+                            glyph_code: "cubes",
                             content: function(tab){
                                 var settings = {
                                     buttons: [
@@ -270,6 +285,7 @@ define([
                             label: "Art Assets",
                             hover: "***",
                             order: 5,
+                            glyph_code: "folder-open",
                             content: "<p>Art Assets</p>",
                             disabled: true
                         }
@@ -277,6 +293,79 @@ define([
                 };
 
                 var tr2 = zui_tab_view.init(tabSettings2);
+
+
+                actor_viewer.on('post-render', function(data){
+                   
+                    var photo = actor_viewer.el.querySelector('.photo_box');
+                   
+                    // //mod_animation.velocity(photo, "fadeIn", { duration: 1500 });
+                    // //setTimeout(function(){
+                    //     console.log('!! render !!');
+                    //     var photo = actor_viewer.el.querySelector('.photo_box');
+                    //     // photo.style.opacity = .25;
+                    //     // photo.style.opacity = .15;
+                    //     mod_animation.velocity(photo, {
+                    //         opacity: [ 1, "easeInSine", 0],
+                    //         //display: "none"
+                    //     }, {
+                    //         duration: 1500,
+                    //         //loop: true 
+                    //     }).then(function(res){
+                    //         console.log('!! DONE !!', res);
+                    //         // res.velocity(photo, "reverse").then(function(res){
+                    //         //     console.log('!! DONE !!', res);
+                    //         // });
+                    //     });
+
+                    //     // setTimeout(function(){
+                    //     //     mod_animation.velocity(photo, "stop");
+                    //     // }, 5000);
+
+                    // //}, 1000);
+
+
+
+
+                    var inBoundQ = [
+                        // {
+                        //    element: photo,
+                        //    animation: 'fadeIn'
+                        // },
+                        {
+                            element: photo,
+                            animation: 'fadeOut',
+                            stayHidden: true
+                        }
+                    ];
+
+                    //_domReference['closeBtn'].addEventListener('click', function (ev) {
+                    //    console.log('close table overlay');
+                    //    var outBoundQ = [
+                    //        {
+                    //            element: _domReference['overlay'],
+                    //            animation: 'fadeOut',
+                    //            stayHidden: true
+                    //        }
+                    //    ];
+
+                    //    window['ks'].animation.queueAnimationSequence(outBoundQ).then(function () {
+                    //        _domReference['overlay'].parentNode.removeChild(_domReference['overlay']);
+                    //    });
+                    //});
+
+
+                    mod_animation.queueAnimationSequence(inBoundQ).then(function(res){
+                        console.log('!! DONE !!', res);
+                    });
+
+
+
+
+
+
+
+                });
 
                 return actor_viewer;
             },

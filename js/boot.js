@@ -20,7 +20,10 @@ requirejs.config({
         "text": './3rdPArty/require_text',
         underscore: './3rdParty/underscore.amd',  
         backbone: './3rdParty/backbone.amd',
+        
+        'velocity-animate': './3rdParty/velocity.min',
         //d3: 'js/3rdParty/d3.v3.min.js',
+
         zui: './zui/zui_init',
         zuiRoot: 'zui',
         

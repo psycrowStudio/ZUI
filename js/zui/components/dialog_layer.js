@@ -3,6 +3,7 @@ define([
     'zuiRoot/logger', 
     'zuiRoot/types',
     'mod/dom_helper',
+    'mod/animation',
     "zuiRoot/view_templates/dialogs",
 ], 
     function(
@@ -10,6 +11,7 @@ define([
         Logger, 
         Types,
         mod_dom,
+        mod_animation,
         dialogs
     ){
         var MODULE_NAME = "zui_dialog_layer";
@@ -34,19 +36,11 @@ define([
                 case 'inputField':
                     template = dialogs.templates['input'].compile(settings.typeSettings);
                 break;
+                case 'loading':
+                    template = dialogs.templates['loading'].compile(settings);
+                break;
                 default:
-                    template = '<div class="edge">\
-                        <div class="titleBar"><span class="title"></span>\
-                        <span class="buttons">\
-                            <button class="dismissPanel" title="Escape">X</button>\
-                        </span>\</div>\
-                        <div class="content"></div>\
-                        <div class="footer"><span class="buttons">\
-                                <button class="dismissPanel" title="Escape">Cancel</button>\
-                                <button class="confirmPanel" title="Continue">Accept</button>\
-                            </span>\
-                        </div>\
-                    </div>';
+                    template = dialogs.templates['base'].compile(settings.typeSettings);
             }
             
             return settings.resizable === false ? template : panelHitBoxes + template;
@@ -109,7 +103,7 @@ define([
             return false;
         }
 
-        var _stopDrag = function () {
+        function _stopDrag() {
             this.isDragging = false;      
       
             console.log('stopping drag...');
@@ -215,6 +209,7 @@ define([
             return false;
         };
 
+        // Dialog logic helpers
         var _panelEval = function(event){
             var settings = { isResolved: false };
             switch(this.dialogType){
@@ -235,6 +230,50 @@ define([
 
             return settings;
         };
+
+        var _removeDialog = function (id) {
+            for (var z = 0; z < openDialogs.length; z++) {
+                if (openDialogs[z].id === id) {
+                    openDialogs.splice(z, 1);
+                    break;
+                }
+            }
+
+            var d = dialogLayer.querySelector('#' + id);
+            if (d) {
+                if (d.classList.contains(LOADING_DIALOG_CLASS) && loadingCount === 1) {
+                    dialogLayer.removeChild(d);
+                    loadingCount--;
+                } else if (d.classList.contains(LOADING_DIALOG_CLASS)) {
+                    loadingCount--;
+                    //return;
+                } else {
+                    dialogLayer.removeChild(d);
+                }
+            }
+
+            if (activeDialog && activeDialog.id === id) {
+                activeDialog = null;
+            }
+
+            if (openDialogPromises.hasOwnProperty(id)) {
+                // TODO unsure if this will get cleaned up automatically, rejecting it for now with false to signal canceled
+                openDialogPromises[id].reject(false);
+                delete openDialogPromises[id];
+            }
+
+            //if (openDialogs.length === 0) {
+            //    _toggleLayer(false);
+            //}
+            var allDialogs = Array.from(document.querySelectorAll('.' + BASE_DIALOG_CLASS));
+            if (allDialogs.length === 0) {
+                _toggleLayer(false);
+                loadingCount = 0;
+                openDialogs = [];
+                // reject promises?
+            }
+        };
+
 
         //floating panel
         var _createPanel = function(settings) {
@@ -336,9 +375,14 @@ define([
             return panel;
         };
 
+        var LOADING_DIALOG_CLASS = "zui-dialog-loading";
+
         var _activeDialogs = [];
+        var loadingCount = 0;
         var _active;
+        var _activeLoading;
         var _prius;
+
         return {
             current: function(){ return _prius; },
             addToPage: function(page){
@@ -346,9 +390,7 @@ define([
                     id:'dialogLayer', 
                     parent: page,
                     classes: ['zui-hidden'],
-                    template:'<div class="overlay">\
-                    <div class="dialogContainer"></div>\
-                    </div>',
+                    template:'<div class="dialogContainer overlay-bg"></div>',
                     events:{
                         // 'mouseup' : function(e) {
                         //     _stopDrag.call(this,e);
@@ -364,16 +406,94 @@ define([
                 });
 
                 _prius.triggerDialog = this.triggerDialog.bind(_prius);
-                _prius.toggleOverlay = this.toggleOverlay.bind(_prius);
+                _prius.toggleLayer = this.toggleLayer.bind(_prius);
                 _prius.resolveDialog = this.resolveDialog.bind(_prius);
                 _prius.activateDialog = this.activateDialog.bind(_prius);
 
+                // grid adds
+                _prius.triggerLoading = this.triggerLoading.bind(_prius);
+                _prius.clearLoading = this.clearLoading.bind(_prius);
                 return _prius;
+            },
+
+            triggerLoading: function (loadingMessage) {
+                var loadingContainer = _activeLoading ? _activeLoading : null;
+                if (!loadingContainer) {
+                    this.toggleLayer(true);
+
+                    var dialog_container = document.querySelector('.dialogContainer');
+
+                    loadingCount = 0;
+                    
+                    var loading_settings = {
+                        type:'loading',
+                        resizable: false,
+                        label: loadingMessage ? loadingMessage : "Loading...",
+                    };
+
+                    loadingContainer = Types.view.fab({  
+                        parent: this,
+                        insertionSelector: '.dialogContainer',
+                        classes: ["zui-dialog-base", LOADING_DIALOG_CLASS],
+                        template: _generateTemplate(loading_settings),
+                        events: { }
+                    });
+        
+                    //TODO need a more modular way to do this.
+                    loadingContainer.dialogType = loading_settings.type;
+
+                    _activeLoading = loadingContainer;
+                    loadingContainer.render();
+
+                    var inBoundQ = [
+                        {
+                            element: dialog_container,
+                            animation: 'fadeIn'
+                        },
+                        {
+                            element: loadingContainer.el,
+                            animation: 'fadeInDown'
+                        },
+                    ];
+                    mod_animation.queueAnimationSequence(inBoundQ).then(function(res){
+                        console.log('!! DONE !!', res);
+                    });
+                }
+
+                loadingCount++;
+                return loadingContainer.id;
+            },
+            clearLoading: function (clearAll) {
+                if (loadingCount > 1 && !clearAll) {
+                    loadingCount--;
+                }
+                else if (loadingCount === 1 || clearAll === true) {
+                    var dialog_container = document.querySelector('.dialogContainer');
+                    var outBoundQ = [
+                        {
+                            element: _activeLoading.el,
+                            animation: 'fadeOutUp'
+                        },
+                        {
+                            element: dialog_container,
+                            animation: 'fadeOut'
+                        },
+                    ];
+                    mod_animation.queueAnimationSequence(outBoundQ).then(function(res){
+                        _activeLoading.el.parentNode.removeChild(_activeLoading.el);
+                        _prius.removeView(_activeLoading);
+                        
+                        
+                        _prius.toggleLayer(false);
+                        _activeLoading = null;
+                        loadingCount = 0;
+                    });
+                }
             },
 
             // COMMON BOUND TO INSTANCE METHODS
             triggerDialog: function(settings){ 
-                this.toggleOverlay(true);
+                this.toggleLayer(true);
                 
                 var panel = _createPanel.call(this, settings);
                 _activeDialogs.push(panel);
@@ -401,7 +521,7 @@ define([
                 return promise;
             },
             //trigger dialog series
-            toggleOverlay: function(state){ 
+            toggleLayer: function(state){ 
                 if(state === true){
                     this.el.classList.remove('zui-hidden');
                 }
@@ -433,7 +553,7 @@ define([
                 }
                 
                 if(_activeDialogs.length === 0){
-                    this.toggleOverlay(false);
+                    this.toggleLayer(false);
                 }
             },
             activateDialog: function(id){

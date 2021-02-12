@@ -2,12 +2,13 @@
 .toolbar-container {
     border: dotted #333 1px;
     list-style: none;
+    font-size: 0;
 }
 
 .toolbar-button {
     border: dotted #333 1px;
-    padding: 10px;
-    font-size: 1.6rem;
+    padding: 8px;
+    font-size: 1.2rem;
     margin: 0 2px;
 }
 

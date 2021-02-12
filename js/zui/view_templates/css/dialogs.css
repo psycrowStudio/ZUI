@@ -103,6 +103,55 @@
     width: 100%;
 }
 
+
+/*  GRID TESTING */
+
+.overlay-bg {
+    background-color: rgba(55,55,55,0.85);
+}
+
+#dialogLayer .dialogContainer {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+
+    display: grid;
+    grid-template-columns: 25% 50% 25%;
+    grid-template-rows: 25% 50% 25%;
+
+    grid-template-areas:
+    "...... ...... ......"
+    "...... dialog ......"
+    "...... ...... ......";
+}
+
+.zui-dialog-base {
+    grid-area: dialog;
+    overflow:hidden;
+}
+
+.zui-dialog-loading-panel {
+
+    border: 2px solid crimson;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    font-size: 2.0rem;
+    background-color: #333;
+    color: #c1c1c1;
+
+    pointer-events: none;
+    -webkit-user-select: none; /* Safari */        
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
+}
+
+/*  END GRID TESTING */
+
+
 .zui-dialog {
     width: 50%;
     height: 50%;

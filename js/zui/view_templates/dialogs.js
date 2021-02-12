@@ -4,6 +4,8 @@ define([
     "text!/js/zui/view_templates/ejs/dialog_confirm.ejs",
     "text!/js/zui/view_templates/ejs/dialog_input.ejs",
     "text!/js/zui/view_templates/ejs/dialog_mc.ejs",
+    "text!/js/zui/view_templates/ejs/dialog_base.ejs",
+    "text!/js/zui/view_templates/ejs/dialog_loading.ejs",
     "text!/js/zui/view_templates/css/dialogs.css"
 ],
 function (
@@ -12,6 +14,8 @@ function (
     confirm_ejs,
     input_ejs,
     mc_ejs,
+    base_ejs,
+    loading_ejs,
     css
 ) {
     var MODULE_NAME = "dialogs";
@@ -19,6 +23,18 @@ function (
 
     return {
         templates:{
+            base: mod_templating.buildTemplateHarness({
+                key: "base_dialog", 
+                ejs: base_ejs,
+                // parent model (page / component)
+                context: {}
+            }),
+            loading: mod_templating.buildTemplateHarness({
+                key: "loading_dialog", 
+                ejs: loading_ejs,
+                // parent model (page / component)
+                context: {}
+            }),
             confirm: mod_templating.buildTemplateHarness({
                 key: "confirm_dialog", 
                 ejs: confirm_ejs,

@@ -1,12 +1,12 @@
 .tabs_row {
     padding: 12px 0 0;
     border: dotted #333 1px;
+    font-size: 0;
 }
 
 .tabs_content_row {
     min-height: 200px;
     border: dotted #333 1px;
-    
 }
 
 .zui-tab {
@@ -17,6 +17,7 @@
     text-align: center;
     padding: 4px 8px 2px;
     margin: 0;
+    font-size: .85rem;
 }
 
 .zui-tab:hover {

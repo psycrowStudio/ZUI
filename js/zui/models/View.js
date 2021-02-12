@@ -113,6 +113,7 @@ define([
                         }
 
                         //if post renerer modifiers, call them here
+                        this.trigger('post-render', { "hello": true } );
 
                         return this;
                     },
