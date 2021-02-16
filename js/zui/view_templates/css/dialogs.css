@@ -106,11 +106,12 @@
 
 /*  GRID TESTING */
 
+.zui-dialog.darken,
 .overlay-bg {
     background-color: rgba(55,55,55,0.85);
 }
 
-#dialogLayer .dialogContainer {
+#dialogLayer .zui-dialog {
     position: absolute;
     height: 100%;
     width: 100%;
@@ -118,8 +119,8 @@
     left: 0;
 
     display: grid;
-    grid-template-columns: 25% 50% 25%;
-    grid-template-rows: 25% 50% 25%;
+    grid-template-columns: 20% 60% 20%;
+    grid-template-rows: 15% 75% 10%;
 
     grid-template-areas:
     "...... ...... ......"
@@ -127,10 +128,71 @@
     "...... ...... ......";
 }
 
-.zui-dialog-base {
+.zui-dialog-body {
+    position: relative;
     grid-area: dialog;
-    overflow:hidden;
 }
+
+.zui-base-panel {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #999;
+    padding: 2px;
+    overflow: hidden;
+}
+
+
+.zui-dialog-title-bar {
+    min-height: 20px;
+    background-color: #333;
+    padding: 12px 20px;
+    color: #c1c1c1;
+
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currntly */
+}
+
+.zui-drag .zui-dialog-title-bar {
+    cursor: move;
+}
+
+
+.zui-dialog-content {
+    min-height: 50px;
+    padding: 12px 20px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    
+}
+
+.zui-dialog-button-bar {
+    min-height: 20px;
+    background-color: #333;
+    background-color: #333;
+    padding: 12px 20px;
+}
+
+.active .zui-base-panel {
+    background-color: #f00;
+}
+
+.zui-base-panel > .edge {
+    background-color:#c1c1c1;
+    cursor: initial;
+
+    position: relative;
+    
+    display: grid;
+    grid-template-rows: minmax(20px, auto) minmax(50px, 1fr) minmax(20px, auto);
+    max-height: 75vh;
+}
+
 
 .zui-dialog-loading-panel {
 
@@ -150,29 +212,6 @@
 }
 
 /*  END GRID TESTING */
-
-
-.zui-dialog {
-    width: 50%;
-    height: 50%;
-    margin: 100px auto 0;
-    /* background-color: #333; */
-    cursor:crosshair;
-}
-
-.zui-dialog.active{
-    background-color: #f00;
-}
-
-.zui-dialog > .edge {
-    background-color:#c1c1c1;
-    position: absolute;
-    top: 2px;
-    bottom:2px;
-    left:2px;
-    right: 2px;
-    cursor: initial;
-}
 
 .zui-dialog .titleBar {
     padding: 8px;
@@ -228,11 +267,7 @@
 }
 
 
-.zui-dialog.zui-drag {
-    position: absolute;
-    margin: 0;
-}
-
+/*  Resize Grab-Handles */
 .zui-dialog .resize-N {
     position: absolute;
     cursor: ns-resize;

@@ -199,8 +199,8 @@ define([
 
                                         },
                                         "click #btn_5": function(ev){
-                                            console.log("Button 5 clicked...");
-
+                                            var dialog_layer = zui.components.dialogLayer.current();
+                                            dialog_layer.triggerBasic();
                                         }
                                     },
                                     template: '\
