@@ -75,6 +75,8 @@ define([
                         if(!this.enabled)
                             return;
 
+                        this.trigger('pre-render', this);
+
                         mod_dom.clearChildren(this.el);
                         var compliled_template = _compileTemplate(this);
                         if(typeof compliled_template === 'string') {
@@ -84,17 +86,11 @@ define([
                             this.el.appendChild(compiled);
                         }
                         
-                        // if(this.model.afterTemplateGenerate) {
-                        //     this.model.afterTemplateGenerate(this.el);
-                        // }
-
                         this.childViews.forEach(function(child){
                             child.render();
                         });
                         
-                        //TODO start back here ---
-                        /// start to iron out the logger, make modules etc0
-                        this.trigger('render', { "hello": true } );
+                        this.trigger('post-render', this);
 
                         if(!this.el.parentNode && this.autoInsert){
                             var parent_dom = !this.parentView ? document.body : this.parentView instanceof Backbone.Model ? this.parentView.view.el : this.parentView.el;
@@ -106,15 +102,13 @@ define([
                                 }
     
                                 parent_dom.insertAdjacentElement(this.insertionPosition, this.el);
+                                this.trigger('post-insert', this);
                             }
                             else {
                                 console.warn('No parent located for: ' + this.id);
                             }
                         }
-
-                        //if post renerer modifiers, call them here
-                        this.trigger('post-render', { "hello": true } );
-
+          
                         return this;
                     },
 

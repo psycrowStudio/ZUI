@@ -5,6 +5,7 @@ define([
     'mod/dom_helper',
     'mod/animation',
     "zuiRoot/view_templates/dialogs",
+    "zuiRoot/components/collection_viewer",
 ], 
     function(
         Common, 
@@ -12,32 +13,553 @@ define([
         Types,
         mod_dom,
         mod_animation,
-        dialogs
+        dialogs,
+        zui_collection_viewer
     ){
         var MODULE_NAME = "zui_dialog_layer";
+        var LOADING_DIALOG_CLASS = "zui-loading-dialog";
 
-        function _generateTemplate(settings){
-            var template;
-            switch(settings.type){
-                case 'confirm':
-                    template = dialogs.templates['confirm'].compile(settings.typeSettings);
-                break;
-                case 'mc':
-                    template = dialogs.templates['mc'].compile(settings.typeSettings);
-                break;
-                case 'inputField':
-                    template = dialogs.templates['input'].compile(settings.typeSettings);
-                break;
-                case 'loading':
-                    template = dialogs.templates['loading'].compile(settings);
-                break;
-                default:
-                    template = dialogs.templates['base'].compile(settings.typeSettings);
-            }
+        var _openDialogs = [];
+        var loadingCount = 0;
+        var _active;
+        var _activeLoading;
+        var _prius;
+
+        // TODO save current focus element, and restore after?
+
+
+        // AKA -- floating panel
+        var _createBaseDialog = function(settings) {
+            // TODO specific logic for modal type behavior
             
-            return template;
+            var base_settings = {
+                glyph_code: settings.glyph_code ? settings.glyph_code : undefined,
+                title: settings.title ? settings.title : "",
+
+                title_bar_buttons: settings.title_bar_buttons ? settings.title_bar_buttons : [],
+                button_bar_buttons: settings.button_bar_buttons ? settings.button_bar_buttons : [],
+
+                draggable: settings.draggable === false ? false : true,
+                resizable: settings.resizable === false ? false : true,
+                showTitleBar: settings.showTitleBar === false ? false : true,
+                showTitleBarButtons: settings.showTitleBarButtons === false ? false : true,
+                showButtonBar: settings.showButtonBar === false ? false : true,
+                showOverlay: settings.showOverlay === false ? false : true
+            };
+            
+            var dialog = Types.view.fab({  
+                parent: this,
+                insertionSelector: '.dialogContainer',
+                classes: [
+                    "zui-dialog",
+                    (settings.draggable === false ? "" : "zui-drag"), 
+                    (settings.showOverlay === false ? "" : "darken")],
+                template: dialogs.templates['base'].compile(base_settings),
+                events: {
+                    'zui-dialog-resolution': function(e) {
+                        console.log('Resolved Event:', e, this);
+                        payload = !e || !e.detail ? {} : e.detail;
+
+                        this.parentView.resolveDialog(this.id, true, payload);
+                    },
+                    'zui-dialog-rejection': function(e) {
+                        console.log('Rejected Event:', e, this);
+                        payload = !e || !e.detail ? {} : e.detail;
+
+                        this.parentView.resolveDialog(this.id, false, payload);
+                    },
+                    'keydown': function(e){
+                        if(e.keyCode === 27 && this.el.classList.contains('active')){
+                            //ESC KEY
+                            for(var i in base_settings.title_bar_buttons) {
+                                if(base_settings.title_bar_buttons[i].hotkey_code === 27) {
+                                    if(Array.isArray(base_settings.title_bar_buttons[i].classes) && base_settings.title_bar_buttons[i].classes.indexOf("dismissPanel") > -1){
+                                        this.parentView.resolveDialog(this.id, false);
+                                    }
+                                    else if(typeof base_settings.title_bar_buttons[i].onClick === 'function'){
+                                        base_settings.title_bar_buttons[i].onClick(this, e);
+                                    }
+                                }
+                            }
+
+                            for(var i in base_settings.button_bar_buttons) {
+                                if(base_settings.button_bar_buttons[i].hotkey_code === 27) {
+                                    if(Array.isArray(base_settings.button_bar_buttons[i].classes) && base_settings.button_bar_buttons[i].classes.indexOf("dismissPanel") > -1){
+                                        this.parentView.resolveDialog(this.id, false);
+                                    }
+                                    else if(typeof base_settings.button_bar_buttons[i].onClick === 'function'){
+                                        base_settings.button_bar_buttons[i].onClick(this, e);
+                                    }
+                                }
+                            }
+
+                            return false;
+                        }
+                        if(e.keyCode === 13 && this.el.classList.contains('active'))
+                        {
+                            //ENTER KEY
+                            for(var i in base_settings.button_bar_buttons) {
+                                if(base_settings.button_bar_buttons[i].hotkey_code === 13) {
+                                    if(Array.isArray(base_settings.button_bar_buttons[i].classes) && base_settings.button_bar_buttons[i].classes.indexOf("confirmPanel") > -1){
+                                        this.parentView.resolveDialog(this.id, true);
+                                    }
+                                    else if(typeof base_settings.button_bar_buttons[i].onClick === 'function'){
+                                        base_settings.button_bar_buttons[i].onClick(this, e);
+                                    }
+                                }
+                            }
+                            return false;
+                        }
+                    },
+                    'click .zui-dialog-title-bar button:not(.dismissPanel):not(.confirmPanel)': function(e) {
+                        var index = parseInt(e.currentTarget.getAttribute('data-index'));
+                        if(typeof base_settings.title_bar_buttons[index].onClick === 'function'){
+                            base_settings.title_bar_buttons[index].onClick(this, e);
+                        }
+
+                        return false;
+                    },
+                    'click .zui-dialog-button-bar button:not(.dismissPanel):not(.confirmPanel)': function(e) {
+                        var index = parseInt(e.currentTarget.getAttribute('data-index'));
+                        if(typeof base_settings.button_bar_buttons[index].onClick === 'function'){
+                            base_settings.button_bar_buttons[index].onClick(this, e);
+                        }
+
+                        return false;
+                    },
+                    'click .dismissPanel': function(e) {
+                        console.log('Dismiss Panel', e, this);
+
+                        this.parentView.resolveDialog(this.id, false);
+                        return false;
+                    },
+                    'click .confirmPanel': function(e) {
+                        console.log('Confirm Panel', e, this);
+
+                        this.parentView.resolveDialog(this.id, true);
+                        return false;
+                    },
+                    'mousedown .zui-dialog-title-bar' : function(e) {
+                        if(this.el.classList.contains('zui-drag')){
+                            _startDrag.call(this,e);
+                        }
+                    },
+                    'mousedown .zui-dialog-panel': function(e){
+                        this.parentView.activateDialog(this.id);
+                    },
+                    'mousedown .resize-N': function(e) {
+                        _startResizePanel.call(this,'N', e);
+                    },
+                    'mousedown .resize-NE': function(e) {
+                        _startResizePanel.call(this,'NE', e);
+                    },
+                    'mousedown .resize-NW': function(e) {
+                        _startResizePanel.call(this,'NW', e); 
+                    },
+                    'mousedown .resize-S': function(e) {
+                        _startResizePanel.call(this, 'S', e); 
+                    },
+                    'mousedown .resize-SE': function(e) {
+                        _startResizePanel.call(this,'SE', e);  
+                    },
+                    'mousedown .resize-SW': function(e) {
+                        _startResizePanel.call(this,'SW', e);
+                    },
+                    'mousedown .resize-E': function(e) {
+                        _startResizePanel.call(this,'E', e);
+                    },
+                    'mousedown .resize-W': function(e) {
+                        _startResizePanel.call(this,'W', e);
+                    }
+                },
+                autoInsert: settings.autoInsert
+            });
+
+            return dialog;
+        };
+
+        var _createTypedDialog = function(dialogType, settings) { 
+            var default_accept_button = {
+                label:"OK",
+                glyph_code:"check",
+                hover_text: "OK",
+                classes: ["confirmPanel"],
+                hotkey_code: 13 
+            };
+
+            var default_reject_button = {
+                label:"Cancel",
+                glyph_code:"times",
+                hover_text: "Cancel",
+                classes: ["dismissPanel"]
+            };
+
+            var default_x_button = {
+                label:"",
+                glyph_code:"times",
+                hover_text: "Cancel",
+                classes: ["dismissPanel"],
+                hotkey_code: 27 
+            };
+            
+            if(dialogType === "confirm"){
+                // button labels in typeSettings
+                var confirm_label = Array.isArray(settings.typeSettings.buttonLabels) && settings.typeSettings.buttonLabels.length == 2? settings.typeSettings.buttonLabels[0] : "Yes";
+                var decline_label = Array.isArray(settings.typeSettings.buttonLabels) && settings.typeSettings.buttonLabels.length == 2? settings.typeSettings.buttonLabels[1] : "No";
+
+                settings.glyph_code = settings.glyph_code || "alert"; 
+                settings.title_bar_buttons = [];
+                settings.button_bar_buttons = settings.button_bar_buttons || [
+                    {
+                        label: confirm_label,
+                        glyph_code:"check",
+                        hover_text: confirm_label,
+                        hotkey_code: 13,
+                        classes: ["confirmPanel"]
+                    },
+                    {
+                        label: decline_label,
+                        glyph_code:"times",
+                        hover_text: decline_label,
+                        hotkey_code: 27,
+                        classes: ["dismissPanel"]
+                    }
+                ];
+                dialogType = "info"; // the remaining details are the same as info
+
+            } 
+            else if(dialogType === "error"){                
+                settings.classes.append('zui-error-dialog');
+                settings.glyph_code = settings.glyph_code || "alert"; 
+                settings.title_bar_buttons = [];
+                settings.button_bar_buttons = settings.button_bar_buttons || [
+                   default_accept_button
+                ];
+
+                dialogType = "info"; // the remaining details are the same as info
+            }
+            else if(dialogType === "info"){       
+                settings.button_bar_buttons = settings.button_bar_buttons || [default_accept_button];
+            }
+            else if(dialogType === "mc"){       
+                settings.title_bar_buttons = settings.title_bar_buttons || [default_x_button];
+            }
+            else if(dialogType === "input"){       
+                var default_input_accept_button = {
+                    label:"OK",
+                    glyph_code:"check",
+                    hover_text: "OK",
+                    hotkey_code: 13,
+                    onClick: function(view, ev){
+                        console.log("input OK");
+                        var inputField = view.el.querySelector('.dialog-input').value;
+                        
+                        // validate input
+                        if(inputField){
+                            mod_dom.raiseCustomEvent("zui-dialog-resolution", inputField, dialog.el);
+                        }
+                        else {
+                            // validation failed...
+                            console.error("Input cannot be blank...");
+                        }
+                    }
+                };
+                
+                settings.title_bar_buttons = settings.title_bar_buttons || [default_x_button];
+                settings.button_bar_buttons = [default_input_accept_button];
+            }
+
+            var dialog = _createBaseDialog.call(this, settings);
+            dialog.listenTo(dialog, 'post-render', function(){
+                var content_box = dialog.el.querySelector('.zui-dialog-content');
+                var content = "";
+                switch(dialogType){
+                    case "info":
+                        content = dialogs.templates['info'].compile(settings.typeSettings);
+                        break;
+                    case "input":
+                        content = dialogs.templates['input'].compile(settings.typeSettings);
+                        break;
+                    case "mc":
+                        content = dialogs.templates['mc'].compile(settings.typeSettings);
+                        break;
+                    case "custom":
+                        content = _compileTemplate.call(this, settings.typeSettings.content, settings.typeSettings);
+                        break;
+                }
+    
+                if(mod_dom.isDomObject(content)){
+                    content_box.insertAdjacentElement('beforeend', content);
+                } else if(content){
+                    content_box.insertAdjacentHTML('beforeend', content);
+                }
+
+                switch(dialogType){
+                    case "mc": 
+                        var list_settings = {
+                            dataset: settings.typeSettings.buttons,
+                            insertionSelector: ".mc-box",
+                            parent: dialog,
+                            generateItemSettings: function(el, i){
+                                return {
+                                    label: el.label,
+                                    hover_text: el.label,
+                                    value: el.value
+                                };
+                            },
+                            onClick:function(view, ev){
+                                console.log("dialog item picked", view.model[ev.currentTarget.id.split('_')[1]]);
+                                
+                                mod_dom.raiseCustomEvent("zui-dialog-resolution", view.model[ev.currentTarget.id.split('_')[1]], dialog.el);
+                            }
+                        };
+
+                        var list =  zui_collection_viewer.createListViewer(list_settings);
+                        list.render();
+                    break;
+                }
+            });
+
+            return dialog;
+        };
+
+        var _compileTemplate = function(content, settings){
+            if(content === null){
+                return '';
+            } else if(typeof content === 'string'){
+                return content;
+            } else if(typeof content === 'function'){
+                return content(settings);
+            }
+            else if(content.compile){
+                return content.compile(settings);
+            }
+            else {
+                return '';
+            }
+        };
+
+        var _activateDialog = function(dialog){
+            _prius.toggleLayer(true);
+
+            dialog.autoInsert = true;
+            dialog.render();
+
+            _openDialogs.push(dialog);
+            _prius.activateDialog(dialog.id);
+            return _basicTransitionIn(dialog);
+        };
+
+        function _addPromiseToView(view){
+            var generator = function(handle){
+                var promise = new Promise(function(resolve, reject){
+                    handle.resolve = resolve;
+                    handle.reject = reject;
+                });
+                view.handle = handle;
+                return promise;
+            };
+
+            return Common.QuerablePromise.call(view, generator);
         }
 
+        return {
+            current: function(){ return _prius; },
+            addToPage: function(page){
+                _prius = Types.view.fab({ 
+                    id:'dialogLayer', 
+                    parent: page,
+                    classes: ['zui-hidden'],
+                    template:'',
+                    events:{
+                        // 'mouseup' : function(e) {
+                        //     _stopDrag.call(this,e);
+                        // },
+                        'click' : function(e) {
+                            if(e.target.classList.contains('zui-dialog') || e.target.classList.contains('zui-dialog-body')){
+                                console.log('deactivating non-modal dialogs...');
+                                this.activateDialog();
+                            }
+                        }
+                    }
+                });
+
+                _prius.triggerDialog = this.triggerDialog.bind(_prius);
+                _prius.toggleLayer = this.toggleLayer.bind(_prius);
+                _prius.resolveDialog = this.resolveDialog.bind(_prius);
+                _prius.activateDialog = this.activateDialog.bind(_prius);
+
+                // grid adds
+                _prius.triggerLoading = this.triggerLoading.bind(_prius);
+                _prius.clearLoading = this.clearLoading.bind(_prius);
+                return _prius;
+            },
+            triggerLoading: function (loadingMessage) {
+                var loadingContainer = _activeLoading ? _activeLoading : null;
+                if (!loadingContainer) {
+                    this.toggleLayer(true);
+
+                    loadingCount = 0;
+                    
+                    var loading_settings = {
+                        resizable: false,
+                        label: loadingMessage !== undefined ? loadingMessage : "Loading..."
+                    };
+
+                    loadingContainer = Types.view.fab({  
+                        parent: this,
+                        classes: ["zui-dialog", LOADING_DIALOG_CLASS, 'darken'],
+                        template: dialogs.templates['loading'].compile(loading_settings),
+                        dialogType: "loading",
+                        events: { }
+                    });
+
+                    _activeLoading = loadingContainer;
+                    loadingContainer.render();
+
+                    _basicTransitionIn(loadingContainer);
+                }
+
+                loadingCount++;
+                return loadingContainer.id;
+            },
+            clearLoading: function (clearAll) {
+                if (loadingCount > 1 && !clearAll) {
+                    loadingCount--;
+                }
+                else if (loadingCount === 1 || clearAll === true) {
+                    _basicTransitionOut(_activeLoading).then(function(res){
+                        _activeLoading.el.parentNode.removeChild(_activeLoading.el);
+                        _prius.removeView(_activeLoading);
+                        _prius.toggleLayer(false);
+                        _activeLoading = null;
+                        loadingCount = 0;
+                    });
+                }
+            },
+
+            triggerDialog:function(dialogType, settings){
+                // TODO Consider how to return the dialog ID to the callee
+
+                var base_settings = {
+                    glyph_code:  "globe",
+                    resizable: true,
+                    draggable: true
+                }
+
+                settings = settings || base_settings;
+                
+                for(key in base_settings){
+                    settings[key] = settings.hasOwnProperty(key) ? settings[key] : base_settings[key];
+                }
+
+                var dialog =_createTypedDialog.call(this, dialogType, settings);
+
+                return _activateDialog.call(this, dialog).then(function(){
+                    return _addPromiseToView.call(this, dialog);
+                });
+            },
+
+            toggleLayer: function(state){ 
+                if(state === true){
+                    this.el.classList.remove('zui-hidden');
+                }
+                else if(state === false) {
+                    this.el.classList.add('zui-hidden');
+                }
+                else {
+                    this.el.classList.toggle('zui-hidden');
+                }
+            },
+            resolveDialog: function(id, state, settings){
+                console.log('resolving dialog', id, settings);
+                var activeInstance = _openDialogs.find(function(item){ return item.id === id; });
+                if(activeInstance) { 
+                    if(state === true) {
+                        activeInstance.handle.resolve(settings || true);
+                    }
+                    else {
+                        activeInstance.handle.reject(settings || false)
+                    }
+
+                    _basicTransitionOut(activeInstance).then(function(res){
+                        if(activeInstance.el && activeInstance.el.parentNode){
+                            activeInstance.parentView.removeView(activeInstance);
+                            activeInstance.el.parentNode.removeChild(activeInstance.el);                            
+                            _openDialogs.splice(_openDialogs.indexOf(activeInstance), 1);
+                        }
+
+                        if(_openDialogs.length === 0){
+                            _prius.toggleLayer(false);
+                        }
+                    });
+                }
+            },
+            activateDialog: function(id){
+                if(!id) {
+                    if(_active)
+                    {
+                        console.log('Deactivating:', _active.id);
+                        _active.el.classList.remove('active');
+                    }
+                    _active = null;
+                }
+                else {
+                    
+                    var next = _openDialogs.find(function(item){ return item.id === id; });
+                    if(next && next != _active){
+                        console.log('Activating:', id);
+                        if(_active)
+                        {
+                            _active.el.classList.remove('active');
+                        }
+                        
+                        next.el.classList.add('active');
+                        _active = next;
+                    }
+                }
+            }
+        };
+
+        // animation helpers
+        function _basicTransitionIn(view){
+            document.activeElement.blur();
+            var dialog_container = view.el;
+            var dialog_body = view.el.querySelector('.zui-dialog-body');
+            var dialog_panel = view.el.querySelector('.zui-dialog-panel');
+            var inBoundQ = [
+                {
+                    element: dialog_container,
+                    animation: 'fadeIn'
+                },
+                {
+                    element: dialog_body,
+                    animation: 'fadeInDown'
+                },
+            ];
+            return mod_animation.queueAnimationSequence(inBoundQ).then(function(){
+                dialog_panel.focus();
+            });
+        }
+
+        function _basicTransitionOut(view){
+            document.activeElement.blur();
+            var dialog_container = view.el;
+            var dialog_body = view.el.querySelector('.zui-dialog-body');
+            var outBoundQ = [
+                {
+                    element: dialog_body,
+                    animation: 'fadeOutUp'
+                },
+                {
+                    element: dialog_container,
+                    animation: 'fadeOut'
+                },
+            ];
+            return mod_animation.queueAnimationSequence(outBoundQ)
+        }
+
+        // Dialog Move & Resize Helpers
         function _move(x,y) {
             var rawX =  x;
             rawX = rawX < this.box_x_zero ? this.box_x_zero : rawX;
@@ -77,7 +599,7 @@ define([
             var dialog_body = this.el.querySelector('.zui-dialog-body');
             var body_rect = dialog_body.getBoundingClientRect();
 
-            var dialog_panel = this.el.querySelector('.zui-base-panel');
+            var dialog_panel = this.el.querySelector('.zui-dialog-panel');
             var panel_rect = dialog_panel.getBoundingClientRect();
             
             var dialog_view_rect = this.el.getBoundingClientRect();
@@ -119,8 +641,9 @@ define([
             return false;
         }
 
-        //TODO add in a check for minimum size (stored on model?)
-        var _resizePanel = function(direction, e){
+        function _resizePanel(direction, e){
+            //TODO add in a check for minimum size (stored on model?)
+
             e = e || window.event;
         
             if(!this.isResizing){ return true };      
@@ -184,10 +707,10 @@ define([
             }
         };
 
-        var _startResizePanel = function(direction, e){
+        function _startResizePanel(direction, e){
             e = e || window.event;
 
-            var dialog_panel = this.el.querySelector('.zui-base-panel');
+            var dialog_panel = this.el.querySelector('.zui-dialog-panel');
             var panel_rect = dialog_panel.getBoundingClientRect();
             var inner_edge = this.el.querySelector('.edge');
         
@@ -214,687 +737,12 @@ define([
             };
         };
 
-        var _stopResizePanel = function(){
+        function _stopResizePanel(){
             console.log('Stopping Resize...');
             this.isResizing = false;
             this.el.onmousemove = null;
             this.el.onmouseup = null;
             return false;
         };
-
-        // Dialog logic helpers
-        var _panelEval = function(event){
-            var settings = { isResolved: false };
-            switch(this.dialogType){
-                case 'mc':
-                settings.isResolved = true;    
-                settings.data = event.target.getAttribute('data-value');
-                break;
-                case 'inputField':
-                    settings.isResolved = true;    
-                    inputField = this.el.querySelector('.dialog-input');
-                    settings.data = inputField.value;
-                    if(!settings.data){
-                         //TODO add custom eval & messaging
-                        settings.abort = true;
-                    }
-                break;
-            }
-
-            return settings;
-        };
-
-        var _removeDialog = function (id) {
-            for (var z = 0; z < openDialogs.length; z++) {
-                if (openDialogs[z].id === id) {
-                    openDialogs.splice(z, 1);
-                    break;
-                }
-            }
-
-            var d = dialogLayer.querySelector('#' + id);
-            if (d) {
-                if (d.classList.contains(LOADING_DIALOG_CLASS) && loadingCount === 1) {
-                    dialogLayer.removeChild(d);
-                    loadingCount--;
-                } else if (d.classList.contains(LOADING_DIALOG_CLASS)) {
-                    loadingCount--;
-                    //return;
-                } else {
-                    dialogLayer.removeChild(d);
-                }
-            }
-
-            if (activeDialog && activeDialog.id === id) {
-                activeDialog = null;
-            }
-
-            if (openDialogPromises.hasOwnProperty(id)) {
-                // TODO unsure if this will get cleaned up automatically, rejecting it for now with false to signal canceled
-                openDialogPromises[id].reject(false);
-                delete openDialogPromises[id];
-            }
-
-            //if (openDialogs.length === 0) {
-            //    _toggleLayer(false);
-            //}
-            var allDialogs = Array.from(document.querySelectorAll('.' + BASE_DIALOG_CLASS));
-            if (allDialogs.length === 0) {
-                _toggleLayer(false);
-                loadingCount = 0;
-                openDialogs = [];
-                // reject promises?
-            }
-        };
-
-
-        //floating panel
-        var _createPanel = function(settings) {
-            var panel = Types.view.fab({  
-                parent: this,
-                insertionSelector: '.dialogContainer',
-                classes: ['zui-panel', 'zui-dialog', 'zui-drag'],
-                template: _generateTemplate(settings),
-                events: {
-                    // 'zui-dialog-resolution': function(e) {
-
-                    // },
-                    // 'zui-dialog-rejection': function(e) {
-                        
-                    // },
-                    'keypress input': function(e){
-                        if(e.keyCode === 13)
-                        {
-                            console.log('Eval Panel', e, this);
-                            var settings = _panelEval.call(this, e) || { isResolved: false };
-                            
-                            if(!settings.abort){
-                                this.parentView.resolveDialog(this.id, settings);
-                            }
-                            
-                            return false;
-                        }
-                    },
-
-                    'click .panelResult': function(e) {
-                        console.log('Eval Panel', e, this);
-                        var settings = _panelEval.call(this, e) || { isResolved: false };
-                        
-                        // have a check if continue (ex failed input validation)
-                        if(!settings.abort){
-                            this.parentView.resolveDialog(this.id, settings);
-                        }
-                        
-                        return false;
-                    },
-                    'click .dismissPanel': function(e) {
-                        console.log('Dismiss Panel', e, this);
-                        var settings = {
-                            isResolved: false
-                        };
-
-                        this.parentView.resolveDialog(this.id, settings);
-                        return false;
-                    },
-                    'click .confirmPanel': function(e) {
-                        console.log('Confirm Panel', e, this);
-                        var settings = { 
-                            isResolved: true
-                        };
-
-                        this.parentView.resolveDialog(this.id, settings);
-                        return false;
-                    },
-                    'mousedown .titleBar' : function(e) {
-                        if(this.el.classList.contains('zui-drag')){
-                            _startDrag.call(this,e);
-                        }
-                    },
-                    'mousedown': function(e){
-                        this.parentView.activateDialog(this.id);
-                    },
-                    'mousedown .resize-N': function(e) {
-                        _startResizePanel.call(this,'N', e);
-                    },
-                    'mousedown .resize-NE': function(e) {
-                        _startResizePanel.call(this,'NE', e);
-                    },
-                    'mousedown .resize-NW': function(e) {
-                        _startResizePanel.call(this,'NW', e); 
-                    },
-                    'mousedown .resize-S': function(e) {
-                        _startResizePanel.call(this, 'S', e); 
-                    },
-                    'mousedown .resize-SE': function(e) {
-                        _startResizePanel.call(this,'SE', e);  
-                    },
-                    'mousedown .resize-SW': function(e) {
-                        _startResizePanel.call(this,'SW', e);
-                    },
-                    'mousedown .resize-E': function(e) {
-                        _startResizePanel.call(this,'E', e);
-                    },
-                    'mousedown .resize-W': function(e) {
-                        _startResizePanel.call(this,'W', e);
-                    }
-                }
-            });
-
-            //TODO need a more modular way to do this.
-            panel.dialogType = settings.type;
-            panel.dialogTitle = settings.title;
-            panel.dialogContent = settings.content;
-
-            return panel;
-        };
-
-        var _createBaseDialog = function(settings) {
-            // TODO specific logic for modal type behavior
-            
-            var base_settings = {
-                typeSettings : {
-                    glyph_code: settings.glyph_code ? settings.glyph_code : undefined,
-                    title: settings.title ? settings.title : "",
-
-                    title_bar_buttons: settings.title_bar_buttons ? settings.title_bar_buttons : [],
-                    button_bar_buttons: settings.button_bar_buttons ? settings.button_bar_buttons : [],
-
-                    draggable: settings.draggable === false ? false : true,
-                    resizable: settings.resizable === false ? false : true,
-                    showTitleBar: settings.showTitleBar === false ? false : true,
-                    showTitleBarButtons: settings.showTitleBarButtons === false ? false : true,
-                    showButtonBar: settings.showButtonBar === false ? false : true,
-                    showOverlay: settings.showOverlay === false ? false : true
-                }
-            };
-            
-            var panel = Types.view.fab({  
-                parent: this,
-                insertionSelector: '.dialogContainer',
-                classes: [
-                    "zui-dialog",
-                    (settings.draggable === false ? "" : "zui-drag"), 
-                    (settings.showOverlay === false ? "" : "darken")],
-                template: _generateTemplate(base_settings),
-                events: {
-                    'zui-dialog-resolution': function(e) {
-
-                    },
-                    'zui-dialog-rejection': function(e) {
-                        
-                    },
-                    'keypress input': function(e){
-                        if(e.keyCode === 13)
-                        {
-                            console.log('Eval Panel', e, this);
-                            var settings = _panelEval.call(this, e) || { isResolved: false };
-                            
-                            if(!settings.abort){
-                                this.parentView.resolveDialog(this.id, settings);
-                            }
-                            
-                            return false;
-                        }
-                        //TODO add ESC can close dialog
-                    },
-                    'click input': function(e){
-                        if(e.keyCode === 13)
-                        {
-                            console.log('Eval Panel', e, this);
-                            var settings = _panelEval.call(this, e) || { isResolved: false };
-                            
-                            if(!settings.abort){
-                                this.parentView.resolveDialog(this.id, settings);
-                            }
-                            
-                            return false;
-                        }
-                    },
-                    'click .zui-dialog-title-bar button:not(.dismissPanel):not(.confirmPanel):not(.panelResult) ': function(e) {
-                        console.log('Title Buttons', e, this);
-                        //_prius.triggerBasic();
-                        return false;
-                    },
-                    'click .zui-dialog-button-bar button:not(.dismissPanel):not(.confirmPanel):not(.panelResult) ': function(e) {
-                        console.log('Title Buttons', e, this);
-
-                        return false;
-                    },
-                    'click .panelResult': function(e) {
-                        console.log('Eval Panel', e, this);
-                        var settings = _panelEval.call(this, e) || { isResolved: false };
-                        
-                        // have a check if continue (ex failed input validation)
-                        if(!settings.abort){
-                            this.parentView.resolveDialog(this.id, settings);
-                        }
-                        
-                        return false;
-                    },
-                    'click .dismissPanel': function(e) {
-                        console.log('Dismiss Panel', e, this);
-                        var settings = {
-                            isResolved: false
-                        };
-
-                        this.parentView.resolveDialog(this.id, settings);
-                        return false;
-                    },
-                    'click .confirmPanel': function(e) {
-                        console.log('Confirm Panel', e, this);
-                        var settings = { 
-                            isResolved: true
-                        };
-
-                        this.parentView.resolveDialog(this.id, settings);
-                        return false;
-                    },
-                    'mousedown .zui-dialog-title-bar' : function(e) {
-                        if(this.el.classList.contains('zui-drag')){
-                            _startDrag.call(this,e);
-                        }
-                    },
-                    'mousedown .zui-base-panel': function(e){
-                        this.parentView.activateDialog(this.id);
-                    },
-                    'mousedown .resize-N': function(e) {
-                        _startResizePanel.call(this,'N', e);
-                    },
-                    'mousedown .resize-NE': function(e) {
-                        _startResizePanel.call(this,'NE', e);
-                    },
-                    'mousedown .resize-NW': function(e) {
-                        _startResizePanel.call(this,'NW', e); 
-                    },
-                    'mousedown .resize-S': function(e) {
-                        _startResizePanel.call(this, 'S', e); 
-                    },
-                    'mousedown .resize-SE': function(e) {
-                        _startResizePanel.call(this,'SE', e);  
-                    },
-                    'mousedown .resize-SW': function(e) {
-                        _startResizePanel.call(this,'SW', e);
-                    },
-                    'mousedown .resize-E': function(e) {
-                        _startResizePanel.call(this,'E', e);
-                    },
-                    'mousedown .resize-W': function(e) {
-                        _startResizePanel.call(this,'W', e);
-                    }
-                }
-            });
-
-            //TODO need a more modular way to do this.
-            panel.dialogType = settings.type;
-            panel.dialogTitle = settings.title;
-            panel.dialogContent = settings.content;
-
-            return panel;
-        };
-
-        var LOADING_DIALOG_CLASS = "zui-dialog-loading";
-
-        var _activeDialogs = [];
-        var loadingCount = 0;
-        var _active;
-        var _activeLoading;
-        var _prius;
-
-        return {
-            current: function(){ return _prius; },
-            addToPage: function(page){
-                _prius = Types.view.fab({ 
-                    id:'dialogLayer', 
-                    parent: page,
-                    classes: ['zui-hidden'],
-                    template:'',
-                    events:{
-                        // 'mouseup' : function(e) {
-                        //     _stopDrag.call(this,e);
-                        // },
-                        'click' : function(e) {
-                            if(e.target.classList.contains('zui-dialog') || e.target.classList.contains('zui-dialog-body')){
-                                console.log('deactivating non-modal dialogs...');
-                                this.activateDialog();
-                            }
-                        },
-
-                    }
-                });
-
-                _prius.triggerDialog = this.triggerDialog.bind(_prius);
-                _prius.toggleLayer = this.toggleLayer.bind(_prius);
-                _prius.resolveDialog = this.resolveDialog.bind(_prius);
-                _prius.activateDialog = this.activateDialog.bind(_prius);
-
-                _prius.triggerBasic = this.triggerBasic.bind(_prius);
-
-                // grid adds
-                _prius.triggerLoading = this.triggerLoading.bind(_prius);
-                _prius.clearLoading = this.clearLoading.bind(_prius);
-                return _prius;
-            },
-            triggerLoading: function (loadingMessage) {
-                var loadingContainer = _activeLoading ? _activeLoading : null;
-                if (!loadingContainer) {
-                    this.toggleLayer(true);
-
-                    loadingCount = 0;
-                    
-                    var loading_settings = {
-                        type:'loading',
-                        resizable: false,
-                        label: loadingMessage !== undefined ? loadingMessage : "Loading..."
-                    };
-
-                    loadingContainer = Types.view.fab({  
-                        parent: this,
-                        classes: ["zui-dialog", LOADING_DIALOG_CLASS, 'darken'],
-                        template: _generateTemplate(loading_settings),
-                        events: { }
-                    });
-        
-                    //TODO need a more modular way to do this.
-                    loadingContainer.dialogType = loading_settings.type;
-
-                    _activeLoading = loadingContainer;
-                    loadingContainer.render();
-
-                    var dialog_container = loadingContainer.el;
-                    var dialog_body = loadingContainer.el.querySelector('.zui-dialog-body');
-                    var inBoundQ = [
-                        {
-                            element: dialog_container,
-                            animation: 'fadeIn'
-                        },
-                        {
-                            element: dialog_body,
-                            animation: 'fadeInDown'
-                        },
-                    ];
-                    mod_animation.queueAnimationSequence(inBoundQ).then(function(res){
-                        console.log('!! DONE !!', res);
-                    });
-                }
-
-                loadingCount++;
-                return loadingContainer.id;
-            },
-            clearLoading: function (clearAll) {
-                if (loadingCount > 1 && !clearAll) {
-                    loadingCount--;
-                }
-                else if (loadingCount === 1 || clearAll === true) {
-                    var dialog_container = _activeLoading.el;
-                    var dialog_body = _activeLoading.el.querySelector('.zui-dialog-body');
-                    var outBoundQ = [
-                        {
-                            element: dialog_body,
-                            animation: 'fadeOutUp'
-                        },
-                        {
-                            element: dialog_container,
-                            animation: 'fadeOut'
-                        },
-                    ];
-                    mod_animation.queueAnimationSequence(outBoundQ).then(function(res){
-                        _activeLoading.el.parentNode.removeChild(_activeLoading.el);
-                        _prius.removeView(_activeLoading);
-                        
-                        
-                        _prius.toggleLayer(false);
-                        _activeLoading = null;
-                        loadingCount = 0;
-                    });
-                }
-            },
-
-
-            triggerBasic:function(){
-                var _default_title_bar_buttons = [
-                    {
-                        label:"",
-                        glyph_code:"cog",
-                        hover_text: "Settings",
-                        disabled: false,
-                        onClick:function(view, ev){
-                            console.log("Home", this);
-                            var glyph = ev.currentTarget.querySelector('.glyph');
-                            if(glyph.classList.contains('fa-' + this.glyph_code)){
-                                glyph.classList.remove('fa-' + this.glyph_code);
-                                glyph.classList.add('fa-cog');
-                            }
-                            else {
-                                glyph.classList.remove('fa-cog');
-                                glyph.classList.add('fa-' + this.glyph_code);
-                            }
-                        }
-                    },
-                    {
-                        label:"",
-                        glyph_code:"times",
-                        hover_text: "Close",
-                        disabled: false,
-                        classes: ["dismissPanel"],
-                        onClick:function(view, ev){
-                            console.log("Home", this);
-                            var glyph = ev.currentTarget.querySelector('.glyph');
-                            if(glyph.classList.contains('fa-' + this.glyph_code)){
-                                glyph.classList.remove('fa-' + this.glyph_code);
-                                glyph.classList.add('fa-cog');
-                            }
-                            else {
-                                glyph.classList.remove('fa-cog');
-                                glyph.classList.add('fa-' + this.glyph_code);
-                            }
-                        }
-                    },
-                ];
-    
-                var _default_button_bar_buttons = [
-                    {
-                        label:"Edit",
-                        glyph_code:"pencil",
-                        hover_text: "Make Changes",
-                        disabled: true,
-                        onClick:function(view, ev){
-                            console.log("Home", this);
-                            var glyph = ev.currentTarget.querySelector('.glyph');
-                            if(glyph.classList.contains('fa-' + this.glyph_code)){
-                                glyph.classList.remove('fa-' + this.glyph_code);
-                                glyph.classList.add('fa-cog');
-                            }
-                            else {
-                                glyph.classList.remove('fa-cog');
-                                glyph.classList.add('fa-' + this.glyph_code);
-                            }
-                        }
-                    },
-                    {
-                        label:"OK",
-                        glyph_code:"check",
-                        hover_text: "Confirm",
-                        disabled: false,
-                        classes: ["confirmPanel"],
-                        onClick:function(view, ev){
-                            console.log("Home", this);
-                            var glyph = ev.currentTarget.querySelector('.glyph');
-                            if(glyph.classList.contains('fa-' + this.glyph_code)){
-                                glyph.classList.remove('fa-' + this.glyph_code);
-                                glyph.classList.add('fa-cog');
-                            }
-                            else {
-                                glyph.classList.remove('fa-cog');
-                                glyph.classList.add('fa-' + this.glyph_code);
-                            }
-                        }
-                    },
-                ];
-
-                var base_settings = {
-                    glyph_code:  "globe",
-                    title: "BASE DIALOG",
-                    title_bar_buttons: _default_title_bar_buttons,
-                    button_bar_buttons: _default_button_bar_buttons,
-                    resizable: false,
-                    draggable: false
-                }
-
-
-                this.toggleLayer(true);
-                var panel = _createBaseDialog.call(this, base_settings);
-                
-                _activeDialogs.push(panel);
-                this.activateDialog(panel.id);
-                panel.render();
-                
-                var dialog_container = panel.el;
-                var dialog_body = panel.el.querySelector('.zui-base-panel');
-                var inBoundQ = [
-                    {
-                        element: dialog_container,
-                        animation: 'fadeIn'
-                    },
-                    {
-                        element: dialog_body,
-                        animation: 'fadeInDown'
-                    },
-                ];
-                mod_animation.queueAnimationSequence(inBoundQ).then(function(res){
-                    console.log('!! DONE !!', res);
-                });
-
-
-                //APPLY MODIFIERS:
-                panel.isDragging = false
-                panel.offsetX = 0;
-                panel.offsetY = 0;
-                panel.el.style.left = (window.innerWidth /2 - panel.el.offsetWidth /2) + 'px';
-                panel.el.style.top = (window.innerHeight /2 - panel.el.offsetHeight /2) + 'px';
-                
-                //TODO start here
-                var generator =  function(handle){
-                    var promise = new Promise(function(resolve, reject){
-                        handle.resolve = resolve;
-                        handle.reject = reject;
-                    });
-                    panel.handle = handle;
-                    return promise;
-                } 
-
-                var promise = Common.QuerablePromise.call(panel, generator);
-                return promise;
-            },
-
-            // COMMON BOUND TO INSTANCE METHODS
-            triggerDialog: function(settings){ 
-                this.toggleLayer(true);
-                
-                var panel = _createPanel.call(this, settings);
-                _activeDialogs.push(panel);
-                this.activateDialog(panel.id);
-
-                this.render();
-                //APPLY MODIFIERS:
-                panel.isDragging = false
-                panel.offsetX = 0;
-                panel.offsetY = 0;
-                panel.el.style.left = (window.innerWidth /2 - panel.el.offsetWidth /2) + 'px';
-                panel.el.style.top = (window.innerHeight /2 - panel.el.offsetHeight /2) + 'px';
-                
-                //TODO start here
-                var generator =  function(handle){
-                    var promise = new Promise(function(resolve, reject){
-                        handle.resolve = resolve;
-                        handle.reject = reject;
-                    });
-                    panel.handle = handle;
-                    return promise;
-                } 
-
-                var promise = Common.QuerablePromise.call(panel, generator);
-                return promise;
-            },
-            //trigger dialog series
-            toggleLayer: function(state){ 
-                if(state === true){
-                    this.el.classList.remove('zui-hidden');
-                }
-                else if(state === false) {
-                    this.el.classList.add('zui-hidden');
-                }
-                else {
-                    this.el.classList.toggle('zui-hidden');
-                }
-            },
-            resolveDialog: function(id, settings){
-                //TODO remove dialog from DOM
-                console.log('resolving dialog', id, settings);
-                var activeInstance = _activeDialogs.find(function(item){ return item.id === id; });
-                if(activeInstance && settings.isResolved) {
-                    activeInstance.handle.resolve(settings);
-                }
-                else if (activeInstance && !settings.isResolved){
-                    activeInstance.handle.reject(settings)
-                }
-
-                var dialog_container = activeInstance.el;
-                var dialog_body = activeInstance.el.querySelector('.zui-base-panel');
-                var outBoundQ = [
-                    {
-                        element: dialog_body,
-                        animation: 'fadeOutUp'
-                    },
-                    {
-                        element: dialog_container,
-                        animation: 'fadeOut'
-                    },
-                ];
-
-                var _dialog_layer = this;
-                mod_animation.queueAnimationSequence(outBoundQ).then(function(res){
-                    if(activeInstance && activeInstance.el && activeInstance.el.parentNode){
-                        activeInstance.el.parentNode.removeChild(activeInstance.el);
-                    }
-    
-                    if(activeInstance){
-                        activeInstance.parentView.removeView(activeInstance);
-                        _activeDialogs.splice(_activeDialogs.indexOf(activeInstance), 1);
-                    }
-                    
-                    if(_activeDialogs.length === 0){
-                        _dialog_layer.toggleLayer(false);
-                    }
-                });
-
-
-            },
-            activateDialog: function(id){
-                if(!id) {
-                    if(_active)
-                    {
-                        console.log('Deactivating:', _active.id);
-                        _active.el.classList.remove('active');
-                    }
-                    _active = null;
-                }
-                else {
-                    
-                    var next = _activeDialogs.find(function(item){ return item.id === id; });
-                    if(next && next != _active){
-                        console.log('Activating:', id);
-                        if(_active)
-                        {
-                            _active.el.classList.remove('active');
-                        }
-                        
-                        next.el.classList.add('active');
-                        _active = next;
-                    }
-                }
-            }
-        };
     });
     //TYPES: blank, text input, text area, MC & bool, 
-    //MOD: resizeable, movable, modal, KB only, 
-    // MISC: fixed w/h, flex w/h, min/max w/h 

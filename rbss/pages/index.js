@@ -37,7 +37,7 @@ define([
         '
     });
 
-    testPage.view.listenToOnce(testPage.view, "render", function(ev){
+    testPage.view.listenToOnce(testPage.view, "post-render", function(ev){
         tool_box.render();
     });
 

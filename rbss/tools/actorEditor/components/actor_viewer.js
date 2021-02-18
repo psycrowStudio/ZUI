@@ -124,7 +124,6 @@ define([
                                     events: {
                                         "click #btn_1": function(ev){
                                             var settings = {
-                                                type:'confirm',
                                                 typeSettings: {
                                                     query: "Would you care for some lemonade?",
                                                     buttonLabels: ['Accept', 'Cancel']
@@ -132,7 +131,7 @@ define([
                                             };
 
                                             var dialog_layer = zui.components.dialogLayer.current();
-                                            var confirmation = dialog_layer.triggerDialog(settings).then(function(resolve){
+                                            var confirmation = dialog_layer.triggerDialog('confirm', settings).then(function(resolve){
                                                 console.log('resolved', resolve);
                                             }).catch(function(error){
                                                 console.log('rejected', error);
@@ -140,7 +139,6 @@ define([
                                         },
                                         "click #btn_2": function(ev){
                                             var settings = {
-                                                type:'mc',
                                                 typeSettings: {
                                                     query: "Pick a number?",
                                                     buttons: [{
@@ -166,7 +164,7 @@ define([
                                             };
                             
                                             var dialog_layer = zui.components.dialogLayer.current();
-                                            var confirmation = dialog_layer.triggerDialog(settings).then(function(resolve){
+                                            var confirmation = dialog_layer.triggerDialog('mc', settings).then(function(resolve){
                                                 console.log('resolved', resolve);
                                             }).catch(function(error){
                                                 console.log('rejected', error);
@@ -174,16 +172,15 @@ define([
                                         },
                                         "click #btn_3": function(ev){
                                             var settings = {
-                                                type:'inputField',
                                                 typeSettings: {
                                                     query: 'What is your name?',
-                                                    subtype: 'text',
-                                                    buttonLabels: ['Make introduction', 'Nevermind']
+                                                    input: 'textarea',
+                                                    hoverText: "Some thing to hover"
                                                 },
                                             };
                             
                                             var dialog_layer = zui.components.dialogLayer.current();
-                                            var confirmation = dialog_layer.triggerDialog(settings).then(function(resolve){
+                                            var confirmation = dialog_layer.triggerDialog('input', settings).then(function(resolve){
                                                 console.log('resolved', resolve);
                                             }).catch(function(error){
                                                 console.log('rejected', error);
@@ -200,7 +197,8 @@ define([
                                         },
                                         "click #btn_5": function(ev){
                                             var dialog_layer = zui.components.dialogLayer.current();
-                                            dialog_layer.triggerBasic();
+                                            
+                                            dialog_layer.triggerDialog("", {});
                                         }
                                     },
                                     template: '\
@@ -208,7 +206,7 @@ define([
                                     <button id="btn_2">MC</button>\
                                     <button id="btn_3">Input</button>\
                                     <button id="btn_4">Loading</button>\
-                                    <button id="btn_5">Button 5</button>\
+                                    <button id="btn_5">Base Dialog</button>\
                                     ',
                                     autoInsert: false
                                 });

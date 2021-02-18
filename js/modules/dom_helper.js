@@ -110,6 +110,15 @@
         isDomObject: function(o){
             return isNode(o) || isElement(0);
         },
+        raiseCustomEvent:function (eventType, payload, domEl) {
+            var ev = new CustomEvent(eventType, {
+                bubbles: true,
+                cancelable: true,
+                // whatever is added to detail will be passed along as event properties
+                detail: payload
+            });
+            domEl.dispatchEvent(ev);
+        },
         css: (function () {
             var _stylesAvailable = {};
             var _stylesLoaded = {};

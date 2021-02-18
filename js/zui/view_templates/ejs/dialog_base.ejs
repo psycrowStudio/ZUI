@@ -3,7 +3,7 @@
 <% var overlay_value = showOverlay ? 'enabled' : '' %>
 
 <div class="zui-dialog-body">
-    <div class="zui-base-panel">
+    <div class="zui-dialog-panel" tabindex="-1">
         <% if(resizable) {%>
             <span class="resize-N"></span>
             <span class="resize-NE"></span>
@@ -39,6 +39,7 @@
                                     class="<%= btn_classes_value %>"
                                 <% } %>
                                 <% if (btn_is_disabled) { %><%= 'disabled' %><% } %>
+                                data-index="<%= i %>"
                                 >
                                     <% if (btn_glyph_value) { %>  
                                         <i class="glyph fa fa-<%= btn_glyph_value %>"></i>
@@ -76,6 +77,7 @@
                                 class="<%= btn_classes_value %>"
                             <% } %>
                             <% if (btn_is_disabled) { %><%= 'disabled' %><% } %>
+                            data-index="<%= i %>"
                             >
                                 <% if (btn_glyph_value) { %>  
                                     <i class="glyph fa fa-<%= btn_glyph_value %>"></i>

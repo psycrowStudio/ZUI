@@ -105,6 +105,10 @@
 
 
 /*  GRID TESTING */
+.zui-dialog-panel:focus,
+.zui-dialog-body:focus {
+    outline: none;
+}
 
 .zui-dialog.darken,
 .overlay-bg {
@@ -119,9 +123,8 @@
     left: 0;
 
     display: grid;
-    grid-template-columns: 20% 60% 20%;
+    grid-template-columns: 25% 50% 25%;
     grid-template-rows: 15% 75% 10%;
-
     grid-template-areas:
     "...... ...... ......"
     "...... dialog ......"
@@ -133,7 +136,7 @@
     grid-area: dialog;
 }
 
-.zui-base-panel {
+.zui-dialog-panel {
     position: relative;
     top: 0;
     left: 0;
@@ -167,7 +170,7 @@
     min-height: 50px;
     padding: 12px 20px;
     overflow-x: hidden;
-    overflow-y: scroll;
+    overflow-y: auto;
     
 }
 
@@ -178,11 +181,11 @@
     padding: 12px 20px;
 }
 
-.active .zui-base-panel {
+.active .zui-dialog-panel {
     background-color: #f00;
 }
 
-.zui-base-panel > .edge {
+.zui-dialog-panel > .edge {
     background-color:#c1c1c1;
     cursor: initial;
 
@@ -194,8 +197,10 @@
 }
 
 
-.zui-dialog-loading-panel {
-
+.zui-loading-dialog .zui-dialog-panel {
+    max-width: 500px;
+    overflow:hidden;
+    margin: 0 auto;
     border: 2px solid crimson;
     border-radius: 20px;
     padding: 40px;

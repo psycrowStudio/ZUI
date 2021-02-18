@@ -1,8 +1,8 @@
 define([
-    'zui',
+    'zuiRoot/types',
     "zuiRoot/view_templates/collection_views",
 ], function (
-    zui,
+    Types,
     zui_collection_views,
 ) {
     var MODULE_NAME = "zui_collection_viewer";
@@ -87,7 +87,7 @@ define([
     // MODULE ------------------------------------------------------------------------------------------------------------------------ 
     var _collection_viewer = {
         createListViewer: function (settings) {
-            var list_view = zui.types.view.fab( {
+            var list_view = Types.view.fab( {
                 // do we need this ID added onto the tab id's
                 tagName: 'ul',
                 model: settings.dataset,
@@ -127,7 +127,7 @@ define([
             return list_view;
         },
         createGridViewer: function (settings) {
-            var grid_view = zui.types.view.fab( {
+            var grid_view = Types.view.fab( {
                 // do we need this ID added onto the tab id's
                 tagName: 'ul',
                 model: settings.dataset,

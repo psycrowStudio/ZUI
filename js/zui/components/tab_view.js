@@ -100,7 +100,7 @@ define([
                 template: zui_tab_container.compile(settings),
             });
 
-            _tab_view.listenToOnce(_tab_view, "render", function(ev){
+            _tab_view.listenToOnce(_tab_view, "post-render", function(ev){
                 // on inital render, set the default tabs
                 var content_row = _tab_view.el.querySelector('.tabs_content_row');
                 var active_tab = settings.activeTab ? _tab_view.el.querySelector('#' + settings.activeTab) : _tab_view.el.querySelector('.tabs_row > .zui-tab:first-child');

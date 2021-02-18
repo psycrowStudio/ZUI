@@ -1,7 +1,7 @@
 define([
     "mod/templating",
     "mod/dom_helper",
-    "text!/js/zui/view_templates/ejs/dialog_confirm.ejs",
+    "text!/js/zui/view_templates/ejs/dialog_info.ejs",
     "text!/js/zui/view_templates/ejs/dialog_input.ejs",
     "text!/js/zui/view_templates/ejs/dialog_mc.ejs",
     "text!/js/zui/view_templates/ejs/dialog_base.ejs",
@@ -11,7 +11,7 @@ define([
 function (
     mod_templating,
     mod_dom,
-    confirm_ejs,
+    info_ejs,
     input_ejs,
     mc_ejs,
     base_ejs,
@@ -35,9 +35,9 @@ function (
                 // parent model (page / component)
                 context: {}
             }),
-            confirm: mod_templating.buildTemplateHarness({
+            info: mod_templating.buildTemplateHarness({
                 key: "confirm_dialog", 
-                ejs: confirm_ejs,
+                ejs: info_ejs,
                 // parent model (page / component)
                 context: {}
             }),
