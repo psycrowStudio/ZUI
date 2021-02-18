@@ -198,7 +198,22 @@ define([
                                         "click #btn_5": function(ev){
                                             var dialog_layer = zui.components.dialogLayer.current();
                                             
-                                            dialog_layer.triggerDialog("", {});
+                                            var custom_settings = {
+                                                glyph_code: "cog",
+                                                title_bar_buttons: [
+                                                    {
+                                                        label:"",
+                                                        glyph_code:"times",
+                                                        hover_text: "Cancel",
+                                                        classes: ["dismissPanel"],
+                                                        hotkey_code: 27 
+                                                    }
+                                                ],
+                                                typeSettings: {
+                                                    content: "<p> custom </p>"
+                                                },
+                                            };
+                                            dialog_layer.triggerDialog("custom", custom_settings);
                                         }
                                     },
                                     template: '\
@@ -206,7 +221,7 @@ define([
                                     <button id="btn_2">MC</button>\
                                     <button id="btn_3">Input</button>\
                                     <button id="btn_4">Loading</button>\
-                                    <button id="btn_5">Base Dialog</button>\
+                                    <button id="btn_5">Custom Dialog</button>\
                                     ',
                                     autoInsert: false
                                 });
