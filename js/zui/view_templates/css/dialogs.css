@@ -1,82 +1,4 @@
-/* Modifiers */
-.zui-invis {
-    visibility: hidden !important;
-}
-
-.zui-hidden {
-    visibility: hidden !important;
-    z-index: -999999 !important;
-    position: fixed !important;
-}
-
-.zui-noDisplay {
-    display: none !important;
-}
-
-.bgClear {
-    background-color: transparent !important;
-}
-
-
-.zui-component {
-    position: relative;
-    /* box method, font, color, etc*/
-}
-
-.zui-component.status-active	{
-    border: 2px solid #333 !important; 
-}
-
-.zui-component.status-inactive	{
-    border: 1px solid #666 !important; 
-    color: #666;
-}
-
-.zui-component.status-disabled	{
-    border: 1px solid #999 !important; 
-    color: #999 !important;
-    pointer-events: none !important;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
-.zui-component.status-disabled *	{
-    user-select: inherit !important;
-}
-
-.zui-component.status-disabled::before {
-    content: '\f056 ';
-    font-family: 'FontAwesome';
-    color:#666;
-    position: absolute;
-    z-index: 100;
-    top:5px;
-    left:5px;
-}
-
 /* Partials */
-.zui-screen {
-    position: absolute;
-    display: table;
-    z-index: 99;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background-color: rgba(0,0,0,0.7);
-    pointer-events: none;
-}
-
-.zui-message {
-    position: relative;
-    display: table-cell;
-    vertical-align: middle;
-}
-
 #dialogLayer {
     position: fixed;
     top:0;
@@ -85,24 +7,12 @@
     width: 100%;
     z-index: 9999999;
     background-color: transparent;
+    pointer-events: none;
 }
 
-
-#dialogLayer .overlay {
-    background-color: rgba(55,55,55,0.85);
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    top: 0;
-    left: 0;
+.disable-pointer-events {
+    pointer-events: none !important;
 }
-
-#dialogLayer .dialogContainer {
-    position: relative;
-    height: 100%;
-    width: 100%;
-}
-
 
 /*  GRID TESTING */
 .zui-dialog-panel:focus,
@@ -113,9 +23,11 @@
 .zui-dialog.darken,
 .overlay-bg {
     background-color: rgba(55,55,55,0.85);
+    pointer-events: all !important;
 }
 
 #dialogLayer .zui-dialog {
+    pointer-events: none;
     position: absolute;
     height: 100%;
     width: 100%;
@@ -131,6 +43,10 @@
     "...... ...... ......";
 }
 
+#dialogLayer .zui-dialog.active {
+    z-index: 999;
+}
+
 .zui-dialog-body {
     position: relative;
     grid-area: dialog;
@@ -144,6 +60,7 @@
     background-color: #999;
     padding: 2px;
     overflow: hidden;
+    pointer-events: all;
 }
 
 
@@ -192,7 +109,7 @@
     position: relative;
     
     display: grid;
-    grid-template-rows: minmax(20px, auto) minmax(50px, 1fr) minmax(20px, auto);
+    grid-template-rows: minmax(48px, auto) minmax(100px, 1fr) minmax(36px, auto);
     max-height: 75vh;
 }
 
@@ -202,13 +119,14 @@
     overflow:hidden;
     margin: 0 auto;
     border: 2px solid crimson;
-    border-radius: 20px;
+    /* border-radius: 20px; */
     padding: 40px;
     text-align: center;
     font-size: 2.0rem;
     background-color: #333;
     color: #c1c1c1;
 
+    z-index: 9999;
     pointer-events: none;
     -webkit-user-select: none; /* Safari */        
     -moz-user-select: none; /* Firefox */
@@ -218,59 +136,62 @@
 
 /*  END GRID TESTING */
 
-.zui-dialog .titleBar {
-    padding: 8px;
-    background-color: #999;
-    cursor: move;
-    overflow: auto;
-    position: absolute;
-    top:0;
-    left: 0;
-    right: 0;
-    z-index: 5;
-    -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-    -khtml-user-select: none; /* Konqueror HTML */
-    -moz-user-select: none; /* Firefox */
-    -ms-user-select: none; /* Internet Explorer/Edge */
-    user-select: none; /* Non-prefixed version, currntly */
-}
-.zui-dialog .titleBar .buttons {
-    float: right;
-}
-.zui-dialog .footer {
-    background-color: #999;
-    position: absolute;
-    bottom:0;
-    left: 0;
-    right: 0;
-    z-index: 3;
-    padding: 8px;
-}
-.zui-dialog .footer .buttons {
-    float: right;
-    overflow: auto;
+
+/*  CONTENT STYLES */
+.zui-dialog-title-bar > .glyph {
+    font-size: 1.4rem;
 }
 
-.zui-dialog .content {
-    position: absolute;
-    margin: 45px 0;
-    top:0;
-    left:0;
-    right:0;
-    bottom:0;
-    overflow-y: auto;
-    z-index: 2;
-    padding: 10px;
+.zui-dialog-title-bar > .title {
+    font-size: 1.2rem;
 }
 
-.zui-dialog .content:after {
-    content: "";
-    display: block;
-    height: 50px;
+.zui-dialog-content textarea {
     width: 100%;
+    min-height: 75px;
+    margin: 12px 0;
+    padding: 8px;
 }
 
+.zui-dialog-content input {
+    width: 100%;
+    margin: 20px 0;
+    padding: 8px 12px;
+    border-radius: 3px;
+    border: 2px inset #999;
+}
+
+.zui-dialog-content textarea:focus, 
+.zui-dialog-content input:focus {
+    border: 2px inset crimson;
+    outline: none;
+}
+
+.zui-dialog-content .mc-box {
+    margin: 12px 0;
+}
+/*  END CONTENT STYLES */
+
+
+
+
+.zui-dialog .zui-dialog-title-bar .buttons {
+    float: right;
+}
+
+.zui-dialog .zui-dialog-title-bar button {
+    padding: 2px 4px;
+}
+
+
+.zui-dialog .zui-dialog-button-bar  .buttons {
+    float: right;
+    overflow: auto;
+}
+
+.zui-dialog .zui-dialog-button-bar  button {
+    padding: 8px 12px;
+}
 
 /*  Resize Grab-Handles */
 .zui-dialog .resize-N {

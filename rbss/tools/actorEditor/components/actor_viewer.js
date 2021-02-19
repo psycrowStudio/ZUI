@@ -5,6 +5,7 @@ define([
         "zuiRoot/components/collection_viewer",
         "zuiRoot/components/toolbar",
         "rbssRoot/tools/actorEditor/view_templates/actor_editor",
+        "rbssRoot/framework/models/actor"
     ],
     function (
         mod_animation,
@@ -13,9 +14,12 @@ define([
         zui_collection_viewer,
         zui_toolbar,
         actor_editor_template,
+        rbss_actor
     ) {
         var MODULE_NAME = "actor_viewer";
         
+        console.log('actor', new rbss_actor());
+
         return {
             init: function(pm, pms){
                 console.log('animation', mod_animation);
@@ -34,8 +38,15 @@ define([
                     pm:actor_viewer,
                     pms: '.tab_row_one',
                     tabs: {
-                        "base_stats": {
-                            label: "Base Stats",
+                        "basic_info": {
+                            label: "Basic Info",
+                            hover: "!!!",
+                            order: 0,
+                            glyph_code: "info-circle",
+                            content: "<p>basic_info</p>"
+                        },
+                        "Stats": {
+                            label: "Stats",
                             hover: "!!!",
                             order: 0,
                             glyph_code: "sliders",
@@ -126,7 +137,7 @@ define([
                                             var settings = {
                                                 typeSettings: {
                                                     query: "Would you care for some lemonade?",
-                                                    buttonLabels: ['Accept', 'Cancel']
+                                                    buttonLabels: ['Yes, Please', 'No, thank you']
                                                 }
                                             };
 
@@ -175,6 +186,7 @@ define([
                                                 typeSettings: {
                                                     query: 'What is your name?',
                                                     input: 'textarea',
+                                                    placeholder:"Text placeholder",
                                                     hoverText: "Some thing to hover"
                                                 },
                                             };
@@ -199,7 +211,9 @@ define([
                                             var dialog_layer = zui.components.dialogLayer.current();
                                             
                                             var custom_settings = {
+                                                title: "Some title text",
                                                 glyph_code: "cog",
+                                                showOverlay: false,
                                                 title_bar_buttons: [
                                                     {
                                                         label:"",

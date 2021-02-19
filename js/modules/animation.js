@@ -93,6 +93,8 @@ define([
                         var chain = Promise.resolve();
                         aniMap.forEach(function(anim, i){
                             chain = chain.then(function (result) {
+                                // TODO these are all started consecutivly without waiting on complete
+                                // can fix by returning the promise below, but this casues other timing / state issues
                                 _startAnimation(anim.element, anim.animation, i);
                             });
                         });

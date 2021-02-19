@@ -95,7 +95,7 @@ define([
 
                             return false;
                         }
-                        if(e.keyCode === 13 && this.el.classList.contains('active'))
+                        if(e.keyCode === 13 && this.el.classList.contains('active') && document.activeElement.tagName.toLocaleLowerCase() !== "button")
                         {
                             //ENTER KEY
                             for(var i in base_settings.button_bar_buttons) {
@@ -146,6 +146,12 @@ define([
                     },
                     'mousedown .zui-dialog-panel': function(e){
                         this.parentView.activateDialog(this.id);
+                    },
+                    'click .zui-dialog-panel':function(e){
+                        // this captures any panel click, preventing it from propigating to the page
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        return false;
                     },
                     'mousedown .resize-N': function(e) {
                         _startResizePanel.call(this,'N', e);
@@ -363,9 +369,46 @@ define([
             return Common.QuerablePromise.call(view, generator);
         }
 
+        function _findFocus(view){
+            var af = view.el.querySelector('.autofocus');
+            if(af){
+                af.focus();
+                return true;
+            }
+            
+            var firstButton = view.el.querySelector('.zui-dialog-button-bar .buttons button:first-child');
+            if(firstButton) {
+                firstButton.focus();
+                return true;
+            }
+
+            return false;
+        }
+
         return {
             current: function(){ return _prius; },
             addToPage: function(page){
+               
+                // setup a page level listener, helpful for click offs and other event tracking
+                //    page.view.el.addEventListener('click', function(e){
+                //         if(_active && !e.target.classList.contains('zui-dialog-panel')){
+                //             console.log('clicked');
+                //         }
+                //         //             console.log('deactivating non-modal dialogs...');
+                //         //             this.activateDialog();
+                //         //         }
+                    
+                //    });
+
+                page.view.delegateEvents({
+                    "click": function(ev){
+                        if(_active){
+                            console.log('deactivating non-modal dialogs...');
+                            _prius.activateDialog();
+                        }
+                    }
+                });
+               
                 _prius = Types.view.fab({ 
                     id:'dialogLayer', 
                     parent: page,
@@ -375,12 +418,12 @@ define([
                         // 'mouseup' : function(e) {
                         //     _stopDrag.call(this,e);
                         // },
-                        'click' : function(e) {
-                            if(e.target.classList.contains('zui-dialog') || e.target.classList.contains('zui-dialog-body')){
-                                console.log('deactivating non-modal dialogs...');
-                                this.activateDialog();
-                            }
-                        }
+                        // 'click' : function(e) {
+                        //     if(e.target.classList.contains('zui-dialog') || e.target.classList.contains('zui-dialog-body')){
+                        //         console.log('deactivating non-modal dialogs...');
+                        //         this.activateDialog();
+                        //     }
+                        // }
                     }
                 });
 
@@ -431,9 +474,12 @@ define([
                     _basicTransitionOut(_activeLoading).then(function(res){
                         _activeLoading.el.parentNode.removeChild(_activeLoading.el);
                         _prius.removeView(_activeLoading);
-                        _prius.toggleLayer(false);
                         _activeLoading = null;
                         loadingCount = 0;
+
+                        if(_openDialogs.length === 0){
+                            _prius.toggleLayer(false);
+                        }
                     });
                 }
             },
@@ -538,7 +584,10 @@ define([
                 },
             ];
             return mod_animation.queueAnimationSequence(inBoundQ).then(function(){
-                dialog_panel.focus();
+                _prius.activateDialog(view.id);
+                if(!_findFocus(view)){
+                    dialog_panel.focus();
+                }
             });
         }
 
@@ -601,8 +650,6 @@ define([
 
             var dialog_panel = this.el.querySelector('.zui-dialog-panel');
             var panel_rect = dialog_panel.getBoundingClientRect();
-            
-            var dialog_view_rect = this.el.getBoundingClientRect();
 
             var rect = body_rect;
             
@@ -710,6 +757,9 @@ define([
         function _startResizePanel(direction, e){
             e = e || window.event;
 
+            var dialog_body = this.el.querySelector('.zui-dialog-body');
+            var body_rect = dialog_body.getBoundingClientRect();
+
             var dialog_panel = this.el.querySelector('.zui-dialog-panel');
             var panel_rect = dialog_panel.getBoundingClientRect();
             var inner_edge = this.el.querySelector('.edge');
@@ -717,20 +767,20 @@ define([
             var rect = panel_rect;
             dialog_panel.resizeMouseX = e.clientX;
             dialog_panel.resizeMouseY = e.clientY;
-            dialog_panel.resizeX = rect.left;
-            dialog_panel.resizeY = rect.top;
+            dialog_panel.resizeX = (panel_rect.left -body_rect.left) //rect.left;
+            dialog_panel.resizeY = (panel_rect.top -body_rect.top) //rect.top;
             dialog_panel.resizeW = rect.width;
             dialog_panel.resizeH = rect.height;
             dialog_panel.isResizing = true;
             dialog_panel.innerEdge = inner_edge; // used to adjust height with our new grid layout
 
             var _scope = this;
-            this.el.onmousemove = function(ev){
+            _prius.parentView.view.el.onmousemove = function(ev){
                 _resizePanel.call(dialog_panel, direction, ev);
                 return false;
             };
 
-            this.el.onmouseup = function(ev){
+            _prius.parentView.view.el.onmouseup = function(ev){
                 dialog_panel.isResizing = false;
                 _stopResizePanel.call(_scope);
                 return false;
@@ -740,8 +790,8 @@ define([
         function _stopResizePanel(){
             console.log('Stopping Resize...');
             this.isResizing = false;
-            this.el.onmousemove = null;
-            this.el.onmouseup = null;
+            _prius.parentView.view.el.onmousemove = null;
+            _prius.parentView.view.el.onmouseup = null;
             return false;
         };
     });

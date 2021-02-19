@@ -68,7 +68,9 @@ require([
     'jquery',
     'underscore',
     'luxon',
-    'router'
+    'router',
+    "mod/dom_helper",
+    'text!/js/zui/styles/zui.css'
 ], function(
     zui, 
     // index, 
@@ -76,9 +78,13 @@ require([
     jquery,
     underscore,
     luxon,
-    router
+    router,
+    mod_dom,
+    css
 ) {
-    
+    var MODULE_NAME = "zui";
+    mod_dom.css.addRaw(MODULE_NAME, css);
+
     console.log('ZUI initialized');
     zui.logger.log('Zui Loaded!', { tags:'zui-all', eventName: 'zui-load' });
       

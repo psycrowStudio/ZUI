@@ -1,3 +1,8 @@
+define([
+],
+function (
+
+) {
 	var RaceOptions = ["Human"];
 	var HumanMaleFirsts = ["Arne", "Bjørn", "Eirik", "Geir", "Gisle", "Gunnar", "Harald",  "Håkon", "Inge", "Ivar", "Knut", "Leif", "Magnus", "Olav", "Rolf", "Sigurd", "Snorre", "Steinar", "Torstein", "Trygve", "Ulf", "Valdemar", "Vidar", "Yngve"];
 	var HumanFemaleFirsts = ["Astrid", "Brynhild", "Freydis", "Gudrun", "Gunnhild", "Gunnvor", "Hilde", "Ingrid", "Ragnhilid", "Ranveig", "Sigrid", "Sigrunn", "Siv", "Solveig", "Svanhild", "Torhild"];
@@ -5,8 +10,6 @@
 	var AlignmentOptions = ["C-", "N-", "L-", "CN", "TN", "LN", "C+", "N+", "L+"];
 	var ArchetypeOptions = ["Outlaw", "Jester", "Lover", "Caregiver", "Everyman", "Innocent", "Ruler", "Sage", "Magician", "Hero", "Creator", "Explorer"];
 
-
-window.rbss.modelManager.addModel("Actor", (function() {
 	return Backbone.Model.extend({
 
 		initialize: function() { 
@@ -329,4 +332,4 @@ window.rbss.modelManager.addModel("Actor", (function() {
 		// }
 
 	});
-})());
+});

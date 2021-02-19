@@ -7,13 +7,13 @@
 <h3><%= query_value %></h3>
 <div class="field-box">
     <% if(input_value === "textarea") {%>
-        <textarea class="dialog-input"
+        <textarea class="dialog-input autofocus"
             value="<%= defaultValue_value %>" 
             placeholder="<%= placeholder_value %>" 
             title="<%= hoverText_value %>" 
         ></textarea>
     <% } else { %>
-        <input class="dialog-input"
+        <input class="dialog-input autofocus"
             type="<%= input_value %>" 
             value="<%= defaultValue_value %>" 
             placeholder="<%= placeholder_value %>" 
