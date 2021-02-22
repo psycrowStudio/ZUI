@@ -5,6 +5,7 @@ define([
         "zuiRoot/components/collection_viewer",
         "zuiRoot/components/toolbar",
         "rbssRoot/tools/actorEditor/view_templates/actor_editor",
+        "rbssRoot/tools/actorEditor/components/stat_viewer",
         "rbssRoot/framework/models/actor"
     ],
     function (
@@ -14,6 +15,7 @@ define([
         zui_collection_viewer,
         zui_toolbar,
         actor_editor_template,
+        rbss_stat_viewer,
         rbss_actor
     ) {
         var MODULE_NAME = "actor_viewer";
@@ -43,13 +45,6 @@ define([
                             hover: "!!!",
                             order: 0,
                             glyph_code: "info-circle",
-                            content: "<p>basic_info</p>"
-                        },
-                        "Stats": {
-                            label: "Stats",
-                            hover: "!!!",
-                            order: 0,
-                            glyph_code: "sliders",
                             content: function(tab){
                                 var settings = {
                                     dataset: ["One", "Two", "Three"],
@@ -74,6 +69,19 @@ define([
                                 }, 3000)
 
                                 return list.el;
+                            }
+                        },
+                        "Stats": {
+                            label: "Stats",
+                            hover: "!!!",
+                            order: 0,
+                            glyph_code: "sliders",
+                            content: function(tab){
+                                var stat_viewer = rbss_stat_viewer.init(tr1, '.tabs_content_row', ["STR", "INT", "CHA"] );
+
+                                stat_viewer.render();
+
+                                return stat_viewer.el;
                             }
                         },
                         "demo": {
@@ -185,7 +193,7 @@ define([
                                             var settings = {
                                                 typeSettings: {
                                                     query: 'What is your name?',
-                                                    input: 'textarea',
+                                                    input: 'text',
                                                     placeholder:"Text placeholder",
                                                     hoverText: "Some thing to hover"
                                                 },
@@ -308,10 +316,18 @@ define([
                                 return toolbar.el;
                             }
                         },
+                        "preferences": {
+                            label: "Preferences",
+                            hover: "***",
+                            order: 5,
+                            glyph_code: "star",
+                            content: "<p>Preferences</p>",
+                            disabled: true
+                        },
                         "art_assets": {
                             label: "Art Assets",
                             hover: "***",
-                            order: 5,
+                            order: 6,
                             glyph_code: "folder-open",
                             content: "<p>Art Assets</p>",
                             disabled: true

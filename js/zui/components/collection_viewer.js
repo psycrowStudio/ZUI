@@ -17,7 +17,7 @@ define([
         var item_settings_defaults = {
             index: index,
             id: view.id + '_' + index,
-            label: typeof el === 'string' ? item : 'Item: ' + index,
+            label: typeof item === 'string' ? item : 'Item: ' + index,
             hover_text: view.id + '_' + index,
             classes: [].concat(LIST_ITEM_CLASSES)
         };

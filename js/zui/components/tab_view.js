@@ -59,8 +59,8 @@ define([
                 events: {
                     "click .zui-tab":function(ev){
                         console.log("tab_clicked");
-                        if(settings.tabs.hasOwnProperty(ev.target.id)){
-                            if(ev.target.classList.contains('active')){
+                        if(settings.tabs.hasOwnProperty(ev.currentTarget.id)){
+                            if(ev.currentTarget.classList.contains('active')){
                                 return;
                             }
 
@@ -72,7 +72,7 @@ define([
                                 el.classList.remove('active');
                             });
 
-                            ev.target.classList.add('active');
+                            ev.currentTarget.classList.add('active');
                             // save tab state? session? internal var?
 
                             // fire event - after tab change?
@@ -83,7 +83,7 @@ define([
                             }
 
                             mod_dom.clearChildren(tabs_content_row);
-                            var compiled = _compileTemplate(settings.tabs[ev.target.id]);
+                            var compiled = _compileTemplate(settings.tabs[ev.currentTarget.id]);
                             if(typeof compiled === 'string') {
                                 tabs_content_row.innerHTML = compiled;
                             }
