@@ -49,8 +49,25 @@ function (
                         visible: true,
                         classes: ["red-btn"],
                         onClick:function(view, ev){
-                            console.log("Add New Stat", this);
+                            var settings = {
+                                typeSettings: {
+                                    query: 'Enter the name of the new stat',
+                                    input: 'text',
+                                    placeholder:"e.g. DEX",
+                                    hoverText: ""
+                                },
+                            };
+            
+                            var dialog_layer = zui.components.dialogLayer.current();
+                            dialog_layer.triggerDialog('input', settings).then(function(input){
+                                console.log('resolved', input);
+                                stat_list.addItem(input);
 
+                            }).catch(function(error){
+                                console.log('rejected', error);
+                            });
+                            
+                           
                             // add new flow should consider:
                             // the flow for adding an existing vs a totally new stat
                             // need to has out the stat model
@@ -75,10 +92,47 @@ function (
                 // },
                 onClick:function(view, ev){
                     console.log("collection-list-item clicked", view.model[ev.currentTarget.id.split('_')[1]]);
+
+                    var dialog_layer = zui.components.dialogLayer.current();
+                                            
+                    var custom_settings = {
+                        title: "Stat Editor",
+                        glyph_code: "pencil",
+                        showOverlay: true,
+                        title_bar_buttons: [
+                            {
+                                label:"",
+                                glyph_code:"times",
+                                hover_text: "Cancel",
+                                classes: ["dismissPanel"],
+                                hotkey_code: 27 
+                            }
+                        ],
+                        button_bar_buttons: [
+                            {
+                                label:"Save",
+                                glyph_code:"check-circle",
+                                hover_text: "Save Edits",
+                                classes: ["confirmPanel"],
+                                hotkey_code: 13,
+                                onClick:function(dialog_view, dialog_ev){
+                                    return view.model[ev.currentTarget.id.split('_')[1]];
+                                }
+                            }
+                        ],
+                        typeSettings: {
+                            content: "<p> Editing: "+ view.model[ev.currentTarget.id.split('_')[1]] +" </p>"
+                        },
+                    };
+                    dialog_layer.triggerDialog("custom", custom_settings).then(function(updates){
+
+                        console.log("Saving: " + updates + " changes to model: " + view.model)
+                    }).catch(function(){});
+
                 }
             };
 
-            var list =  zui_collection_viewer.createListViewer(stat_list_settings);
+            var stat_list =  zui_collection_viewer.createListViewer(stat_list_settings);
 
 
             return viewer;

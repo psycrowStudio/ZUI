@@ -1,9 +1,11 @@
 define([
     'zuiRoot/types',
     "zuiRoot/view_templates/collection_views",
+    'mod/animation'
 ], function (
     Types,
     zui_collection_views,
+    mod_animation
 ) {
     var MODULE_NAME = "zui_collection_viewer";
     var LIST_ITEM_CLASSES = ['collection-list-item'];
@@ -19,18 +21,18 @@ define([
             id: view.id + '_' + index,
             label: typeof item === 'string' ? item : 'Item: ' + index,
             hover_text: view.id + '_' + index,
-            classes: [].concat(LIST_ITEM_CLASSES)
+            classes: settings.classes || [].concat(LIST_ITEM_CLASSES)
         };
 
         var item_settings = item_settings_defaults;
-        if(typeof settings.generateItemSettings === 'function'){
+        if(settings && typeof item_settings.generateItemSettings === 'function'){
             var item_setting_overrides = settings.generateItemSettings(item, index);
             for(var key in item_setting_overrides){
                 item_settings[key] = Array.isArray(item_settings[key]) ?  item_settings[key].concat(item_settings[key]) : item_setting_overrides[key];
             }
         }
 
-        if(settings.clickable !== false){
+        if(settings && settings.clickable !== false){
             item_settings.classes.push(CLICKABLE_CLASS);
         }
 
@@ -55,18 +57,18 @@ define([
             id: view.id + '_' + index,
             label: typeof el === 'string' ? item : 'Item: ' + index,
             hover_text: view.id + '_' + index,
-            classes: [].concat(GRID_ITEM_CLASSES)
+            classes: settings.classes || [].concat(GRID_ITEM_CLASSES)
         };
 
         var item_settings = item_settings_defaults;
-        if(typeof settings.generateItemSettings === 'function'){
+        if(settings && typeof settings.generateItemSettings === 'function'){
             var item_setting_overrides = settings.generateItemSettings(item, index);
             for(var key in item_setting_overrides){
                 item_settings[key] = Array.isArray(item_settings[key]) ?  item_settings[key].concat(item_settings[key]) : item_setting_overrides[key];
             }
         }
 
-        if(settings.clickable !== false){
+        if(settings && settings.clickable !== false){
             item_settings.classes.push(CLICKABLE_CLASS);
         }
 
@@ -120,8 +122,26 @@ define([
 
             // add item function -- update collection & add item
             list_view.addItem = function(o){
-                this.el.insertAdjacentHTML('beforeend', _buildListRow(this, o, this.model.length, settings));
+                var item_settings = {
+                    onClick : settings.onClick || undefined,
+                    classes: ["hidden"].concat(LIST_ITEM_CLASSES),
+                    generateItemSettings: settings.generateItemSettings || undefined
+                }
+
+                this.el.insertAdjacentHTML('beforeend', _buildListRow(this, o, this.model.length, item_settings));
                 this.model.push(o);
+               
+                
+                var inBoundQ = [
+                    {
+                        element: this.el.lastChild,
+                        animation: 'fadeInDown',
+                    }
+                ];
+
+                setTimeout(function(){
+                    mod_animation.queueAnimationSequence(inBoundQ);
+                }, 1);
             }
 
             return list_view;
@@ -160,8 +180,24 @@ define([
 
             // add item function -- update collection & add item
             grid_view.addItem = function(o){
-                this.el.insertAdjacentHTML('beforeend', _buildGridRow(this, o, this.model.length, settings));
+                var item_settings = {
+                    onClick : settings.onClick || undefined,
+                    classses: ["hidden"].concat(GRID_ITEM_CLASSES),
+                    generateItemSettings: settings.generateItemSettings || undefined
+                }
+
+                this.el.insertAdjacentHTML('beforeend', _buildGridRow(this, o, this.model.length, item_settings));
                 this.model.push(o);
+                var inBoundQ = [
+                    {
+                        element: this.el.lastChild,
+                        animation: 'fadeInDown',
+                    }
+                ];
+
+                setTimeout(function(){
+                    mod_animation.queueAnimationSequence(inBoundQ);
+                }, 1);
             }
 
             return grid_view;

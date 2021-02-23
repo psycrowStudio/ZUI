@@ -130,13 +130,26 @@ define([
                     'click .dismissPanel': function(e) {
                         console.log('Dismiss Panel', e, this);
 
-                        this.parentView.resolveDialog(this.id, false);
+                        var index = parseInt(e.currentTarget.getAttribute('data-index'));
+                        if(typeof base_settings.button_bar_buttons[index].onClick === 'function'){
+                            this.parentView.resolveDialog(this.id, false, base_settings.button_bar_buttons[index].onClick(this, e));
+                        }
+                        else {
+                            this.parentView.resolveDialog(this.id, false);
+                        }
+
                         return false;
                     },
                     'click .confirmPanel': function(e) {
                         console.log('Confirm Panel', e, this);
 
-                        this.parentView.resolveDialog(this.id, true);
+                        var index = parseInt(e.currentTarget.getAttribute('data-index'));
+                        if(typeof base_settings.button_bar_buttons[index].onClick === 'function'){
+                            this.parentView.resolveDialog(this.id, true, base_settings.button_bar_buttons[index].onClick(this, e));
+                        }
+                        else {
+                            this.parentView.resolveDialog(this.id, true);
+                        }
                         return false;
                     },
                     'mousedown .zui-dialog-title-bar' : function(e) {
