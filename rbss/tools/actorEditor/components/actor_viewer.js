@@ -6,6 +6,7 @@ define([
         "zuiRoot/components/toolbar",
         "rbssRoot/tools/actorEditor/view_templates/actor_editor",
         "rbssRoot/tools/actorEditor/components/stat_viewer",
+        "rbssRoot/tools/actorEditor/components/basic_info_viewer",
         "rbssRoot/framework/models/actor"
     ],
     function (
@@ -16,17 +17,28 @@ define([
         zui_toolbar,
         actor_editor_template,
         rbss_stat_viewer,
+        rbss_basic_info_viewer,
         rbss_actor
     ) {
         var MODULE_NAME = "actor_viewer";
         
         console.log('actor', new rbss_actor());
 
+        function _generateBaseActor(){
+            var actor_settings = {};
+
+            return rbss_actor.fab(actor_settings);
+        }
+
+
         return {
-            init: function(pm, pms){
+            init: function(pm, pms, actor){
                 console.log('animation', mod_animation);
                 
+                actor = actor || _generateBaseActor();
+
                 var actor_viewer = zui.types.view.fab( {
+                    model: actor,
                     parent: pm, 
                     insertionSelector: pms,
                     classes:['actor_viewer'],
@@ -46,32 +58,14 @@ define([
                             order: 0,
                             glyph_code: "info-circle",
                             content: function(tab){
-                                var settings = {
-                                    dataset: ["One", "Two", "Three"],
-                                    autoInsert: false,
-                                    generateItemSettings: function(el, i){
-                                        return {
-                                            label: el.length,
-                                            hover_text: el
-                                        };
-                                    },
-                                    onClick:function(view, ev){
-                                        console.log("collection-list-item clicked", view.model[ev.currentTarget.id.split('_')[1]]);
-                                    }
-                                };
+                                var basic_info_viewer = rbss_basic_info_viewer.init(tr1, '.tabs_content_row', actor);
 
-                                var list =  zui_collection_viewer.createListViewer(settings);
-                                console.log(list);
-                                list.render();
+                                basic_info_viewer.render();
 
-                                setTimeout(function(){
-                                    list.addItem("Eleven");
-                                }, 3000)
-
-                                return list.el;
+                                return basic_info_viewer.el;
                             }
                         },
-                        "Stats": {
+                        "stats": {
                             label: "Stats",
                             hover: "!!!",
                             order: 0,

@@ -127,11 +127,36 @@ define([
 
                         return false;
                     },
-                    'click .dismissPanel': function(e) {
+                    'click .zui-dialog-title-bar .dismissPanel': function(e) {
                         console.log('Dismiss Panel', e, this);
 
                         var index = parseInt(e.currentTarget.getAttribute('data-index'));
-                        if(typeof base_settings.button_bar_buttons[index].onClick === 'function'){
+                        if(Array.isArray(base_settings.title_bar_buttons) && typeof base_settings.title_bar_buttons[index].onClick === 'function'){
+                            this.parentView.resolveDialog(this.id, false, base_settings.title_bar_buttons[index].onClick(this, e));
+                        }
+                        else {
+                            this.parentView.resolveDialog(this.id, false);
+                        }
+
+                        return false;
+                    },
+                    'click .zui-dialog-title-bar .confirmPanel': function(e) {
+                        console.log('Confirm Panel', e, this);
+
+                        var index = parseInt(e.currentTarget.getAttribute('data-index'));
+                        if(Array.isArray(base_settings.title_bar_buttons) && typeof base_settings.title_bar_buttons[index].onClick === 'function'){
+                            this.parentView.resolveDialog(this.id, true, base_settings.title_bar_buttons[index].onClick(this, e));
+                        }
+                        else {
+                            this.parentView.resolveDialog(this.id, true);
+                        }
+                        return false;
+                    },
+                    'click .zui-dialog-button-bar .dismissPanel': function(e) {
+                        console.log('Dismiss Panel', e, this);
+
+                        var index = parseInt(e.currentTarget.getAttribute('data-index'));
+                        if(Array.isArray(base_settings.button_bar_buttons) && typeof base_settings.button_bar_buttons[index].onClick === 'function'){
                             this.parentView.resolveDialog(this.id, false, base_settings.button_bar_buttons[index].onClick(this, e));
                         }
                         else {
@@ -140,11 +165,11 @@ define([
 
                         return false;
                     },
-                    'click .confirmPanel': function(e) {
+                    'click .zui-dialog-button-bar .confirmPanel': function(e) {
                         console.log('Confirm Panel', e, this);
 
                         var index = parseInt(e.currentTarget.getAttribute('data-index'));
-                        if(typeof base_settings.button_bar_buttons[index].onClick === 'function'){
+                        if(Array.isArray(base_settings.button_bar_buttons) && typeof base_settings.button_bar_buttons[index].onClick === 'function'){
                             this.parentView.resolveDialog(this.id, true, base_settings.button_bar_buttons[index].onClick(this, e));
                         }
                         else {

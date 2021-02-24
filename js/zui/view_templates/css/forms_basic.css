@@ -1,0 +1,15 @@
+/* Partials */
+#dialogLayer {
+    position: fixed;
+    top:0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 9999999;
+    background-color: transparent;
+    pointer-events: none;
+}
+
+
+
+/*  button, form_row, label, select / multi-select,  */
