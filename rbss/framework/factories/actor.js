@@ -1,4 +1,20 @@
-window.rbss.factoryManager.addFactory("Actor", (function() {
+define([
+	'mod/text',
+	'zuiRoot/logger',
+	"rbssRoot/framework/models/actor"
+],
+function (
+    mod_text,
+	Logger,
+	rbss_actor
+) {
+	var RaceOptions = ["Human"];
+	var HumanMaleFirsts = ["Arne", "Bjørn", "Eirik", "Geir", "Gisle", "Gunnar", "Harald",  "Håkon", "Inge", "Ivar", "Knut", "Leif", "Magnus", "Olav", "Rolf", "Sigurd", "Snorre", "Steinar", "Torstein", "Trygve", "Ulf", "Valdemar", "Vidar", "Yngve"];
+	var HumanFemaleFirsts = ["Astrid", "Brynhild", "Freydis", "Gudrun", "Gunnhild", "Gunnvor", "Hilde", "Ingrid", "Ragnhilid", "Ranveig", "Sigrid", "Sigrunn", "Siv", "Solveig", "Svanhild", "Torhild"];
+	var HumanLasts = ["Albertsen", "Andréasson", "Bengtsson", "Danielsen", "Kron", "Karlsen", "Knutson", "Steensen", "Ostberg", "Prebensen", "Ericson", "Jakobsen", "Rask", "Solberg", "Vång", "Vinter"];
+	var AlignmentOptions = ["C-", "N-", "L-", "CN", "TN", "LN", "C+", "N+", "L+"];
+	var ArchetypeOptions = ["Outlaw", "Jester", "Lover", "Caregiver", "Everyman", "Innocent", "Ruler", "Sage", "Magician", "Hero", "Creator", "Explorer"];
+
 	return {
 		CollectionManager: (function()
 		{
@@ -127,4 +143,4 @@ window.rbss.factoryManager.addFactory("Actor", (function() {
 		SetRandomResources: function(actor){},
 
 	};
-})());
+});

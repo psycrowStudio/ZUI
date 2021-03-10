@@ -54,10 +54,10 @@ define([
                 id:'context_bar', 
                 parent: content, 
                 insertionSelector: '#content',
-                classes:['context-bar'],
+                classes:['context-bar', 'g-v-24'],
                 events: {
                 },
-                template:''
+                template:'<div class="lSide g-col-6"></div><div class="rSide g-col-6"></div>'
             });
         
             zui.types.view.fab( {

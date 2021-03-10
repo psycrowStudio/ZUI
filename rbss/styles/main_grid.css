@@ -392,6 +392,7 @@ div, section, nav, figure, textarea
 	object-fit: contain;
 }
 
+
 .g-flow-dense {
 	grid-auto-flow: dense;
 }
@@ -404,12 +405,27 @@ div, section, nav, figure, textarea
 	grid-auto-flow: row;
 }
 
+
+
 .g-align-center {
 	align-items: center;
 }
 
 .g-align-flex-start {
 	align-items: flex-start;
+}
+
+
+.g-justify-center {
+	justify-content: center;
+}
+
+.g-justify-start {
+	justify-content: start;
+}
+
+.g-justify-end {
+	justify-content: end;
 }
 /*  */
 

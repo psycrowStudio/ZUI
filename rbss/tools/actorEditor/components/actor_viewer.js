@@ -7,6 +7,9 @@ define([
         "rbssRoot/tools/actorEditor/view_templates/actor_editor",
         "rbssRoot/tools/actorEditor/components/stat_viewer",
         "rbssRoot/tools/actorEditor/components/basic_info_viewer",
+        "rbssRoot/tools/actorEditor/components/demographics_viewer",
+        "rbssRoot/tools/actorEditor/components/log_book_viewer",
+        "rbssRoot/tools/actorEditor/components/resources_viewer",
         "rbssRoot/framework/models/actor"
     ],
     function (
@@ -18,25 +21,15 @@ define([
         actor_editor_template,
         rbss_stat_viewer,
         rbss_basic_info_viewer,
+        rbss_demographics_viewer,
+        rbss_log_book_viewer,
+        rbss_resources_viewer,
         rbss_actor
     ) {
         var MODULE_NAME = "actor_viewer";
         
-        console.log('actor', new rbss_actor());
-
-        function _generateBaseActor(){
-            var actor_settings = {};
-
-            return rbss_actor.fab(actor_settings);
-        }
-
-
         return {
             init: function(pm, pms, actor){
-                console.log('animation', mod_animation);
-                
-                actor = actor || _generateBaseActor();
-
                 var actor_viewer = zui.types.view.fab( {
                     model: actor,
                     parent: pm, 
@@ -46,7 +39,6 @@ define([
                     template: actor_editor_template.compile(),
                 });
 
-                
                 // TODO consider if these need to be a model or not...
                 var tabSettings = {
                     pm:actor_viewer,
@@ -83,10 +75,47 @@ define([
                             hover: "@@@",
                             order: 2,
                             glyph_code: "address-card",
-                            content: "<p>Demographics</p>"
+                            content: function(tab){
+                                var demographics_viewer = rbss_demographics_viewer.init(tr1, '.tabs_content_row', actor);
+
+                                demographics_viewer.render();
+
+                                return demographics_viewer.el;
+                            }
                         },
-                        "personality": {
-                            label: "Personality",
+                        "traits": {
+                            label: "Traits",
+                            hover: "###",
+                            order: 4,
+                            glyph_code: "user",
+                            content: function(tab){
+                                var settings = {
+                                    dataset: ["AAAA", "BBBBBBB", "CCC"],
+                                    autoInsert: false,
+                                    generateItemSettings: function(el, i){
+                                        return {
+                                            label: el.length,
+                                            hover_text: el
+                                        };
+                                    },
+                                    onClick:function(view, ev){
+                                        console.log("collection-grid-item clicked", view.model[ev.currentTarget.id.split('_')[1]]);
+                                    }
+                                };
+
+                                var grid =  zui_collection_viewer.createGridViewer(settings);
+                                console.log(grid);
+                                grid.render();
+
+                                setTimeout(function(){
+                                    grid.addItem("DDDDDDDDDDD");
+                                }, 3000)
+
+                                return grid.el;
+                            }
+                        },
+                        "talents": {
+                            label: "Talents",
                             hover: "###",
                             order: 4,
                             glyph_code: "user",
@@ -126,8 +155,8 @@ define([
                     pm:actor_viewer,
                     pms: '.tab_row_two',
                     tabs: {
-                        "skills": {
-                            label: "Skills",
+                        "abilities": {
+                            label: "Abilities",
                             hover: "!!!",
                             order: 0,
                             glyph_code: "flash",
@@ -251,13 +280,32 @@ define([
                             hover: "@@@",
                             order: 2,
                             glyph_code: "book",
-                            content: "<p>Log Book</p>"
+                            content: function(tab){
+                                var log_book_viewer = rbss_log_book_viewer.init(tr1, '.tabs_content_row', actor);
+
+                                log_book_viewer.render();
+
+                                return log_book_viewer.el;
+                            }
                         },
                         "resources": {
                             label: "Resources",
                             hover: "###",
                             order: 4,
                             glyph_code: "cubes",
+                            content: function(tab){
+                                var resources_viewer = rbss_resources_viewer.init(tr1, '.tabs_content_row', actor);
+
+                                resources_viewer.render();
+
+                                return resources_viewer.el;
+                            }
+                        },
+                        "preferences": {
+                            label: "Preferences",
+                            hover: "***",
+                            order: 5,
+                            glyph_code: "star",
                             content: function(tab){
                                 var settings = {
                                     buttons: [
@@ -308,14 +356,7 @@ define([
                                 toolbar.render();
 
                                 return toolbar.el;
-                            }
-                        },
-                        "preferences": {
-                            label: "Preferences",
-                            hover: "***",
-                            order: 5,
-                            glyph_code: "star",
-                            content: "<p>Preferences</p>",
+                            },
                             disabled: true
                         },
                         "art_assets": {
@@ -331,44 +372,10 @@ define([
 
                 var tr2 = zui_tab_view.init(tabSettings2);
 
-
                 actor_viewer.on('post-render', function(data){
-                   
                     var photo = actor_viewer.el.querySelector('.photo_box');
-                   
-                    // //mod_animation.velocity(photo, "fadeIn", { duration: 1500 });
-                    // //setTimeout(function(){
-                    //     console.log('!! render !!');
-                    //     var photo = actor_viewer.el.querySelector('.photo_box');
-                    //     // photo.style.opacity = .25;
-                    //     // photo.style.opacity = .15;
-                    //     mod_animation.velocity(photo, {
-                    //         opacity: [ 1, "easeInSine", 0],
-                    //         //display: "none"
-                    //     }, {
-                    //         duration: 1500,
-                    //         //loop: true 
-                    //     }).then(function(res){
-                    //         console.log('!! DONE !!', res);
-                    //         // res.velocity(photo, "reverse").then(function(res){
-                    //         //     console.log('!! DONE !!', res);
-                    //         // });
-                    //     });
-
-                    //     // setTimeout(function(){
-                    //     //     mod_animation.velocity(photo, "stop");
-                    //     // }, 5000);
-
-                    // //}, 1000);
-
-
-
-
+                
                     var inBoundQ = [
-                        // {
-                        //    element: photo,
-                        //    animation: 'fadeIn'
-                        // },
                         {
                             element: photo,
                             animation: 'fadeOut',
@@ -376,32 +383,9 @@ define([
                         }
                     ];
 
-                    //_domReference['closeBtn'].addEventListener('click', function (ev) {
-                    //    console.log('close table overlay');
-                    //    var outBoundQ = [
-                    //        {
-                    //            element: _domReference['overlay'],
-                    //            animation: 'fadeOut',
-                    //            stayHidden: true
-                    //        }
-                    //    ];
-
-                    //    window['ks'].animation.queueAnimationSequence(outBoundQ).then(function () {
-                    //        _domReference['overlay'].parentNode.removeChild(_domReference['overlay']);
-                    //    });
-                    //});
-
-
                     mod_animation.queueAnimationSequence(inBoundQ).then(function(res){
                         console.log('!! DONE !!', res);
                     });
-
-
-
-
-
-
-
                 });
 
                 return actor_viewer;
