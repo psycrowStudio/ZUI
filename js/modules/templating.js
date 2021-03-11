@@ -1,10 +1,11 @@
 define([
-        "mod/dom_helper"
+        "mod/dom_helper",
+        "3p/ejs.min"
     ],
     function (
-        s5_dom
+        s5_dom,
+        ejs
     ) {
-        
         var MODULE_NAME = "templating";
         var _templateCache = {};
         var _domParser = new DOMParser();
@@ -19,8 +20,9 @@ define([
 
         var _module = {
             // TODO create cache management helpers, clear, etc
-            createFromEjs : function(key, ejs) { 
-                _templateCache[key] = _.template(ejs);
+            createFromEjs : function(key, ejs_template) { 
+                //_templateCache[key] = _.template(ejs_template); // _ substitute for ejs
+                _templateCache[key] = ejs.compile(ejs_template);
                 return _templateCache[key];
             },
             compileToRawHtml: function(key, data){

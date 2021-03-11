@@ -29,23 +29,12 @@ define([
         return actor_settings ? new rbss_actor(actor_settings) : new rbss_actor();
     }
 
-    // TODO start some backbone mixins
-    // make this recursive
-    // handle dates?
-    Backbone.Model.prototype.toJSON = function() {
-        if (this._isSerializing) {
-            return this.id || this.cid;
-        }
-        this._isSerializing = true;
-        var json = _.clone(this.attributes);
-        _.each(json, function(value, name) {
-            _.isFunction((value || "").toJSON) && (json[name] = value.toJSON());
-        });
-        this._isSerializing = false;
-        return json;
-    }
+    var actor_json = '{"personality":{"state":"EAT"},"id":"A944F5","name":"New Actor","background":"","glyph_code":"","accent_color":"","demographic":{"age":0,"date_of_birth":"2021-03-10T18:47:39.226-06:00","height":0,"weight":0,"race":{"id":"8C3C65","name":"New Actor Race"},"sex":"","archetype":{"id":"8F3D81","name":"New Actor Archetype"},"ethical_alignment":0,"moral_alignment":0},"stats":[],"abilities":[],"talents":[],"traits":[],"modifiers":[],"logbook":{"itinerary":[],"quests":[],"contacts":[],"history":[]},"resources":{"inventory":[],"currencies":[],"property":[],"knowledge":[],"equipment":[]}}';
+    var actor_parsed = JSON.parse(actor_json);
+    
+    var a1 =  new rbss_actor(actor_parsed);
+    //var a2 =  new rbss_actor(actor_parsed, {parse: true});
 
-    var a1 =  new rbss_actor();
     console.log('actor', a1.toJSON());
 
     var testPage = zui.types.page.fab({ 
@@ -231,6 +220,25 @@ define([
                 disabled: false,
                 visible: true,
                 onClick:function(view, ev){
+                    var dialog_layer = zui.components.dialogLayer.current();
+                                            
+                    var custom_settings = {
+                        title: "Saving Actor Data",
+                        glyph_code: "save",
+                        title_bar_buttons: [
+                            {
+                                label:"",
+                                glyph_code:"times",
+                                hover_text: "Cancel",
+                                classes: ["dismissPanel"],
+                                hotkey_code: 27 
+                            }
+                        ],
+                        typeSettings: {
+                            content: '<div class="actor_json">'+ JSON.stringify(a1.toJSON()) +'</div>'
+                        },
+                    };
+                    dialog_layer.triggerDialog("custom", custom_settings);
                 }
             },
         ]

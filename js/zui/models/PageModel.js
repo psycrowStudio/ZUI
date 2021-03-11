@@ -3,7 +3,7 @@ define(['underscore',
     'mod/dom_helper',
     'zuiRoot/common',
     'zuiRoot/models/ComponentModel',
-    'zuiRoot/logger'], function(_, Backbone, mod_dom, Common, Component,  Logger){
+    'zuiRoot/logger'], function(_, Backbone, mod_dom, Common, Component, Logger){
         var _prius;
 
         var generateScope = function(settings){

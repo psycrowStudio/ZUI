@@ -82,7 +82,7 @@ function (
 			personality: new rbss_personality(),
 			demographic : {
 				age: 0,
-				birthdate: null,
+				date_of_birth: null,
 				height: 0,
 				weight: 0,
 				race: new rbss_actor_race(),
@@ -142,26 +142,39 @@ function (
 			// Art / Sound / assets?
 			// dialogs
 		},
-
-		initialize : function(){   
+		constructor: function(attributes, options) {
+			if(!attributes || !this.fromJSON(attributes, options)){
+				Backbone.Model.apply(this, arguments);
+			}
+		},
+		initialize : function(attributes, options){   
 			if(!this.get('id')){
 				this.set('id', mod_text.random.hexColor());
 			}
 
-			if(!this.get('birthday')){
-				this.set('birthday', luxon.DateTime.local());
+			var demographic = _.clone(this.get('demographic'));
+			if(!demographic['date_of_birth']){
+				demographic['date_of_birth'] = luxon.DateTime.utc();
 			}
+			else if(_.isString(demographic['date_of_birth'])){
+				demographic['date_of_birth'] = luxon.DateTime.fromISO(demographic['date_of_birth']);
+			}
+			this.set('demographic', demographic);
+
 			//_inform(this, "rbss-actor-created");
-		}
+		},
+		get_model: function(){ return _model; }
 	};
-	
-	//These are the static methods that this type will inherit
-	var _staticMethods = (function() {
+
+	//These are the static methods & properties that this type will inherit
+	var _static = (function() {
 		return {
 			model_name: MODEL_SINGULAR,
 			model_plural: MODEL_PLURAL
 		};
 	})();
+
+	var _model = Backbone.Model.extend(_classDefaults, _static);
 
 	//These are private methods shared by the entire class
 	// function _inform(callee, event, message) {
@@ -185,5 +198,5 @@ function (
 	// 	callee.trigger(event, eventObject);
 	// };
 
-	return Backbone.Model.extend(_classDefaults, _staticMethods);
+	return _model;
 });
