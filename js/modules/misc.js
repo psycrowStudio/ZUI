@@ -166,9 +166,28 @@ define([],
 
                 return obj;
             },
-            objectClone: function (obj) {
-                // simple clone. Could use a better deep clone // will probably use _'s varient of this.
+            simpleClone: function (obj) {
+                // simple clone
                 return JSON.parse(JSON.stringify(obj));
+            },
+            deepClone: function (obj) {
+                var c = null;
+                if(Array.isArray(obj)){
+                    c = [];
+                    obj.forEach(function(el){
+                        c.push(_misc.deepClone(el));
+                    });
+                }
+                else if(typeof obj === "object"){
+                    c = {};
+                    for(var key in obj) {
+                        c[key] = _misc.deepClone(obj[key]);
+                    };
+                }
+                else {
+                    c = obj;
+                }
+                return c;
             }
         };
 

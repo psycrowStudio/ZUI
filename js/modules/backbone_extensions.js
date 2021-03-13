@@ -1,33 +1,45 @@
 define([
     'backbone',
-    'underscore'
+    'underscore',
+    'mod/misc'
 ], function(
     backbone,
-    underscore
+    underscore,
+    mod_misc
 ){
+    
+    function _clone(obj) {
+        var c = null;
+
+        if(obj instanceof Backbone.Model || obj instanceof Backbone.Collection){
+            c = obj.clone();
+        }
+        else {
+            c = mod_misc.deepClone(obj);
+        }
+        return c;
+    }
+    
     // convert an object to JSON
     Backbone.Model.prototype.toJSON = function() {
-        var _recurse_object = function(json){
-            _.each(json, function(value, name) {
-                if(_.isFunction((value || "").toJSON)) {
-                    json[name] = value.toJSON();
-                }
-                else if(_.isArray(value) || _.isObject(value)){
-                    json[name] = _recurse_object(value);
-                }
-            });
-            return json;
-        };
+        // var _recurse_object = function(json){
+        //     _.each(json, function(value, name) {
+        //         if(_.isFunction((value || "").toJSON)) {
+        //             json[name] = value.toJSON();
+        //         }
+        //         else if(_.isArray(value) || _.isObject(value)){
+        //             json[name] = _recurse_object(_.clone(value));
+        //         }
+        //     });
+        //     return json;
+        // };
 
-        if (this._isSerializing) {
-            return this.id || this.cid;
-        }
+        // if (this._isSerializing) {
+        //     return this.id || this.cid;
+        // }
 
         this._isSerializing = true;
-        var json = _.clone(this.attributes);
-        
-        json = _recurse_object(json);
-
+        var json = JSON.parse(JSON.stringify(this.attributes));
         this._isSerializing = false;
         return json;
     };
@@ -42,9 +54,13 @@ define([
                 else if(attributes.hasOwnProperty(name) && attributes[name] instanceof Backbone.Collection){
                     attributes[name].reset(data[name]);
                 }
+                else if(attributes.hasOwnProperty(name) && _.isArray(attributes[name])){
+                    attributes[name] = data[name].slice(0);
+                }
                 else if(attributes.hasOwnProperty(name) && _.isObject(attributes[name])){
                     attributes[name] = _recurse_object(attributes[name], data[name]);
                 }
+
                 else {
                     attributes[name] = data[name]
                 }
@@ -53,7 +69,7 @@ define([
         };
 
         try {
-            var defaults = _.clone(this.defaults);
+            var defaults = _clone(this.defaults);
             json = _recurse_object(defaults, json);
             
             Backbone.Model.apply(this, arguments);

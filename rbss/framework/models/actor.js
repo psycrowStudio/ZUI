@@ -76,20 +76,21 @@ function (
 		defaults : {
 			'id': "",
 			name : "New " + MODEL_SINGULAR,
+			nickname : "",
 			background: "",
 			glyph_code:"",
 			accent_color:"",
-			personality: new rbss_personality(),
 			demographic : {
 				age: 0,
 				date_of_birth: null,
 				height: 0,
 				weight: 0,
-				race: new rbss_actor_race(),
-				sex: "",
-				archetype: new rbss_actor_archetype(),
+				race: null,
+				gender: "",
+				personality: null,
+				archetype: null,
 				ethical_alignment: 0,  // 1 law-0-chaos -1
-				moral_alignment: 0  //  1 good-0-evil -1
+				moral_alignment: 0  // 1 good-0-evil -1
 			},
 			stats: new Backbone.Collection(null, {
 				model: rbss_statistic
@@ -119,6 +120,7 @@ function (
 				history: new Backbone.Collection(null, {
 					model: rbss_actor_history_entry
 				})
+				// family tree
 				// newspaper "tips"
 				// passport stamps & visas
 			},
@@ -152,13 +154,26 @@ function (
 				this.set('id', mod_text.random.hexColor());
 			}
 
-			var demographic = _.clone(this.get('demographic'));
+			var demographic = JSON.parse(JSON.stringify(this.get('demographic')));
 			if(!demographic['date_of_birth']){
 				demographic['date_of_birth'] = luxon.DateTime.utc();
 			}
 			else if(_.isString(demographic['date_of_birth'])){
 				demographic['date_of_birth'] = luxon.DateTime.fromISO(demographic['date_of_birth']);
 			}
+
+			if(!demographic.race){
+				demographic.race = rbss_actor_race.random_default_race()
+			}
+
+			if(!demographic.personality){
+				demographic.personality = rbss_personality.random_personality();
+			}
+
+			if(!demographic.archetype){
+				demographic.archetype = rbss_actor_archetype.random_archetype();
+			}
+
 			this.set('demographic', demographic);
 
 			//_inform(this, "rbss-actor-created");

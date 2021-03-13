@@ -32,10 +32,10 @@ define([
     var actor_json = '{"personality":{"state":"EAT"},"id":"A944F5","name":"New Actor","background":"","glyph_code":"","accent_color":"","demographic":{"age":0,"date_of_birth":"2021-03-10T18:47:39.226-06:00","height":0,"weight":0,"race":{"id":"8C3C65","name":"New Actor Race"},"sex":"","archetype":{"id":"8F3D81","name":"New Actor Archetype"},"ethical_alignment":0,"moral_alignment":0},"stats":[],"abilities":[],"talents":[],"traits":[],"modifiers":[],"logbook":{"itinerary":[],"quests":[],"contacts":[],"history":[]},"resources":{"inventory":[],"currencies":[],"property":[],"knowledge":[],"equipment":[]}}';
     var actor_parsed = JSON.parse(actor_json);
     
-    var a1 =  new rbss_actor(actor_parsed);
+    var a1 =  new rbss_actor();
     //var a2 =  new rbss_actor(actor_parsed, {parse: true});
 
-    console.log('actor', a1.toJSON());
+    console.log('actor', a1);
 
     var testPage = zui.types.page.fab({ 
         'title' : 'RBSS Actor Creator Index', 
@@ -211,6 +211,11 @@ define([
                 disabled: false,
                 visible: true,
                 onClick:function(view, ev){
+                    var race = a1.attributes.demographic.race;
+                    var model = race.get_model();
+                    
+                    console.log("RACE", model.random_default_race());
+                    console.log("NAME: ", model.random_racial_name({ subtype:"Goblinoid" }, "Male"));
                 }
             },
             {
