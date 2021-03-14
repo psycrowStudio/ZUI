@@ -1,7 +1,13 @@
 <div class="row_one g-row g-v-24">
         <div class="photo_col g-col-5">
             <div class="stripe"></div>
-            <div class="photo_box">PHOTO</div>
+            <div class="photo_box">
+                <% if(get('glyph_code')) { %>
+                    <i id="actor_glyph" class="fa fa-<%= get('glyph_code') %>"></i>
+                <% } else { %>
+                    <p> PHOTO </p>
+                <% } %>
+            </div>
         </div>
         <div class="tab_row_one g-col-15"></div>
 </div>

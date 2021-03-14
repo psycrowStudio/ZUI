@@ -1,6 +1,8 @@
 define([
     'mod/dom_helper',
+    'mod/text',
     'zui',
+    "zuiRoot/components/fa_glyph_picker",
     'rbss',
     'rbssRoot/layouts/base_grid',
     // 'rbssRoot/framework/factories/actor',
@@ -11,7 +13,9 @@ define([
     "rbssRoot/framework/models/actor"
 ], function(
     mod_dom,
+    mod_text,
     zui,
+    zui_glyph_picker,
     rbss,
     layout_base,
     // rbss_actor_factory,
@@ -34,7 +38,8 @@ define([
     
     var a1 =  new rbss_actor();
     //var a2 =  new rbss_actor(actor_parsed, {parse: true});
-
+    var glyphs = zui_glyph_picker.getGlyphCodes();
+    a1.set('glyph_code', glyphs[mod_text.random.int(0, glyphs.length-1)])
     console.log('actor', a1);
 
     var testPage = zui.types.page.fab({ 
@@ -45,7 +50,7 @@ define([
     layout_base.generate(testPage);
 
     var scroll_box = testPage.findChildView('scrolling_box');
-    var actor_viewer = rbss_actor_view.init(scroll_box, '#scrolling_box', new rbss_actor());
+    var actor_viewer = rbss_actor_view.init(scroll_box, '#scrolling_box', a1);
 
 
     var context_bar = testPage.findChildView('context_bar');

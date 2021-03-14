@@ -25,7 +25,7 @@ define([
         };
 
         var item_settings = item_settings_defaults;
-        if(settings && typeof item_settings.generateItemSettings === 'function'){
+        if(settings && typeof settings.generateItemSettings === 'function'){
             var item_setting_overrides = settings.generateItemSettings(item, index);
             for(var key in item_setting_overrides){
                 item_settings[key] = Array.isArray(item_settings[key]) ?  item_settings[key].concat(item_settings[key]) : item_setting_overrides[key];

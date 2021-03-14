@@ -21,6 +21,9 @@
     /* min-height: 200px; */
     /* max-width: 80%; */
     margin: 20px auto 0;
+    text-align: center;
+    font-size: 2rem;
+    padding: 20px;
 }
 
 .tabs_content_row {

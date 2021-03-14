@@ -134,7 +134,6 @@ function (
 
             var stat_list =  zui_collection_viewer.createListViewer(stat_list_settings);
 
-
             return viewer;
         }
     };

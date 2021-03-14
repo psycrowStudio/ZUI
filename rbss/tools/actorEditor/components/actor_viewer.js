@@ -1,4 +1,5 @@
 define([
+        'mod/dom_helper',
         'mod/animation',
         'zui',
         "zuiRoot/components/tab_view",
@@ -13,6 +14,7 @@ define([
         "rbssRoot/framework/models/actor"
     ],
     function (
+        mod_dom,
         mod_animation,
         zui,
         zui_tab_view,
@@ -36,7 +38,23 @@ define([
                     insertionSelector: pms,
                     classes:['actor_viewer'],
                     events: {},
-                    template: actor_editor_template.compile(),
+                    template: actor_editor_template.compile(actor),
+                });
+
+                actor.listenTo(actor, 'change:glyph_code', function(m, v, o){
+                    console.log('glyph changed', v);
+                    var actor_glyph = actor_viewer.el.querySelector('#actor_glyph');
+                    if(actor_glyph){
+                        actor_glyph.className = "fa fa-"+ v;
+                    }
+                });
+
+                actor.listenTo(actor, 'change:accent_color', function(m, v, o){
+                    console.log('accent_color changed', v);
+                    var actor_glyph = actor_viewer.el.querySelector('#actor_glyph');
+                    if(actor_glyph){
+                        actor_glyph.style.color = v;
+                    }
                 });
 
                 // TODO consider if these need to be a model or not...
@@ -145,8 +163,7 @@ define([
                                 return grid.el;
                             }
                         }
-                    },
-                    activeTab: "demo"
+                    }
                 };
 
                 var tr1 = zui_tab_view.init(tabSettings);
@@ -372,21 +389,21 @@ define([
 
                 var tr2 = zui_tab_view.init(tabSettings2);
 
-                actor_viewer.on('post-render', function(data){
-                    var photo = actor_viewer.el.querySelector('.photo_box');
+                // actor_viewer.on('post-render', function(data){
+                //     var photo = actor_viewer.el.querySelector('.photo_box');
                 
-                    var inBoundQ = [
-                        {
-                            element: photo,
-                            animation: 'fadeOut',
-                            stayHidden: true
-                        }
-                    ];
+                //     var inBoundQ = [
+                //         {
+                //             element: photo,
+                //             animation: 'fadeOut',
+                //             stayHidden: true
+                //         }
+                //     ];
 
-                    mod_animation.queueAnimationSequence(inBoundQ).then(function(res){
-                        console.log('!! DONE !!', res);
-                    });
-                });
+                //     mod_animation.queueAnimationSequence(inBoundQ).then(function(res){
+                //         console.log('!! DONE !!', res);
+                //     });
+                // });
 
                 return actor_viewer;
             },

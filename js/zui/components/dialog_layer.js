@@ -344,7 +344,7 @@ define([
                             dataset: settings.typeSettings.buttons,
                             insertionSelector: ".mc-box",
                             parent: dialog,
-                            generateItemSettings: function(el, i){
+                            generateItemSettings:  settings.typeSettings.generateItemSettings ? settings.typeSettings.generateItemSettings : function(el, i){
                                 return {
                                     label: el.label,
                                     hover_text: el.label,

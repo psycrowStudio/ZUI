@@ -2,7 +2,7 @@
     <div class="g-row g-v-24">
         <div>
             <label for="actor_name">Actor's Name</label>
-            <input id="actor_name" type="text" name="actor_name" placeholder="Dwight K. Schrute">
+            <input id="actor_name" type="text" name="actor_name" placeholder="Dwight K. Schrute" value="<%= get('name') %>">
             <button><i class="fa fa-random" title="Randomize"></i></button>
         </div>
     </div>
@@ -20,28 +20,35 @@
     <div class="g-row g-v-24">
         <div>
             <label for="actor_accent_color">Accent Color</label>
-            <input id="actor_accent_color" type="color" name="actor_accent_color" title="This color will be associated with this character">
-            <button><i class="fa fa-random" title="Randomize"></i></button>
+            <input id="actor_accent_color" type="color" name="actor_accent_color" value="<%= get('accent_color') %>" title="This color will be associated with this character">
+            <button id="random_accent_color"><i class="fa fa-random" title="Randomize"></i></button>
         </div>
     </div>
     <div class="g-row g-v-24">
         <div>
             <label for="actor_accent_glyph">Accent Glyph</label>
-            <input id="actor_accent_glyph" type="text" name="actor_accent_glyph" title="This glyph will be associated with this character">
-            <button><i class="fa fa-random" title="Randomize"></i></button>
+            <input id="actor_accent_glyph" type="text" name="actor_accent_glyph" value="<%= get('glyph_code') %>" title="This glyph will be associated with this character">
+            <button id="random_glyph"><i class="fa fa-random" title="Randomize"></i></button>
+        </div>
+    </div>
+    <div class="g-row g-v-24">
+        <div>
+            <label for="actor_race">Race</label>
+            <input id="actor_race" type="text" name="actor_race" value="<%= get('demographic').race.get('type') + '-' + get('demographic').race.get('subtype') %>" title="This glyph will be associated with this character">
+            <button id="random_glyph"><i class="fa fa-random" title="Randomize"></i></button>
         </div>
     </div>
     <div class="g-row g-v-24">
         <div>
             <label for="actor_personality">Personality</label>
-            <input id="actor_personality" type="text" name="actor_personality" title="This architype will alter how your character responds to certain challenges">
+            <input id="actor_personality" type="text" name="actor_personality" value="<%= get('demographic').personality.get('name') %>" title="This architype will alter how your character responds to certain challenges">
             <button><i class="fa fa-random" title="Randomize"></i></button>
         </div>
     </div>
     <div class="g-row g-v-24">
         <div>
             <label for="actor_profession">Profession</label>
-            <input id="actor_profession" type="text" name="actor_profession" title="This glyph will provide benifits to certain in-game situations">
+            <input id="actor_profession" type="text" name="actor_profession" value="<%= get('demographic').archetype.get('name') %>" title="This glyph will provide benifits to certain in-game situations">
             <button><i class="fa fa-random" title="Randomize"></i></button>
         </div>
     </div>

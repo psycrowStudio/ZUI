@@ -1,6 +1,6 @@
 define([
-    "hy-module/dialogs"
-], function (dialogs) {
+    "zui"
+], function (zui) {
     // Pulled from https://fontawesome.com/cheatsheet on 4/2/2020
     // FA v5.x // https://stackoverflow.com/questions/27992992/i-need-list-of-all-class-name-of-font-awesome
     // TODO make a live pull for this, or cache it ever month or something?
@@ -1004,27 +1004,46 @@ define([
     ];  
 
     return {
-        CreateGlyphPicker: function () {
+        createGlyphPicker: function () {
             // list picker override
 
-            var listPickerOptions = {
-                queryResult: _glyphCodes,
-                title: 'Pick a Glyph',
-                icon: 'fa-icons',
-                useSearch: true,
-                displayDelegate: function (data) {
-                    var fragment = document.createDocumentFragment();
+            // var listPickerOptions = {
+            //     queryResult: _glyphCodes,
+            //     title: 'Pick a Glyph',
+            //     icon: 'fa-icons',
+            //     useSearch: true,
+            //     displayDelegate: function (data) {
+            //         var fragment = document.createDocumentFragment();
 
-                    var span = document.createElement('span');
-                    span.innerHTML = '<i class="fa fa-' + data + '"></i>&nbsp;&nbsp;&nbsp;' + data;
+            //         var span = document.createElement('span');
+            //         span.innerHTML = '<i class="fa fa-' + data + '"></i>&nbsp;&nbsp;&nbsp;' + data;
 
-                    fragment.appendChild(span);
-                    return fragment;
+            //         fragment.appendChild(span);
+            //         return fragment;
+            //     }
+            // };
+            // return dialogs.ListPicker(listPickerOptions).then(function (picked) { return "fa-" + picked.detail; });
+
+
+            var settings = {
+                typeSettings: {
+                    query: "Pick a Glyph?",
+                    buttons: _glyphCodes,
+                    generateItemSettings: function(el, i){
+                        return {
+                            label: el,
+                            glyph_code: el,
+                            hover_text: el,
+                            value: el
+                        };
+                    },
                 }
             };
-            return dialogs.ListPicker(listPickerOptions).then(function (picked) { return "fa-" + picked.detail; });
+
+            var dialog_layer = zui.components.dialogLayer.current();
+            return dialog_layer.triggerDialog('mc', settings);
         },
-        GetGlyphCodes: function () {
+        getGlyphCodes: function () {
             return _glyphCodes;
         }
     };
