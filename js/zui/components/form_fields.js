@@ -1,9 +1,11 @@
 define([
     'zui',
-    "zuiRoot/view_templates/forms_basic",
+    'mod/templating',
+    'mod/text'
 ], function (
     zui,
-    zui_forms_basic,
+    mod_templating,
+    mod_text
 ) {
     var MODULE_NAME = "zui_forms_fields";
     // var TOOLBAR_CLASSES = ['toolbar-container'];
@@ -18,271 +20,229 @@ define([
     // -- Validation
     // 
 
-    var _GetFieldTypeFromValue = function (value) {
-        var type = typeof value;
-
-        if (type === "string" && value.length > 150) {
-            return "TextArea";
-        } else if (type === "string") {
-            return "Input-Text";
-        } else if (type === "number") {
-            return "Input-Number";
-        } else if (type === "boolean") {
-            return "Input-Checkbox";
-        } else if (Array.isArray(value)) {
-            return "Array";
-        } else if (type.indexOf("object") > -1) {
-            return "Dictionary";
-        }
-        // undefined / null
-    };
-
-
     // -- Form Input Creators --
-    var _CreateLabel = function (display, forField) {
+    var _CreateLabel = function (settings) {
         var label = document.createElement('label');
-
-        if (typeof display !== "string" && Array.isArray(display)) {
-            label.textContent = '[' + display.toString() + ']';
-        }
-        else {
-            label.textContent = display.toString();
-        }
-
-        if (forField) {
-            label.for = forField;
-        }
-
+        label.className = ZUI_LABEL_CLASSES.join(' ');
+        label.textContent = settings.label;
+        label.title = settings.hover_text;
+        label.htmlFor = settings.field_name;
         return label;
     };
 
-    var _CreateInput = function (name, type, value, hierarchy) {
+    var _CreateOutput = function (settings, source) {
+        var output = document.createElement('output');
+        output.className = ZUI_OUTPUT_CLASSES.join(' ');;
+        output.htmlFor = settings.field_name;
+        output.title = settings.hover_text;
+        output.value = settings.value;
+        output.setAttribute("onforminput", "value = " + settings.field_name + ".value;");
+        
+        if(settings.misc && typeof settings.misc.calculateOutput === "function"){
+            output.value = settings.misc.calculateOutput(source, output);
+            source.addEventListener('input', function(el){
+                output.value = settings.misc.calculateOutput(source);
+            });
+        }
+        else {
+            source.addEventListener('change', function(el){
+                output.value = el.target.value;
+            });
+        }
+        return output;
+    };
+
+    var _CreatePrompt = function (promptText) {
+        var prompt = document.createElement('p');
+        prompt.className = ZUI_PROMPT_CLASSES.join(' ');;
+        prompt.textContent = promptText;
+        return prompt;
+    };
+
+    var _CreateInput = function (settings) {
         var input = document.createElement('input');
-        input.classList.add('form-control');
-        input.name = name;
-        input.type = type;
-        if (hierarchy) {
-            input.setAttribute("hierarchy", hierarchy);
+        input.id = settings.field_name;
+        input.className = settings.classes.join(' ');
+        input.name = settings.field_name;
+        input.type = settings.type;
+        input.dataset.initial_value = settings.value;
+        input.title = settings.hover_text;
+        if(settings.disabled){
+            input.disabled = true;
         }
-        input.placeholder = name + ' <' + type + '>';
 
-        if (type === "checkbox") {
-            input.checked = value;
+        if (settings.type === "checkbox") {
+            input.checked = settings.value;
         } else {
-            input.value = value;
+            input.value = settings.value;
+        }
+
+        for(var key in settings.attributes){
+            input[key] = settings.attributes[key]
         }
 
         return input;
     };
 
-    var _CreateButton = function (name, type) {
-        var input = document.createElement('button');
-        input.classList.add('btn');
-        input.classList.add('btn-' + type);
-        input.textContent = name;
-        return input;
+    var _CreateButton = function (settings) {
+        settings.classes = Array.isArray(settings.classes) ? settings.classes.concat(ZUI_BUTTON_CLASSES) : ZUI_BUTTON_CLASSES;
+        var button = zui.components.button_basic.init_dom(settings);
+        return button
     };
 
-    var _CreateTextArea = function (name, value, maxLength, hierarchy) {
-        maxLength = maxLength ? maxLength : 100000;
+    var _CreateTextArea = function (settings) {
+        var area = document.createElement('textarea');
+        area.id = settings.field_name;
+        area.className = settings.classes.join(' ');
+        area.name = settings.field_name;
+        area.value = settings.value;
+        area.maxLength = MAX_TEXTAREA_LENGTH;
+        area.title = settings.hover_text;
+        area.dataset.initial_value = settings.value;
 
-        var area = document.createElement('TextArea');
-        //area.classList.add('form-control');
-        area.name = name;
-        area.value = value.length > maxLength ? value.substring(0, maxLength - 3) + "..." : value;
-        area.maxLength = maxLength;
-        area.placeholder = "Enter up to [" + maxLength + "] characters.";
-        if (hierarchy) {
-            area.setAttribute("hierarchy", hierarchy);
+        if(settings.disabled){
+            area.disabled = true;
         }
 
         return area;
     };
 
-    var _CreateSelect = function (name, options, selectedIndex, hierarchy) {
-
+    var _CreateSelect = function (settings) {
         var select = document.createElement('select');
-        select.classList.add('form-control');
-        select.name = name;
+        select.id = settings.field_name;
+        select.className = settings.classes.join(' ');
+        select.name = settings.field_name;
+        select.title = settings.hover_text;
+        select.dataset.initial_value = settings.value;
 
-        for (var key in options) {
+        if(settings.disabled){
+            select.disabled = true;
+        }
+
+        for (var opt in settings.options) {
             var option = document.createElement('option');
-            option.value = key;
-            option.textContent = options[key];
-
-            if (selectedIndex === key || selectedIndex === options[key]) {
+            option.value = settings.options[opt].value;
+            option.textContent = settings.options[opt].label;
+            if (settings.options[opt].selected || settings.options[opt].value === settings.value) {
                 option.selected = true;
             }
-
             select.add(option);
         }
-        select.setAttribute("hierarchy", hierarchy);
+
         return select;
     };
 
 
+    var ZUI_FIELD_ROW_CLASSES = ['zui-field-row', "g-row", "g-v-24"];
+    var ZUI_INPUT_CLASSES = ['zui-input', "g-col-12"];
+    var ZUI_OUTPUT_CLASSES = ['zui-output', "g-col-3"];
+    var ZUI_LABEL_CLASSES = ['zui-input-label', 'g-row'];
+    var ZUI_PROMPT_CLASSES = ['zui-field-prompt', 'g-row'];
+    var ZUI_BUTTON_CLASSES = ['zui-input-button'];
+    var ZUI_FIELDSET_CLASSES = ['zui-fieldset'];
+    var ZUI_LEGEND_CLASSES = ['zui-legend'];
+
+    var MAX_TEXTAREA_LENGTH = 100000;
+
     // MODULE ------------------------------------------------------------------------------------------------------------------------ 
     var _forms = {
-        DefaultPropertyDisplay_hy: function (settings) {
-            settings.prop = settings.prop || "";
-            var fieldType = settings.fieldType || _GetFieldTypeFromValue(settings.value);
-            if (!bp.Data.Clean.Json.length && typeof settings.value === 'object' && !(Array.isArray(settings.value))) {
-                bp.ClearData();
-                bp.NewBluePrint(settings.value);
-            }
-            var field = this.CreateField(fieldType, settings);
+        create_field_row_basic:function(settings) {
+            // settings.options / Select / check list / radios
+            // settings.validation[] // required // TBD
+            // settings.input_buttons
 
-            // need a way to wrap in interface.
-            // still feel like this logic is a bit buggy and there are some uncovered edge cases here.
-            if (!settings.prop && !settings.autogroup) {
-                return field;
+            settings.classes = settings.classes ? ZUI_INPUT_CLASSES.concat(settings.classes) : ZUI_INPUT_CLASSES;
+            settings.field_name = settings.field_name ? settings.field_name : mod_text.random.hexColor();
+
+            var row = document.createElement('div');
+            row.className = ZUI_FIELD_ROW_CLASSES.join(' ')
+           
+            var row_children = [];
+            switch(settings.type){
+                case "textarea":
+                    row_children.push(_CreateTextArea(settings));
+                    break;
+                case "select":
+                    row_children.push(_CreateSelect(settings));
+                    break;
+                case "radio":
+                    //row_children.push(_CreateSelect(settings.label, settings.fieldName));
+                    break;
+                case "checklist":
+                    //row_children.push(_CreateSelect(settings.label, settings.fieldName));
+                    break;
+                case "range":
+                    // needs output...
+                    // needs additional labels... 
+                    var range = _CreateInput(settings)
+                    row_children.push(range);
+                    row_children.push(_CreateOutput(settings, range));
+                    break;
+                default:
+                    row_children.push(_CreateInput(settings));
+                    break;
             }
-            else if (fieldType === "Dictionary" || fieldType === "Array") {
-                return _WrapInFormGroup(field);
+
+            if(Array.isArray(settings.buttons)){
+                settings.buttons.forEach(function(el, i) {
+                    row_children.push(_CreateButton(el));
+                });
             }
-            else if (!settings.autogroup) {
-                return _WrapInFragment([_CreateLabel(settings.prop, field.name), field]);
+
+            if(settings.label && settings.type !== "checklist" && settings.type !== "radio"){
+                row_children.unshift(_CreateLabel(settings));
             }
-            else if (!settings.prop) {
-                return _WrapInFormGroup(field);
+
+            if(settings.prompt){
+                row_children.unshift(_CreatePrompt(settings.prompt));
             }
-            else if (settings.prop && settings.autogroup) {
-                var keyField = settings.isKeyEditable ? this.CreateField(fieldType, settings) : _CreateLabel(settings.prop, field.name, settings);
-                return _WrapInFormGroup([keyField, field]);
-            }
+
+            row_children.forEach(function (el) {
+                //debugger;
+                row.appendChild(el);
+            });
+
+            return row;
         },
-        CreateField_hy: function (fieldType, settings) {
-            var field = {};
-            settings.hasParent = !settings.hasParent ? (!settings.parentIndex ? false : true) : settings.hasParent;
-            switch (fieldType) {
-                case "TextArea":
-                    field = _CreateTextArea(settings.prop, settings.value, null, settings.hierarchy);
-                    if (!settings.isEditable) {
-                        field.disabled = true;
-                    }
-                    else if (settings.recordChanges !== false) {
-                        _AddChangeWatcher(field, settings.validation);
-                    }
-                    break;
-                case "Input-Text":
-                    field = _CreateInput(settings.prop, "text", settings.value, settings.hierarchy);
+        create_fieldset:function(settings){
+            var fieldset = document.createElement('fieldset');
+            fieldset.id = settings.id ? settings.id : mod_text.random.hexColor();
+            fieldset.className =  Array.isArray(settings.classes) ? settings.classes.concat(ZUI_FIELDSET_CLASSES).join(' ') : ZUI_FIELDSET_CLASSES.join(' ');
+            
+            if(settings.disabled){
+                fieldset.disabled = true;
+            }
 
-                    if (!settings.isEditable) {
-                        field.disabled = true;
-                    }
-                    else if (settings.recordChanges !== false) {
-                        _AddChangeWatcher(field, settings.validation);
-                    }
-                    break;
-                case "Input-Number":
-                    field = _CreateInput(settings.prop, "number", settings.value, settings.hierarchy);
+            if(settings.label){
+                var label = document.createElement('legend');
+                label.className = ZUI_LEGEND_CLASSES;
+                label.textContent = settings.label;
+                label.title = settings.hover_text;
 
-                    if (!settings.isEditable) {
-                        field.disabled = true;
-                    }
-                    else if (settings.recordChanges !== false) {
-                        _AddChangeWatcher(field, settings.validation);
-                    }
-                    break;
-                case "Input-Checkbox":
-                    field = _CreateInput(settings.prop, "checkbox", settings.value, settings.hierarchy);
-
-                    if (!settings.isEditable) {
-                        field.disabled = true;
-                    }
-                    else if (settings.recordChanges !== false) {
-                        _AddChangeWatcher(field, settings.validation);
-                    }
-                    break;
-                case "Input-Password":
-                    field = _CreateInput(settings.prop, "password", settings.value, settings.hierarchy);
-
-                    if (!settings.isEditable) {
-                        field.disabled = true;
-                    }
-                    else if (settings.recordChanges !== false) {
-                        _AddChangeWatcher(field, settings.validation);
-                    }
-                    break;
-                case "Array":
-                    field = _CreateArrayList(settings.prop, settings.value, settings.isEditable, true, settings.hierarchy);
-                    break;
-                case "Dictionary":
-                    field = _CreateDictionaryList(settings);
-                    break;
-                case "Select":
-                    field = _CreateSelect(settings.prop, settings.optionGroup, settings.value, settings.hierarchy);
-                    if (!settings.isEditable) {
-                        field.disabled = true;
-                    }
-                    else if (settings.recordChanges !== false) {
-                        _AddChangeWatcher(field);
-                    }
-                    break;
-                case "Date":
-                    if (!settings.isEditable) {
-                        field = _CreateInput(settings.prop, "text", settings.value, settings.hierarchy);
-
-                        field.disabled = true;
+                label.addEventListener('click', function(ev){
+                   console.log(ev.currentTarget, ' clicked');
+                    if(ev.currentTarget.parentNode.classList.contains('collapsed')){
+                        ev.currentTarget.parentNode.classList.remove('collapsed');
                     }
                     else {
-                        field = _CreateDatePicker(settings.value, settings.hierarchy);
-
-                        var input = field.querySelector('input.dateValue');
-
-                        if (input && (settings.hierarchy || settings.hierarchy === 0)) {
-                            console.log('bind date !', input);
-                            bp.BindToData(settings.hierarchy, input, settings.isKey);
-                        }
+                        ev.currentTarget.parentNode.classList.add('collapsed');
                     }
-                    break;
-                case "DateTime":
-                    if (!settings.isEditable) {
-                        field = _CreateInput(settings.path, "text", settings.value, settings.hierarchy);
-                        field.disabled = true;
-                    }
-                    else {
-                        field = _CreateDateTimePicker(settings.value, settings.hierarchy);
+                });
 
-                        var dtInput = field.querySelector('input.dateValue');
-
-                        if (dtInput && (settings.hierarchy || settings.hierarchy === 0)) {
-                            console.log('bind date !', dtInput);
-                            bp.BindToData(settings.hierarchy, dtInput, settings.isKey);
-                        }
-                    }
-                    break;
+                fieldset.appendChild(label);
             }
 
-            if (settings.isNested) {
-                field.classList.add(NESTED_INPUT_CLASS);
+            if(settings.prompt){
+                fieldset.appendChild(_CreatePrompt(settings.prompt));
             }
 
-            if (fieldType !== "Dictionary" && fieldType !== "Array") {
-                _ApplyDefaultInputClasses(field);
+            if(Array.isArray(settings.fields)){
+                settings.fields.forEach(function(el, i){
+                    fieldset.appendChild(el);
+                });
             }
 
-            var parsedValue;
-            if (fieldType === "Array") {
-                parsedValue = JSON.stringify(settings.value);
-            }
-            else {
-                parsedValue = settings.value;
-            }
-
-            field.setAttribute(INITAL_VALUE_ATTRIBUTE, parsedValue);
-            if (!field.getAttribute('hierarchy')) {
-                field.setAttribute('hierarchy', settings.hierarchy);
-            }
-
-            if ((fieldType !== "Date" && fieldType !== "DateTime") && (settings.hierarchy || settings.hierarchy === 0)) {
-
-                bp.BindToData(settings.hierarchy, field, settings.isKey);
-            }
-            return field;
-        },
-        CreateLabel_hy: function (display, forField) {
-            return _CreateLabel(display, forField);
+            return fieldset;    
         }
     };
 

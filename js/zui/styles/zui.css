@@ -122,3 +122,99 @@ body {
 .bgClear {
     background-color: transparent !important;
 }
+
+button {
+    border: dotted #333 1px;
+    padding: 8px;
+    font-size: 1.2rem;
+    margin: 0 2px;
+}
+
+button:hover {
+    border: solid #333 1px;
+    background-color: crimson;
+    color: #FFF;
+    cursor: pointer;
+}
+
+
+/*  FORMS & INPUT FIELD */
+.zui-input {
+    padding:8px;
+}
+
+.zui-input-label {
+    margin: 12px 0 2px;
+    font-style: italic;
+}
+
+.zui-field-prompt {
+    margin: 18px 0 6px;
+    font-size: 1.1rem;
+}
+
+.zui-output {
+    border: 1px solid #333;
+    padding: 6px 8px;
+    margin: 0 12px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    pointer-events: none !important;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.zui-fieldset {
+    padding: 10px;
+}
+
+.zui-fieldset.no-border {
+   border: none;
+}
+
+.zui-legend {
+    font-size: 1.4rem;
+    margin: 0 0 -12px;
+    padding: 10px 34px 0 10px;
+    position: relative;
+    pointer-events: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.zui-fieldset:not(.collapsed) .zui-legend:not(.collapsed):after {
+    content: '\f146';
+    font-family: 'FontAwesome';
+    position: absolute;
+    z-index: 100;
+    right: 10px;
+    top: 15px;
+    cursor: pointer;
+    font-size: .95rem;
+    pointer-events: auto;
+}
+
+.zui-fieldset.collapsed .zui-legend:after {
+    content: '\f0fe';
+    font-family: 'FontAwesome';
+    position: absolute;
+    z-index: 100;
+    right: 10px;
+    top: 15px;
+    cursor: pointer;
+    font-size: .95rem;
+    pointer-events: auto;
+}
+
+.zui-fieldset.collapsed *:not(legend) {
+    display: none;
+}
+/* --- */

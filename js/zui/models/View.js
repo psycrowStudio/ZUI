@@ -83,7 +83,7 @@ define([
                             this.el.innerHTML = compliled_template;
                         }
                         else if(mod_dom.isDomObject(compliled_template)) {
-                            this.el.appendChild(compiled);
+                            this.el.appendChild(compliled_template);
                         }
                         
                         this.childViews.forEach(function(child){

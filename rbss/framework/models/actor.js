@@ -79,7 +79,7 @@ function (
 			nickname : "",
 			background: "",
 			glyph_code:"",
-			accent_color:"",
+			accent_color:"#000000",
 			demographic : {
 				age: 0,
 				date_of_birth: null,

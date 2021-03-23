@@ -30,7 +30,7 @@ define([
                     settings.buttons.forEach(function(el, i){
                         el.id = view.id + '_' + i, 
                         el.classes = Array.isArray(el.classes) ? TOOLBAR_BUTTON_CLASSES.concat(el.classes) : TOOLBAR_BUTTON_CLASSES
-                        buttons += zui_toolbar_views.templates['basic_button'].compile(el);
+                        buttons += zui.components.button_basic.init_html(el);
                     });
                     return buttons;
                 },
