@@ -16,7 +16,7 @@ function (
     var MODULE_NAME = "demographics_viewer";
     
     return {
-        init: function(pm, pms, datamodel){
+        init: function(pm, pms, actor){
             
             // MAIN VIEW COMPONENT -------------------------
             var stat_viewer_settings = {
@@ -35,12 +35,11 @@ function (
             //-- remove item
             // consider how the list works with arrays / dicts
 
-
-
             // TOOL BAR -------------------------
             var tool_bar_settings = {
                 parent:viewer,
                 insertionSelector: '.toolbar-col',
+                classes: ["vertical"],
                 buttons: [
                     {
                         label:"",
@@ -61,6 +60,20 @@ function (
                                 glyph.classList.remove('fa-check-circle');
                                 glyph.classList.add('fa-' + this.glyph_code);
                                 ev.currentTarget.title = this.hover_text;
+                              
+
+                                // TODO Start back here -- iron out the general model save flow
+                                // implement randoms
+                                // implement class based values (racial height / weight / age)
+                                console.log('Saving Actor Values...');
+                                fields = Array.from(edit_form.el.querySelectorAll('.zui-input:not(:disabled)'));
+
+                                console.log('VALUES:', fields.reduce(function(acc, cv, i){
+                                    // TODO check if changed... if()
+                                    acc[cv.name] = cv.value;
+                                    return  acc;
+                                }, {}));
+
                                 fieldset.disabled = true;
                             }
                             
@@ -76,12 +89,8 @@ function (
             var toolbar =  zui_toolbar.init(tool_bar_settings);
 
             // STAT LIST -------------------------     
-            
-            var basic_actor_info = {
-
-            };
-            
-
+            var demographic = actor.get('demographic');
+            console.log('demo', demographic);
 
             var demographics_viewer_settings = {
                 parent:viewer,
@@ -122,21 +131,79 @@ function (
 
                     var form_content = [
                         {
+                            label:"Race",
+                            field_name:"race",
+                            type:"text",
+                            disabled: true,
+                            hover_text:"This character's race",
+                            value: "RACE HERE",
+                            buttons:[
+                                {
+                                    label:"",
+                                    glyph_code:"list-alt",
+                                    hover_text: "Change Race",
+                                    disabled: false,
+                                    visible: true,
+                                    classes: [],
+                                    onClick:function(view, ev){
+                                        var settings = {
+                                            typeSettings: {
+                                                query: "Pick a number?",
+                                                buttons: [{
+                                                    label: 'One',
+                                                    value: '1'
+                                                },
+                                                {
+                                                    label: 'Two',
+                                                    value: '2'
+                                                },
+                                                {
+                                                    label: 'Three',
+                                                    value: '3'
+                                                },
+                                                {
+                                                    label: 'Four',
+                                                    value: '4'
+                                                },{
+                                                    label: 'Five',
+                                                    value: '5'
+                                                }]
+                                            }
+                                        };
+
+                                        console.log('clicked');
+                                        var dialog_layer = zui.components.dialogLayer.current();
+                                        var confirmation = dialog_layer.triggerDialog('mc', settings).then(function(resolve){
+                                            console.log('resolved', resolve);
+                                        }).catch(function(error){
+                                            console.log('rejected', error);
+                                        }); 
+                                        
+                                        
+                                        // toggle the state of the form fields
+                                        // save data back to model
+            
+                                    }
+                                },
+                                randomize_button
+                            ]
+                        },
+                        {
                             label:"Age",
                             field_name:"age",
                             type:"number",
                             hover_text:"This character's age",
-                            value:21,
+                            value:demographic.age,
                             buttons:[
                                 randomize_button
                             ]
                         },
                         {
                             label:"Birthdate",
-                            field_name:"dob",
+                            field_name:"date_of_birth",
                             type:"date",
                             hover_text:"This character's day of birth",
-                            value:"1984-01-01",
+                            value:demographic.date_of_birth.toFormat('yyyy-MM-dd'),
                             buttons:[
                                 randomize_button
                             ]
@@ -146,7 +213,7 @@ function (
                             field_name:"height",
                             type:"number",
                             hover_text:"This character's overall size (IN)",
-                            value:50,
+                            value:demographic.height,
                             buttons:[
                                 randomize_button
                             ]
@@ -156,7 +223,7 @@ function (
                             field_name:"weight",
                             type:"number",
                             hover_text:"This character's overall weight (LBS)",
-                            value:150,
+                            value:demographic.weight,
                             buttons:[
                                 randomize_button
                             ]
@@ -176,18 +243,17 @@ function (
                                 }
                             ],
                             hover_text:"This character's gender",
-                            value:"female",
+                            value:demographic.gender,
                             buttons:[
                                 randomize_button
                             ]
                         },
                         {
                             label:"Moral Alignment",
-                            prompt: "somthing about alignments...",
                             field_name:"moral_alignment",
                             type:"range",
                             hover_text:"This character's overall size",
-                            value:0,
+                            value:demographic.moral_alignment,
                             attributes:{
                                 min:-1,
                                 max:1,
@@ -216,7 +282,7 @@ function (
                             field_name:"ethical_alignment",
                             type:"range",
                             hover_text:"This character's overall size",
-                            value:0,
+                            value:demographic.ethical_alignment,
                             attributes:{
                                 min:-1,
                                 max:1,
@@ -243,14 +309,17 @@ function (
                     ]
 
                     form_content.forEach(function(el, i){
+                        // Save to el.domEl?
+                        // loop over this array again upon saving values?
+                        // if extended onSave, () else default save to obj?
                         form_rows.push(zui_form_fields.create_field_row_basic(el));
                     });
 
                     var fieldset_settings = {
-                        label:"FIELDSET TEST",
-                        //classes: ["no-border"],
-                        prompt:"Here is some data related to the following fields...",
-                        hover_text:"testing the fieldset",
+                        //label:"FIELDSET TEST",
+                        classes: ["no-border"],
+                        //prompt:"Here is some data related to the following fields...",
+                        //hover_text:"testing the fieldset",
                         fields: form_rows,
                         disabled:true
                     };

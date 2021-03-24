@@ -127,7 +127,7 @@ button {
     border: dotted #333 1px;
     padding: 8px;
     font-size: 1.2rem;
-    margin: 0 2px;
+    margin: 0;
 }
 
 button:hover {
@@ -156,7 +156,7 @@ button:hover {
 .zui-output {
     border: 1px solid #333;
     padding: 6px 8px;
-    margin: 0 12px;
+    margin: 0;
     font-weight: bold;
     font-size: 0.85rem;
     pointer-events: none !important;

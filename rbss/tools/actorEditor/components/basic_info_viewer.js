@@ -43,6 +43,7 @@ function (
             var tool_bar_settings = {
                 parent:viewer,
                 insertionSelector: '.toolbar-col',
+                classes: ["vertical"],
                 buttons: [
                     {
                         label:"",

@@ -22,9 +22,12 @@ define([
                 },
                 init_dom: function(settings){
                     var button = document.createRange().createContextualFragment(basic_button_template.compile(settings));
+                    console.log('init_dom', settings);
 
+                    
                     if(typeof settings.onClick === "function"){
-                        button.addEventListener('click', function(ev){
+                        var btn_dom = button.querySelector('button');
+                        btn_dom.addEventListener('click', function(ev){
                             settings.onClick(ev);
                         });
                     }

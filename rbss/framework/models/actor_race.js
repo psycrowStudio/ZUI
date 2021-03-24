@@ -22,6 +22,9 @@ function (
 			subtype: "",
 			class:"",
 			description:"",
+			weight_range:"",
+			height_range:"",
+			age_range:"",  // child / adult / elder?
 			male_first_names: [],
 			female_first_names: [],
 			last_names: [],

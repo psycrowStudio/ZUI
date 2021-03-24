@@ -571,6 +571,7 @@ define([
                             activeInstance.parentView.removeView(activeInstance);
                             activeInstance.el.parentNode.removeChild(activeInstance.el);                            
                             _openDialogs.splice(_openDialogs.indexOf(activeInstance), 1);
+                            _active = null;
                         }
 
                         if(_openDialogs.length === 0){
