@@ -21,14 +21,13 @@ define([
                     return basic_button_template.compile(settings);
                 },
                 init_dom: function(settings){
+                    var _scope = this;
                     var button = document.createRange().createContextualFragment(basic_button_template.compile(settings));
-                    console.log('init_dom', settings);
 
-                    
                     if(typeof settings.onClick === "function"){
                         var btn_dom = button.querySelector('button');
                         btn_dom.addEventListener('click', function(ev){
-                            settings.onClick(ev);
+                            settings.onClick.call(_scope, ev);
                         });
                     }
 

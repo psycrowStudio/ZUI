@@ -13,7 +13,6 @@ define([
 
     // TODO -- Add:
     // Array / Object Editors
-    // Date / DateTime Pickers
 
     // FORM HELPERS
     // -- Change Watcher
@@ -86,7 +85,7 @@ define([
 
     var _CreateButton = function (settings) {
         settings.classes = Array.isArray(settings.classes) ? settings.classes.concat(ZUI_BUTTON_CLASSES) : ZUI_BUTTON_CLASSES;
-        var button = zui.components.button_basic.init_dom(settings);
+        var button = zui.components.button_basic.init_dom.call(this, settings);
         return button
     };
 
@@ -185,7 +184,7 @@ define([
 
             if(Array.isArray(settings.buttons)){
                 settings.buttons.forEach(function(el, i) {
-                    row_children.push(_CreateButton(el));
+                    row_children.push(_CreateButton.call(settings, el));
                 });
             }
 

@@ -65,6 +65,12 @@ function (
                                 // TODO Start back here -- iron out the general model save flow
                                 // implement randoms
                                 // implement class based values (racial height / weight / age)
+                                
+                                // add a save() to field settings
+                                // validate? // error message
+                                // change watcher
+                                // 
+
                                 console.log('Saving Actor Values...');
                                 fields = Array.from(edit_form.el.querySelectorAll('.zui-input:not(:disabled)'));
 
@@ -90,6 +96,8 @@ function (
 
             // STAT LIST -------------------------     
             var demographic = actor.get('demographic');
+            var demo = actor.attributes.demographic;
+
             console.log('demo', demographic);
 
             var demographics_viewer_settings = {
@@ -108,24 +116,10 @@ function (
                         disabled: false,
                         visible: true,
                         classes: [],
-                        // onClick:function(view, ev){
-                        //     var glyph = ev.currentTarget.querySelector('.glyph');
-                        //     if(glyph.classList.contains('fa-' + this.glyph_code)){
-                        //         glyph.classList.remove('fa-' + this.glyph_code);
-                        //         glyph.classList.add('fa-check-circle');
-                        //         ev.currentTarget.title = "Save Changes";
-                        //     }
-                        //     else {
-                        //         glyph.classList.remove('fa-check-circle');
-                        //         glyph.classList.add('fa-' + this.glyph_code);
-                        //         ev.currentTarget.title = this.hover_text;
-                        //     }
-                            
-                            
-                        //     // toggle the state of the form fields
-                        //     // save data back to model
+                        onClick:function(view, ev){
+                            console.log('RANDOMIZE', this);
 
-                        // }
+                        }
                     };
 
 
@@ -146,35 +140,36 @@ function (
                                     visible: true,
                                     classes: [],
                                     onClick:function(view, ev){
+                                        var click_scope = this;
+                                        var default_races = demographic.race.get_model().default_races()
                                         var settings = {
                                             typeSettings: {
                                                 query: "Pick a number?",
-                                                buttons: [{
-                                                    label: 'One',
-                                                    value: '1'
-                                                },
-                                                {
-                                                    label: 'Two',
-                                                    value: '2'
-                                                },
-                                                {
-                                                    label: 'Three',
-                                                    value: '3'
-                                                },
-                                                {
-                                                    label: 'Four',
-                                                    value: '4'
-                                                },{
-                                                    label: 'Five',
-                                                    value: '5'
-                                                }]
-                                            }
+                                                buttons: default_races.toJSON(),
+                                                generateItemSettings: function(el, i){
+                                                    var r = el.type + " "+ el.subtype + " " + el.class;
+                                                    return {
+                                                        label: r,
+                                                        hover_text: el.description,
+                                                        value: el.id
+                                                    };
+                                                }
+                                            },
+                 
                                         };
 
                                         console.log('clicked');
                                         var dialog_layer = zui.components.dialogLayer.current();
                                         var confirmation = dialog_layer.triggerDialog('mc', settings).then(function(resolve){
-                                            console.log('resolved', resolve);
+                                           
+                                            var selected = default_races.get(resolve.id);
+                                            console.log('resolved',selected);
+                                            demographic.race = selected;
+
+                                            var domEl = form.querySelector('[name='+ click_scope.field_name +']');
+                                            domEl.value = resolve.type + " "+ resolve.subtype + " " + resolve.class;
+                                            
+
                                         }).catch(function(error){
                                             console.log('rejected', error);
                                         }); 
@@ -312,7 +307,8 @@ function (
                         // Save to el.domEl?
                         // loop over this array again upon saving values?
                         // if extended onSave, () else default save to obj?
-                        form_rows.push(zui_form_fields.create_field_row_basic(el));
+                        el.dom_row = zui_form_fields.create_field_row_basic(el);
+                        form_rows.push(el.dom_row);
                     });
 
                     var fieldset_settings = {

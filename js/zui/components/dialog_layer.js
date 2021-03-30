@@ -58,13 +58,13 @@ define([
                 events: {
                     'zui-dialog-resolution': function(e) {
                         console.log('Resolved Event:', e, this);
-                        payload = !e || !e.detail ? {} : e.detail;
+                        payload = !e && !e.detail ? {} : e.detail;
 
                         this.parentView.resolveDialog(this.id, true, payload);
                     },
                     'zui-dialog-rejection': function(e) {
                         console.log('Rejected Event:', e, this);
-                        payload = !e || !e.detail ? {} : e.detail;
+                        payload = !e && !e.detail ? {} : e.detail;
 
                         this.parentView.resolveDialog(this.id, false, payload);
                     },

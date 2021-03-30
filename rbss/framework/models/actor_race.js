@@ -72,6 +72,9 @@ function (
 				}
 
 				return (fName + " " + lName).trim();
+			},
+			default_races: function(){
+				return _default_races;
 			}
 		};
 	})();
@@ -170,8 +173,8 @@ function (
 		{
 			type:"Beast",
 			subtype:"",
-			class:"Nonhumanoid creatures that are a natural part of the fantasy ecology. Some of them have magical powers, but most are unintelligent and lack any society or language. Beasts include all varieties of ordinary animals, dinosaurs, and giant versions of animals.",
-			description:"",
+			class:"",
+			description:"Nonhumanoid creatures that are a natural part of the fantasy ecology. Some of them have magical powers, but most are unintelligent and lack any society or language. Beasts include all varieties of ordinary animals, dinosaurs, and giant versions of animals.",
 			male_first_names: [],
 			female_first_names: [],
 			last_names: [],
