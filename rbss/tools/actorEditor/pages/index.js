@@ -219,8 +219,8 @@ define([
                     var race = a1.attributes.demographic.race;
                     var model = race.get_model();
                     
-                    console.log("RACE", model.random_default_race());
-                    console.log("NAME: ", model.random_racial_name({ subtype:"Goblinoid" }, "Male"));
+                    console.log("RACE", model.random());
+                    console.log("NAME: ", model.random_name({ subtype:"Goblinoid" }, "Male"));
                 }
             },
             {

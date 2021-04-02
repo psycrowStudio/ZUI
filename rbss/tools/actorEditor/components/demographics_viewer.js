@@ -3,15 +3,16 @@ define([
     "zuiRoot/components/toolbar",
     "zuiRoot/components/form_fields",
     "rbssRoot/tools/actorEditor/view_templates/tab_layout",
-    "rbssRoot/tools/actorEditor/view_templates/demographics_editor"
-
+    "rbssRoot/tools/actorEditor/view_templates/demographics_editor",
+    'mod/text'
 ],
 function (
     zui,
     zui_toolbar,
     zui_form_fields,
     tab_layout_template,
-    demographics_template
+    demographics_template,
+    mod_text
 ) {
     var MODULE_NAME = "demographics_viewer";
     
@@ -29,7 +30,6 @@ function (
 
             var viewer = zui.types.view.fab(stat_viewer_settings);
                
-
             // TODO thoughts on needed model events
             //-- add item
             //-- remove item
@@ -72,14 +72,22 @@ function (
                                 // 
 
                                 console.log('Saving Actor Values...');
-                                fields = Array.from(edit_form.el.querySelectorAll('.zui-input:not(:disabled)'));
-
-                                console.log('VALUES:', fields.reduce(function(acc, cv, i){
+                                fields = Array.from(edit_form.el.querySelectorAll('.zui-input:not(:disabled):not(.input-override)'));
+                                fields = fields.reduce(function(acc, cv, i){
                                     // TODO check if changed... if()
                                     acc[cv.name] = cv.value;
                                     return  acc;
-                                }, {}));
+                                }, {});
 
+                                for(var key in fields){
+                                    if(demographic.hasOwnProperty(key)){
+                                        demographic[key] = fields[key];
+                                    }
+                                }
+
+                                console.log('VALUES:', demographic);
+
+                                actor.set('demographic', demographic);
                                 fieldset.disabled = true;
                             }
                             
@@ -109,17 +117,23 @@ function (
                     var form = document.createElement('div');
                     var form_rows = [];
 
-                    var randomize_button = {
-                        label:"",
-                        glyph_code:"random",
-                        hover_text: "Randomize",
-                        disabled: false,
-                        visible: true,
-                        classes: [],
-                        onClick:function(view, ev){
-                            console.log('RANDOMIZE', this);
-
-                        }
+                    var randomize_button = function( randomize){
+                        return {
+                            label:"",
+                            glyph_code:"random",
+                            hover_text: "Randomize",
+                            disabled: false,
+                            visible: true,
+                            classes: [],
+                            onClick:function(view, ev){
+                                if(typeof randomize === 'function'){
+                                    randomize.call(this, view, ev);
+                                }
+                                else {
+                                    console.log('RANDOMIZE', this);
+                                }
+                            }
+                        };
                     };
 
 
@@ -130,7 +144,7 @@ function (
                             type:"text",
                             disabled: true,
                             hover_text:"This character's race",
-                            value: "RACE HERE",
+                            value:  demographic.race.get('type') + " "+ demographic.race.get('subtype') + " " + demographic.race.get('class'),
                             buttons:[
                                 {
                                     label:"",
@@ -141,10 +155,10 @@ function (
                                     classes: [],
                                     onClick:function(view, ev){
                                         var click_scope = this;
-                                        var default_races = demographic.race.get_model().default_races()
+                                        var default_races = demographic.race.get_model().default_collection()
                                         var settings = {
                                             typeSettings: {
-                                                query: "Pick a number?",
+                                                query: "Select a race",
                                                 buttons: default_races.toJSON(),
                                                 generateItemSettings: function(el, i){
                                                     var r = el.type + " "+ el.subtype + " " + el.class;
@@ -180,47 +194,117 @@ function (
             
                                     }
                                 },
-                                randomize_button
+                                randomize_button(function(){
+                                    var selected = demographic.race.get_model().random();
+                                    demographic.race = selected;
+
+                                    var domEl = form.querySelector('[name='+ this.field_name +']');
+                                    domEl.value = selected.get('type') + " "+ selected.get('subtype') + " " + selected.get('class');
+                                })
                             ]
                         },
                         {
-                            label:"Age",
-                            field_name:"age",
-                            type:"number",
-                            hover_text:"This character's age",
-                            value:demographic.age,
+                            label:"Personality",
+                            field_name:"personality",
+                            type:"text",
+                            disabled: true,
+                            hover_text:"This character's personality",
+                            value:  demographic.personality.get('name'),
                             buttons:[
-                                randomize_button
+                                {
+                                    label:"",
+                                    glyph_code:"list-alt",
+                                    hover_text: "Change Personality",
+                                    disabled: false,
+                                    visible: true,
+                                    classes: [],
+                                    onClick:function(view, ev){
+                                        var click_scope = this;
+                                        var default_personality = demographic.personality.get_model().default_collection()
+                                        var settings = {
+                                            typeSettings: {
+                                                query: "Select a personality",
+                                                buttons: default_personality.toJSON(),
+                                                generateItemSettings: function(el, i){
+                                                    var r = el.name;
+                                                    return {
+                                                        label: r,
+                                                        hover_text: el.description,
+                                                        value: el.id
+                                                    };
+                                                }
+                                            },
+                                        };
+
+                                        var dialog_layer = zui.components.dialogLayer.current();
+                                        var confirmation = dialog_layer.triggerDialog('mc', settings).then(function(resolve){
+                                            var selected = default_personality.get(resolve.id);
+                                            demographic.race = selected;
+
+                                            var domEl = form.querySelector('[name='+ click_scope.field_name +']');
+                                            domEl.value = resolve.name;
+                                        }).catch(function(error){}); 
+                                    }
+                                },
+                                randomize_button(function(){
+                                    var selected = demographic.personality.get_model().random();
+                                    demographic.personality = selected;
+
+                                    var domEl = form.querySelector('[name='+ this.field_name +']');
+                                    domEl.value = selected.get('name');
+                                })
                             ]
                         },
                         {
-                            label:"Birthdate",
-                            field_name:"date_of_birth",
-                            type:"date",
-                            hover_text:"This character's day of birth",
-                            value:demographic.date_of_birth.toFormat('yyyy-MM-dd'),
+                            label:"Archetype",
+                            field_name:"archetype",
+                            type:"text",
+                            disabled: true,
+                            hover_text:"This character's archetype",
+                            value:  demographic.archetype.get('name'),
                             buttons:[
-                                randomize_button
-                            ]
-                        },
-                        {
-                            label:"Height",
-                            field_name:"height",
-                            type:"number",
-                            hover_text:"This character's overall size (IN)",
-                            value:demographic.height,
-                            buttons:[
-                                randomize_button
-                            ]
-                        },
-                        {
-                            label:"Weight",
-                            field_name:"weight",
-                            type:"number",
-                            hover_text:"This character's overall weight (LBS)",
-                            value:demographic.weight,
-                            buttons:[
-                                randomize_button
+                                {
+                                    label:"",
+                                    glyph_code:"list-alt",
+                                    hover_text: "Change Archetype",
+                                    disabled: false,
+                                    visible: true,
+                                    classes: [],
+                                    onClick:function(view, ev){
+                                        var click_scope = this;
+                                        var _default_archetype = demographic.archetype.get_model().default_collection()
+                                        var settings = {
+                                            typeSettings: {
+                                                query: "Select an archetype",
+                                                buttons: _default_archetype.toJSON(),
+                                                generateItemSettings: function(el, i){
+                                                    var r = el.name;
+                                                    return {
+                                                        label: r,
+                                                        hover_text: el.description,
+                                                        value: el.id
+                                                    };
+                                                }
+                                            },
+                                        };
+
+                                        var dialog_layer = zui.components.dialogLayer.current();
+                                        var confirmation = dialog_layer.triggerDialog('mc', settings).then(function(resolve){
+                                            var selected = _default_archetype.get(resolve.id);
+                                            demographic.archetype = selected;
+
+                                            var domEl = form.querySelector('[name='+ click_scope.field_name +']');
+                                            domEl.value = resolve.name;
+                                        }).catch(function(error){}); 
+                                    }
+                                },
+                                randomize_button(function(){
+                                    var selected = demographic.archetype.get_model().random();
+                                    demographic.archetype = selected;
+
+                                    var domEl = form.querySelector('[name='+ this.field_name +']');
+                                    domEl.value = selected.get('name');
+                                })
                             ]
                         },
                         {
@@ -239,9 +323,84 @@ function (
                             ],
                             hover_text:"This character's gender",
                             value:demographic.gender,
+                            onChange: function(ev){
+                                demographic[this.field_name] = ev.target.value;
+                            },
                             buttons:[
-                                randomize_button
+                                randomize_button(function(view, ev){
+                                    var option = this.options[mod_text.random.int(0, this.options.length-1)];
+                                    demographic.gender = option.value;
+
+                                    var domEl = form.querySelector('[name='+ this.field_name +']');
+                                    domEl.value = option.value;
+                                })
                             ]
+                        },
+                        {
+                            label:"Age",
+                            field_name:"age",
+                            type:"number",
+                            hover_text:"This character's age",
+                            value:demographic.age,
+                            buttons:[
+                                randomize_button(function(view, ev){
+                                    var rng_age = demographic.race.get_model().random_age({ subtype:demographic.race.get('subtype') });
+                                    
+                                    if(rng_age){
+                                        demographic.age = rng_age;
+                                        var domEl = form.querySelector('[name='+ this.field_name +']');
+                                        domEl.value = demographic.age;
+                                    }
+                                })
+                            ]
+                        },
+                        {
+                            label:"Height",
+                            field_name:"height",
+                            type:"number",
+                            hover_text:"This character's overall size (IN)",
+                            value:demographic.height,
+                            buttons:[
+                                randomize_button(function(view, ev){
+                                    var bodySize = demographic.race.get_model().random_body_size({ subtype:demographic.race.get('subtype') }, demographic.gender);
+                                    if(bodySize){
+                                        demographic.height = bodySize.height;
+
+                                        var domEl = form.querySelector('[name='+ this.field_name +']');
+                                        domEl.value = bodySize.height;
+                                    }
+                                })
+                            ]
+                        },
+                        {
+                            label:"Weight",
+                            field_name:"weight",
+                            type:"number",
+                            hover_text:"This character's overall weight (LBS)",
+                            value:demographic.weight,
+                            buttons:[
+                                randomize_button(function(view, ev){
+                                    var bodySize = demographic.race.get_model().random_body_size({ subtype:demographic.race.get('subtype') }, demographic.gender);
+                                    if(bodySize){
+                                        demographic.weight = bodySize.weight;
+
+                                        var domEl = form.querySelector('[name='+ this.field_name +']');
+                                        domEl.value = bodySize.weight;
+                                    }
+                                })
+                            ]
+                        },
+                        {
+                            label:"Birthdate",
+                            field_name:"date_of_birth",
+                            type:"date",
+                            hover_text:"This character's day of birth",
+                            classes:["input-override"],
+                            value:demographic.date_of_birth.toFormat('yyyy-MM-dd'),
+                            onChange: function(ev){
+                                console.log('!!!!!');
+                                demographic.date_of_birth = luxon.DateTime.fromISO(ev.target.value);
+                            }
                         },
                         {
                             label:"Moral Alignment",

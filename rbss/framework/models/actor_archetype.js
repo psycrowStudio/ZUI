@@ -40,8 +40,11 @@ function (
 		return {
 			model_name: MODEL_SINGULAR,
 			model_plural: MODEL_PLURAL,
-			random_archetype: function(){
+			random: function(){
 				return _default_archetypes.length > 0 ? _default_archetypes.at(mod_text.random.int(0, _default_archetypes.length-1)) : null;
+			},
+			default_collection: function(){
+				return _default_archetypes;
 			}
 		};
 	})();

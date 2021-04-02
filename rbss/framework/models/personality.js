@@ -56,8 +56,11 @@ function (
 		return {
 			model_name: MODEL_SINGULAR,
 			model_plural: MODEL_PLURAL,
-			random_personality: function(){
-				return _default_personalities.length > 0 ? _default_personalities.at(mod_text.random.int(0, _default_personalities.length-1)) : null;
+			random: function(){
+				return _default_collection.length > 0 ? _default_collection.at(mod_text.random.int(0, _default_collection.length-1)) : null;
+			},
+			default_collection: function(){
+				return _default_collection;
 			}
 		};
 	})();
@@ -75,7 +78,7 @@ function (
 	// Peacemaker
 
 	// AFTER MODEL TYPE INSTANTIATED
-	var _default_personalities_json = [
+	var _default_collection_json = [
 		{
 			name : "Perfectionist",
 			description:"",
@@ -231,7 +234,7 @@ function (
 		},
 	];
 
-	var _default_personalities = new Backbone.Collection(_default_personalities_json, {
+	var _default_collection = new Backbone.Collection(_default_collection_json, {
 		model: _model
 	});
 

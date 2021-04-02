@@ -163,15 +163,15 @@ function (
 			}
 
 			if(!demographic.race){
-				demographic.race = rbss_actor_race.random_default_race()
+				demographic.race = rbss_actor_race.random()
 			}
 
 			if(!demographic.personality){
-				demographic.personality = rbss_personality.random_personality();
+				demographic.personality = rbss_personality.random();
 			}
 
 			if(!demographic.archetype){
-				demographic.archetype = rbss_actor_archetype.random_archetype();
+				demographic.archetype = rbss_actor_archetype.random();
 			}
 
 			this.set('demographic', demographic);

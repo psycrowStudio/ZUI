@@ -22,9 +22,11 @@ function (
 			subtype: "",
 			class:"",
 			description:"",
-			weight_range:"",
-			height_range:"",
-			age_range:"",  // child / adult / elder?
+			male_weight_range:"",
+			male_height_range:"",
+			female_weight_range:"",
+			female_height_range:"",
+			age_range:"",
 			male_first_names: [],
 			female_first_names: [],
 			last_names: [],
@@ -46,6 +48,8 @@ function (
 				this.set('id', mod_text.random.hexColor());
 			}
 		},
+
+
 		get_model: function(){ return _model; }
 	};
 
@@ -54,12 +58,12 @@ function (
 		return {
 			model_type: MODEL_SINGULAR,
 			model_plural: MODEL_PLURAL,
-			random_default_race: function () {
-				return _default_races.length > 0 ? _default_races.at(mod_text.random.int(0, _default_races.length-1)) : null;
+			random: function () {
+				return _default_collection.length > 0 ? _default_collection.at(mod_text.random.int(0, _default_collection.length-1)) : null;
 			},
-			random_racial_name: function(race_attributes, gender){
+			random_name: function(race_attributes, gender){
 				// name || class || subclass
-				var race = _default_races.findWhere(race_attributes);
+				var race = _default_collection.findWhere(race_attributes);
 				// DB lookup once established
 
 				var fName = "";
@@ -73,8 +77,42 @@ function (
 
 				return (fName + " " + lName).trim();
 			},
-			default_races: function(){
-				return _default_races;
+			random_age : function(race_attributes){
+				var race = _default_collection.findWhere(race_attributes);
+
+				if(race && race.get('age_range')){
+					var aRange = race.get('age_range').split('-');
+					return mod_text.random.int(parseInt(aRange[0]),parseInt(aRange[1]));
+				}
+				else {
+					return 0;
+				}
+			},
+			random_body_size : function(race_attributes, gender){
+				var race = _default_collection.findWhere(race_attributes);
+
+				if(race && (gender.toLowerCase() === "female" || gender.toLowerCase() === "f") && race.get('female_height_range') && race.get('female_weight_range')) {
+					var hRange = race.get('female_height_range').split('-');
+					var wRange = race.get('female_weight_range').split('-');
+					return {
+						height: mod_text.random.int(parseInt(hRange[0]), parseInt(hRange[1])),
+						weight: mod_text.random.int(parseInt(wRange[0]), parseInt(wRange[1]))
+					};
+				}
+				else if(race && race.get('male_height_range') && race.get('male_weight_range')) {
+					var hRange = race.get('male_height_range').split('-');
+					var wRange = race.get('male_weight_range').split('-');
+					return {
+						height: mod_text.random.int(parseInt(hRange[0]), parseInt(hRange[1])),
+						weight: mod_text.random.int(parseInt(wRange[0]), parseInt(wRange[1]))
+					};
+				}
+				else {
+					return null;
+				}
+			},
+			default_collection: function(){
+				return _default_collection;
 			}
 		};
 	})();
@@ -82,7 +120,7 @@ function (
 	var _model = Backbone.Model.extend(_classDefaults, _static);
 	
 	// AFTER MODEL TYPE INSTANTIATED
-	var _default_races_json = [
+	var _default_collection_json = [
 		{
 			type:"Humanoid",
 			subtype:"Human",
@@ -91,6 +129,11 @@ function (
 			male_first_names: [],
 			female_first_names: [],
 			last_names: [],
+			male_weight_range:"100-300",
+			male_height_range:"60-84",
+			female_weight_range:"80-275",
+			female_height_range:"48-78",
+			age_range:"16-80",
 		},
 		{
 			type:"Humanoid",
@@ -280,7 +323,7 @@ function (
 		}
 	];
 
-	var _default_races = new Backbone.Collection(_default_races_json, {
+	var _default_collection = new Backbone.Collection(_default_collection_json, {
 		model: _model
 	});
 

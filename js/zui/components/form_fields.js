@@ -156,13 +156,14 @@ define([
             var row = document.createElement('div');
             row.className = ZUI_FIELD_ROW_CLASSES.join(' ')
            
+            var input = null;
             var row_children = [];
             switch(settings.type){
                 case "textarea":
-                    row_children.push(_CreateTextArea(settings));
+                    input = _CreateTextArea(settings);
                     break;
                 case "select":
-                    row_children.push(_CreateSelect(settings));
+                    input = _CreateSelect(settings);
                     break;
                 case "radio":
                     //row_children.push(_CreateSelect(settings.label, settings.fieldName));
@@ -173,14 +174,21 @@ define([
                 case "range":
                     // needs output...
                     // needs additional labels... 
-                    var range = _CreateInput(settings)
-                    row_children.push(range);
-                    row_children.push(_CreateOutput(settings, range));
+                    input = _CreateInput(settings)
+                    row_children.push(_CreateOutput(settings, input));
                     break;
                 default:
-                    row_children.push(_CreateInput(settings));
+                    input = _CreateInput(settings);
                     break;
             }
+
+            if(typeof settings.onChange === 'function'){
+                input.addEventListener('change', function(ev){
+                    settings.onChange(ev);
+                });
+            }
+
+            row_children.unshift(input);
 
             if(Array.isArray(settings.buttons)){
                 settings.buttons.forEach(function(el, i) {
