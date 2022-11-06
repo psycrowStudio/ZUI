@@ -70,14 +70,14 @@ define([
             input.disabled = true;
         }
 
+        for(var key in settings.attributes){
+            input[key] = settings.attributes[key]
+        }
+
         if (settings.type === "checkbox") {
             input.checked = settings.value;
         } else {
             input.value = settings.value;
-        }
-
-        for(var key in settings.attributes){
-            input[key] = settings.attributes[key]
         }
 
         return input;
