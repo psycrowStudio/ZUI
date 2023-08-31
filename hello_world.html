@@ -1,0 +1,193 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		
+		<title>ZUI & MT SANDBOX</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+
+		<base href="./">
+		
+		<!-- <script id="data-main" data-main= "/js/boot" src="/js/3rdParty/require.js"></script> -->
+
+        <script id="data-main" data-main= "/js/boot" src="/js/3rdParty/keypress.js"></script>
+
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+		<!-- <link rel="stylesheet" type="text/css" href="js/zui/styles/zui.css"> -->
+		<style>
+			/* Override Styles Go Here */
+
+            html, body {
+                height: 100%;
+                width: 100%;
+            }
+            
+            body textarea {
+                width: 500px;
+                height: 500px;
+                resize: none;
+                overflow-x: visible;
+                overflow-y: visible;
+                word-wrap: unset;
+                white-space: pre;
+                font-family: 'Courier New', Courier, monospace;
+
+                -webkit-user-select: none; /* Safari */
+                -ms-user-select: none; /* IE 10 and IE 11 */
+                user-select: none; /* Standard syntax */
+            }
+		</style>
+	</head>
+	<body>
+		<!-- lol -->
+        <h1>Hello World</h1>
+        <button onclick="StartGame()">START</button>
+        <pre>
+        <textarea cols="10" rows="10" id="gameboard" autofocus="true">
+____{X}___
+        </textarea>
+
+
+
+
+        </pre>
+
+<!-- TODO -- 
+     * make a CSS grid game board, and then a generator that can do x by y board sizes. 
+     * make abiliy to track, navigate a cursor around the grid with the most common keyboard combos
+
+
+-->
+        <div id="gameboard" class="">
+            <div class="row">
+                <span class="cell"></span>
+                <span class="cell"></span>
+            </div>
+            <div class="row">
+
+            </div>
+            <div class="row">
+
+            </div>
+        </div>
+
+
+
+
+        <!-- scripting -->
+        <script>
+            var kp_listener = null;
+            document.addEventListener("DOMContentLoaded", function(){
+                var _this = this;
+                var gb = document.getElementById("gameboard");
+                kp_listener = new window.keypress.Listener(gb);
+                // kp_listener.simple_combo("shift s", function() {
+                //     console.log("You pressed shift and s");
+                // });
+
+                var my_combos = kp_listener.register_many([
+                    {
+                        "keys"          : "s",
+                        "is_exclusive"  : true,
+                        "on_keydown"    : function() {
+                            console.log("You pressed shift and s together.");
+                        },
+                        "on_keyup"      : function(e) {
+                            console.log("And now you've released one of the keys.");
+                        },
+                        "this"          : _this
+                    },
+                    {
+                        "keys"          : "enter",
+                        "is_exclusive"  : true,
+                        "on_keydown"    : function() {
+                            console.log("You pressed enter:" + getSel());
+                            TextEval(getSel());
+
+                        },
+                        "on_keyup"      : function(e) {
+                            console.log("And now you've released enter.");
+                            // Normally because we have a keyup event handler,
+                            // event.preventDefault() would automatically be called.
+                            // But because we're returning true in this handler,
+                            // event.preventDefault() will not be called.
+                        },
+                        "this"          : _this
+                    },
+                    {
+                        "keys"          : "alt right",
+                        "is_exclusive"  : true,
+                        "on_keydown"    : function() {},
+                        "on_keyup"      : function(e) {},
+                        "this"          : _this
+                    },
+                    {
+                        "keys"          : "alt left",
+                        "is_exclusive"  : true,
+                        "on_keydown"    : function() {},
+                        "on_keyup"      : function(e) {},
+                        "this"          : _this
+                    }
+                ]);
+
+            }, false);
+
+            
+            function getSel() // JavaScript
+            {
+                // Obtain the object reference for the <textarea>
+                var txtarea = document.activeElement;
+
+                // Obtain the index of the first selected character
+                var start = txtarea.selectionStart;
+
+                // Obtain the index of the last selected character
+                var finish = txtarea.selectionEnd;
+
+                // Obtain the selected text
+                return  txtarea.value.substring(start, finish);
+            }
+
+
+            function TextEval(tte){
+                console.log("EVAL:'" + tte + "'");
+                if(tte === "{X}"){
+                    StartGame();
+                }
+            }
+
+
+            
+            function StartGame(){
+                alert("HELLO WORLD");
+                var gb = document.getElementById("gameboard");
+                
+                // LISTENERS
+                // gb.addEventListener("beforeinput", (event) => {
+                //     TextEval(window.getSelection().toString());
+                // });
+
+                
+                var r1 = ["_","_","_","_","{","x","}","_","_","_"];
+                var r2 = ["_","_","_","_","{","*","}","_","_","_"];
+                var r3 = ["_","_","_","_","*","*","*","_","_","_"];
+                var r4 = ["_","_","*","*","*","*","*","*","*","_"];
+                var r5 = ["*","*","*","*","*","*","*","*","*","*"];
+                var r6 = ["*","*","*","*","_","_","_","*","*","*"];
+                var r7 = ["*","*","_","_","_","_","_","_","_","*"];
+                var r8 = ["_","_","_","_","_","_","_","_","_","_"];
+                
+
+                gb.value = r1.join("");
+
+
+                setTimeout(function(){ gb.value = r2.join("");  }, 500);
+                setTimeout(function(){ gb.value = r3.join("");  }, 1000);
+                setTimeout(function(){ gb.value = r4.join("");  }, 1500);
+                setTimeout(function(){ gb.value = r5.join("");  }, 2000);
+                setTimeout(function(){ gb.value = r6.join("");  }, 2500);
+                setTimeout(function(){ gb.value = r7.join("");  }, 3000);
+                setTimeout(function(){ gb.value = r8.join("");  }, 3500);
+            }
+        </script>
+	</body>
+</html>

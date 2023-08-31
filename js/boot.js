@@ -12,12 +12,13 @@ requirejs.config({
         underscore: { exports: "_" },
         jquery: { exports: '$' },
         luxon: { exports: 'luxon' },
+        Phaser: { exports: 'Phaser' },
     },
     paths: {
         "router": "./routes",
 
         // requireJS plugins
-        "text": './3rdPArty/require_text',
+        "text": './3rdParty/require_text',
         underscore: './3rdParty/underscore.amd',  
         backbone: './3rdParty/backbone.amd',
         
@@ -37,6 +38,8 @@ requirejs.config({
         jquery: 'https://code.jquery.com/jquery-3.4.1.min',
         luxon: 'https://cdn.jsdelivr.net/npm/luxon@1.25.0/build/global/luxon.min',
         
+        Phaser: './3rdParty/phaser.min',
+
         // mapping to hosted 3p libraries
         '3p': './3rdParty',
 

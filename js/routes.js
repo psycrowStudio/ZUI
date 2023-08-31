@@ -5,11 +5,15 @@ define(['backbone'], function (backbone) {
         routes: {
             '': 'home',
             '/': 'home',
+            'phaser': 'phaser',
             'tools/actorEditor': 'ActorEditor_Home'
         },
 
         home: function (){
             require(['rbssRoot/pages/index'], function(index){});
+        },
+        phaser: function (){
+            require(['zuiRoot/pages/phaser/index'], function(index){});
         },
 
         ActorEditor_Home: function () {
