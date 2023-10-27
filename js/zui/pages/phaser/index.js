@@ -14,29 +14,80 @@ define([
         'isActive': true,
         'bodyClasses': ['page_grid']
     });
-    //layout_base.generate(phaser_sandbox);
 
-    //var scroll_box = phaser_sandbox.findChildView('scrolling_box');
+    var generate = function(pageModel){
+        // var header_compiled = vt_rbss_header.compile({
+        //     titleText : "Role-Based Scenario Simulator",
+        //     titleHover : "R.B.S.S.",
+        //     titleUrl : "/",
+        //     links: [
+        //         {
+        //             text : "ActorCreator",
+        //             hover : "Create and Edit your characters",
+        //             url : "/tools/actorEditor",
+        //         },
+        //         {
+        //             text : "WorldBuilder",
+        //             hover : "Create and Edit your Environment",
+        //             url : "/",
+        //         },
+        //         {
+        //             text : "ActionSequencer",
+        //             hover : "Create and Edit your Triggers & RuleSets",
+        //             url : "/",
+        //         },
+        //     ]
+        // });
+    
+        zui.types.view.fab( { 
+            id:'header', 
+            parent: pageModel,
+            template: '<header>header</header>', //header_compiled
+        });
+    
+        var content = zui.types.view.fab({ 
+            id:'content', 
+            parent: pageModel,
+            template:'<div id="myContent"></div>'
+        });
+        
+        zui.types.view.fab( {
+            id:'context_bar', 
+            parent: content, 
+            insertionSelector: '#content',
+            classes:['context-bar', 'g-v-24'],
+            events: {
+            },
+            template:'<div class="lSide g-col-6"></div><div class="rSide g-col-6"></div>'
+        });
+    
+        zui.types.view.fab( {
+            id:'scrolling_box', 
+            parent: content, 
+            insertionSelector: '#content',
+            classes:['scrolling_box'],
+            events: {
+            },
+            template:''
+        });
+    
+        zui.types.view.fab( { id:'footer', 
+            parent: pageModel,                 
+            template:' &copy;2020 PsyCrow Studio &#x03A8;&#x16E6;' 
+        });
 
+        var dialogLayer = zui.components.dialogLayer.addToPage(pageModel);
+    };
+
+    generate(phaser_sandbox);
     // get content componet -- #scrolling_box
-    var tool_box = zui.types.view.fab( {
-        id:'rbss_tools', 
-        parent: phaser_sandbox, 
-        insertionSelector: '#scrolling_box',
-        classes:['rbss_tools', 'g-row'],
-        events: {
-            "click #AE" : function(){
-                console.log('loading actor creator');
-                //window.location.assign("/tools/actorEditor");
-            }
-        },
-        template:'\
-        <div id="AE" class="tooltile" title="Actor Editor"><div class="fa fa-id-card"><div>AE</div></div></div>\
-        '
-    });
+    var scroll_box = phaser_sandbox.findChildView('scrolling_box');
 
-    phaser_sandbox.view.listenToOnce(phaser_sandbox.view, "post-render", function(ev){
-        tool_box.render();
+    // Note post render is not actually on screen at this moment :/
+    scroll_box.listenToOnce(scroll_box, "post-render", function(ev){
+       var x = document.getElementById("scrolling_box");
+        console.log("post render 2");
+        phaser.start(ev.el);
     });
 
     phaser_sandbox.redraw();

@@ -90,8 +90,6 @@ define([
                             child.render();
                         });
                         
-                        this.trigger('post-render', this);
-
                         if(!this.el.parentNode && this.autoInsert){
                             var parent_dom = !this.parentView ? document.body : this.parentView instanceof Backbone.Model ? this.parentView.view.el : this.parentView.el;
                             parent_dom = this.insertionSelector ? parent_dom.querySelector(this.insertionSelector) || parent_dom : parent_dom;
@@ -108,7 +106,9 @@ define([
                                 console.warn('No parent located for: ' + this.id);
                             }
                         }
-          
+
+                        this.trigger('post-render', this);
+
                         return this;
                     },
 

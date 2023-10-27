@@ -37,6 +37,7 @@ define([
         '
     });
 
+    // Note post render is not actually on screen at this moment :/
     testPage.view.listenToOnce(testPage.view, "post-render", function(ev){
         tool_box.render();
     });

@@ -6,24 +6,6 @@ define([
     phaser
 ) {
         var MODULE_NAME = "Phaser Module";
-
-        var config = {
-            type: Phaser.AUTO,
-            width: 800,
-            height: 600,
-            physics: {
-                default: 'arcade',
-                arcade: {
-                    gravity: { y: 200 }
-                }
-            },
-            scene: {
-                preload: preload,
-                create: create
-            }
-        };
-    
-        var game = new Phaser.Game(config);
     
         function preload ()
         {
@@ -53,10 +35,30 @@ define([
             particles.startFollow(logo);
         }
 
-
         var _misc = {
             phaser:phaser,
-            game: game
+            game: null,
+            start: function(parent){
+                var config = {
+                    type: Phaser.AUTO,
+                    width: 800,
+                    height: 600,
+                    parent: !parent ? "body" :  parent,
+                    physics: {
+                        default: 'arcade',
+                        arcade: {
+                            gravity: { y: 200 }
+                        }
+                    },
+                    scene: {
+                        preload: preload,
+                        create: create
+                    }
+                };
+
+                console.log("phaser game create");
+                _misc.game = new Phaser.Game(config);
+            }
 
         };
 
